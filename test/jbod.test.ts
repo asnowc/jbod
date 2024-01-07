@@ -1,79 +1,52 @@
-import { DataType, JBOD, toArrayJBOD, toArrayItemJBOD, toMapJBOD, JbodScanItem, UnsupportedDataTypeError } from "jbod";
+import {
+  DataType,
+  JBOD,
+  toArrayItemJBOD,
+  JbodAsyncIteratorItem,
+  UnsupportedDataTypeError,
+  JbodError,
+  ObjectId,
+  VOID,
+} from "jbod";
 import { baseDataTypes, unsupportedData } from "./__mocks__/data_type.cases.js";
 import "./expects/expect.js";
-import { describe, it, expect, test } from "vitest";
-const mapCases: Record<string, any> = {
-  0: { a: 1, b: 2, c: 3 },
-  1: { a: false, b: [1, "a", null] }, // [4, 1,97, ] [13,1,98,[5,0,0,0,1, 10,1,97, 1, 0], 0]
-  2: { a: false, b: { a: 9, b: null } },
-};
+import { describe, expect, test } from "vitest";
 
-describe("同步转换器", function () {
-  describe("toArrayItemJBSON", function () {
-    describe.each(Object.entries(baseDataTypes))("%s", function (type, cases) {
-      test.each(cases as any[])("%s", function (data) {
-        const buf = toArrayItemJBOD(data);
-        const [transData, offset] = JBOD.toArrayItem(buf);
-        expect(transData).jbodEqual(data);
-        expect(offset).toBe(buf.byteLength);
-      });
+describe("paseSync", function () {
+  describe.each(Object.entries(baseDataTypes))("%s", function (type, cases) {
+    test.each(cases as any[])("%s", function (data) {
+      const buf = toArrayItemJBOD(data);
+      const { data: transData, offset } = JBOD.paseSync(buf);
+      expect(transData).jbodEqual(data);
+      expect(offset).toBe(buf.byteLength);
     });
-  });
-  describe("toArrayJBSON", function () {
-    test.each(Object.entries(baseDataTypes))("%s", function (key, cases) {
-      const buffer = toArrayJBOD(cases);
-      const map = JBOD.toArray(buffer);
-      expect(map).isJbodArray(cases);
-    });
-  });
-  test("toMapJBSON", function () {
-    const buffer = toMapJBOD(baseDataTypes);
-    const map = JBOD.toMap(buffer);
-    expect(map).isJbodMap(baseDataTypes as any);
-  });
-  test("不支持的数据类型", function () {
-    expect(() => toArrayItemJBOD(unsupportedData.function[0])).toThrowError(UnsupportedDataTypeError);
   });
 });
-describe("异步转换器", function () {
-  describe("JBSON.readItem", function () {
-    describe.each(Object.entries(baseDataTypes))("%s", function (type, cases) {
-      test.each(cases as any[])("%s", async function (data) {
-        const reader = createFixedStreamReader(toArrayItemJBOD(data));
-        const array = await JBOD.readItem(reader);
-        expect(array).jbodEqual(data);
-      });
-    });
-  });
-  describe("readArray", function () {
-    it.each(Object.entries(baseDataTypes))("%s", async function (type, cases) {
-      const reader = createFixedStreamReader(toArrayJBOD(cases));
 
-      const array = await JBOD.readArray(reader);
-      expect(array).isJbodArray(cases);
+test("不支持的数据类型", function () {
+  expect(() => toArrayItemJBOD(unsupportedData.function[0])).toThrowError(UnsupportedDataTypeError);
+});
+describe("pase", function () {
+  describe.each(Object.entries(baseDataTypes))("%s", function (type, cases) {
+    test.each(cases as any[])("%s", async function (data) {
+      const reader = createFixedStreamReader(toArrayItemJBOD(data));
+      const array = await JBOD.pase(reader);
+      expect(array).jbodEqual(data);
     });
-  });
-  test("readMap", async function () {
-    const reader = createFixedStreamReader(toMapJBOD(baseDataTypes));
-
-    const array = await JBOD.readMap(reader);
-    expect(array).isJbodMap(baseDataTypes);
   });
 });
-describe("异步迭代", function () {
-  describe("scanArray", function () {
-    it.each(Object.entries(baseDataTypes))("%s", async function (type, cases) {
-      const reader = createFixedStreamReader(toArrayJBOD(cases));
+describe("iterator", function () {
+  describe.each(Object.entries(baseDataTypes))("%s", async function (type, cases) {
+    test.each(cases as any[])("%s", async function (data) {
+      const reader = createFixedStreamReader(toArrayItemJBOD(data));
+      const expectPath = createIteratorPath(data, []);
+      const expectKeyPath = expectPath.map((item) => item.key);
 
-      const array = await asyncIteratorToArray(JBOD.scanArray(reader), []);
-      expect(array).isJbodArray(cases);
+      const array = await recordIteratorPath(JBOD.iterator(reader), []);
+      const actualKeyPath = array.map((item) => item.key);
+      expect(actualKeyPath).toEqual(expectKeyPath);
+      expect(array).toEqual(expectPath);
     });
-  });
-  test("scanMap", async function () {
-    const reader = createFixedStreamReader(toMapJBOD(baseDataTypes));
-
-    const map = await asyncIteratorToArray(JBOD.scanMap(reader), {});
-    expect(map).isJbodMap(baseDataTypes);
   });
 });
 
@@ -88,15 +61,76 @@ function createFixedStreamReader(buffer: Uint8Array) {
     return buf;
   };
 }
-async function asyncIteratorToArray<T extends Record<number | string, any>>(
-  itr: AsyncIterable<JbodScanItem>,
-  obj: T
-): Promise<T> {
-  for await (const res of itr) {
-    const item = res;
-    let value = item.value;
-    if (item.isIterator) value = await asyncIteratorToArray(item.value, item.dataType === DataType.array ? [] : {});
-    (obj as any)[item.key] = value;
+/** 记录迭代器路径数据 */
+async function recordIteratorPath(
+  iterable: AsyncIterable<JbodAsyncIteratorItem>,
+  path: IteratorPathItem[]
+): Promise<IteratorPathItem[]> {
+  const itr = iterable[Symbol.asyncIterator]();
+  let res = await itr.next();
+  while (!res.done) {
+    const item = res.value;
+
+    const mockValue = toMockValue(item.value);
+    if (item.isIterator) {
+      await recordIteratorPath(item.value, path);
+    } else {
+      path.push({
+        isEnd: false,
+        dataType: DataType[item.dataType],
+        key: item.key,
+        value: mockValue,
+      });
+    }
+
+    res = await itr.next();
   }
-  return obj;
+  path.push({ isEnd: true, dataType: DataType[JBOD.getJbodType(res.value)] });
+
+  return path;
+}
+type IteratorPathItem =
+  | {
+      isEnd: false;
+      dataType: string;
+      key?: number | string;
+      value: any;
+    }
+  | {
+      isEnd: true;
+      key?: number | string;
+      dataType: string;
+    };
+/** 生成迭代器路径数据 */
+function createIteratorPath(data: any, path: IteratorPathItem[], key?: string | number): IteratorPathItem[] {
+  const value = toMockValue(data);
+  if (value !== VOID) {
+    if (key === undefined) path.push({ isEnd: true, dataType: DataType[JBOD.getJbodType(data)] });
+    else path.push({ isEnd: false, dataType: DataType[JBOD.getJbodType(data)], value, key });
+    return path;
+  }
+  if (data instanceof Array) {
+    for (let i = 0; i < data.length; i++) {
+      createIteratorPath(data[i], path, i);
+    }
+    path.push({ isEnd: true, dataType: DataType[DataType.array] });
+  } else {
+    for (const [key, value] of Object.entries(data)) {
+      createIteratorPath(value, path, key);
+    }
+    path.push({ isEnd: true, dataType: DataType[DataType.map] });
+  }
+  return path;
+}
+function toMockValue(data: any): any {
+  const type = typeof data;
+  if (type !== "object" || data === null) {
+    return type === "symbol" ? "symbol" : data;
+  }
+
+  if (data instanceof Error || data instanceof RegExp || data instanceof ArrayBuffer || data instanceof ObjectId) {
+    let valueName = data instanceof Error ? JbodError.name : data.constructor.name;
+    return valueName;
+  }
+  return VOID;
 }

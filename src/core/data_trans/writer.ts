@@ -1,6 +1,7 @@
-import { numToDLD } from "../dynamic_len_data.js";
+import { DBN } from "../dynamic_len_data.js";
 import { DataType, ObjectId, UnsupportedDataTypeError, VOID } from "../../const.js";
 import { numTransf, strTransf } from "../../uint_array_util/mod.js";
+const { numToBinary } = DBN;
 
 export class JbodWriter {
   isNoContentData(type: number) {
@@ -75,12 +76,12 @@ export class JbodWriter {
   }
 
   [DataType.objectId](data: ObjectId, write: StreamWriter) {
-    const buf = numToDLD(data.value);
+    const buf = numToBinary(data.value);
     write(buf);
     return buf.byteLength;
   }
   [DataType.arrayBuffer](data: ArrayBuffer, write: StreamWriter) {
-    const dld = numToDLD(data.byteLength);
+    const dld = numToBinary(data.byteLength);
     write(dld);
     write(new Uint8Array(data));
     return data.byteLength + dld.byteLength;
@@ -120,7 +121,7 @@ export class JbodWriter {
 
         ///key
         const keyBuf = strTransf.writeByUtf8(key);
-        const lenDesc = numToDLD(keyBuf.length);
+        const lenDesc = numToBinary(keyBuf.length);
         write(lenDesc);
         write(keyBuf);
         writeTotalLen += lenDesc.byteLength + keyBuf.byteLength;

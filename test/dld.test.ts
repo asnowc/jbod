@@ -1,9 +1,9 @@
-import { DLD, numToDLD } from "jbod";
+import { DBN } from "jbod";
 import "./expects/expect.js";
 import { describe, expect, test } from "vitest";
 
 describe("DLD", function () {
-  describe("numToDLD", function () {
+  describe("numToBinary", function () {
     const cases: [number | bigint, string][] = [
       [1, "1"],
       [0xff, "10000000_11111111"],
@@ -16,12 +16,12 @@ describe("DLD", function () {
       [0xffffff_ffffffffn, "11111110_11111111_11111111_11111111_11111111_11111111_11111111_11111111"],
     ];
     test.each(cases)("%s", function (input, output) {
-      let buf = numToDLD(input);
+      let buf = DBN.numToBinary(input);
 
       expect(formatBin(buf), input.toString(16)).toBe(output);
     });
-    test("负数", () => expect(() => numToDLD(-1)).toThrowError());
-    test("小数", () => expect(() => numToDLD(2.25)).toThrowError());
+    test("负数", () => expect(() => DBN.numToBinary(-1)).toThrowError());
+    test("小数", () => expect(() => DBN.numToBinary(2.25)).toThrowError());
   });
   /** 极值 */
   const cases2 = [
@@ -45,8 +45,8 @@ describe("DLD", function () {
   describe("write/read:bigInt", function () {
     cases2.forEach((input, i) => {
       test(input.toString(16), function () {
-        const dldBuf = numToDLD(input);
-        let [data, len] = DLD.readBigIntSync(dldBuf);
+        const dldBuf = DBN.numToBinary(input);
+        let [data, len] = DBN.paseBigIntSync(dldBuf);
         expect(data).toBe(BigInt(input));
         expect(len).toBe(dldBuf.byteLength);
       });
@@ -55,8 +55,8 @@ describe("DLD", function () {
   describe("write/read:number", function () {
     cases2.slice(0, -1).forEach((input, i) => {
       test(input.toString(16), function () {
-        const dldBuf = numToDLD(input);
-        let [data, len] = DLD.readNumberSync(dldBuf);
+        const dldBuf = DBN.numToBinary(input);
+        let [data, len] = DBN.paseNumberSync(dldBuf);
         expect(data).toBe(input);
         expect(len).toBe(dldBuf.byteLength);
       });

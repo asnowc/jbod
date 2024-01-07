@@ -21,16 +21,15 @@ function readBigIntCore(desc: int, buf: Uint8Array): [bigint, int] {
   const lo = buf[offset++] * 2 ** 24 + (buf[offset++] << 16) + (buf[offset++] << 8) + buf[offset];
   return [(BigInt(hi) << 32n) + BigInt(lo), len];
 }
-
 /**
  * @public
- * @remarks 将二进制动态数据转为数字的类
+ * @remarks Dynamic Binary Number.
  */
-export class DLD {
+export class DBN {
   static readonly MAX_INT = Number.MAX_SAFE_INTEGER;
   static readonly MAX_BIGINT = 0xffffffffffffffn;
 
-  static readNumberSync(buf: Uint8Array, offset = 0): [int, int] {
+  static paseNumberSync(buf: Uint8Array, offset = 0): [int, int] {
     if (offset > 0) buf = buf.subarray(offset);
 
     const desc = 0xff - buf[0];
@@ -43,7 +42,7 @@ export class DLD {
     if (res[0] > Number.MAX_SAFE_INTEGER) throw new Error("Integer over maximum");
     return [Number(res[0]), res[1]];
   }
-  static readBigIntSync(buf: Uint8Array, offset = 0): [bigint, int] {
+  static paseBigIntSync(buf: Uint8Array, offset = 0): [bigint, int] {
     if (buf[offset] === 0xff) return [readBigInt64BE(buf, offset), 9];
 
     if (offset > 0) buf = buf.subarray(offset);
@@ -74,7 +73,7 @@ export class DLD {
     else addLen = 7;
 
     const buf = await read(addLen);
-    return this.readBigIntSync(concatUint8Array([head, buf], 1 + addLen))[0];
+    return this.paseBigIntSync(concatUint8Array([head, buf], 1 + addLen))[0];
   }
   static async readNumber(read: StreamReader, safe?: false): Promise<number>;
   static async readNumber(read: StreamReader, safe?: boolean): Promise<number | undefined>;
@@ -84,6 +83,22 @@ export class DLD {
     if (bigInt > Number.MAX_SAFE_INTEGER) throw new Error("Integer over maximum");
     return Number(bigInt);
   }
+  /**
+   * @public
+   * @remarks 将整数转为动态二进制数据
+   */
+  static numToBinary(data: number | bigint): Uint8Array {
+    if (data < 0) throw new Error("The number cannot be less than 0");
+    if (typeof data === "number") {
+      if (data % 1 !== 0) throw new Error("The number must be an integer");
+      //超过32位无法使用移位运算符
+      if (data > MAX_INT) return bigIntToDLD(BigInt(data));
+      else return numberToDLD(data);
+    } else if (typeof data !== "bigint") throw new Error("Parameter type error");
+    return bigIntToDLD(data);
+  }
+
+  private constructor() {}
 }
 
 function bigIntToDLD(value: bigint): Uint8Array {
@@ -156,21 +171,6 @@ function numberToDLD(value: int): Uint8Array {
   return buf;
 }
 const MAX_INT = 0xffffffff;
-
-/**
- * @public
- * @remarks 将整数转为动态二进制数据
- */
-export function numToDLD(data: number | bigint): Uint8Array {
-  if (data < 0) throw new Error("The number cannot be less than 0");
-  if (typeof data === "number") {
-    if (data % 1 !== 0) throw new Error("The number must be an integer");
-    //超过32位无法使用移位运算符
-    if (data > MAX_INT) return bigIntToDLD(BigInt(data));
-    else return numberToDLD(data);
-  } else if (typeof data !== "bigint") throw new Error("Parameter type error");
-  return bigIntToDLD(data);
-}
 
 function concatUint8Array(arr: Uint8Array[], useLen?: int) {
   if (!useLen) {

@@ -1,4 +1,4 @@
-import { DLD } from "../dynamic_len_data.js";
+import { DBN } from "../dynamic_len_data.js";
 import { DataType, JbodError, ObjectId, UnsupportedDataTypeError, VOID } from "../../const.js";
 import { strTransf, numTransf } from "../../uint_array_util/mod.js";
 type StreamReader = (size: number) => Promise<Uint8Array>;
@@ -37,7 +37,7 @@ export class JbodScanner {
   }
 
   async [DataType.objectId](read: StreamReader) {
-    const data = await DLD.readBigInt(read);
+    const data = await DBN.readBigInt(read);
     return new ObjectId(data);
   }
 
@@ -84,7 +84,7 @@ export class JbodScanner {
     return map as any;
   }
   private async uInt8Array(read: StreamReader): Promise<Uint8Array> {
-    const len = await DLD.readNumber(read);
+    const len = await DBN.readNumber(read);
     if (len <= 0) return new Uint8Array(0);
     let raw = await read(len);
     if (raw.byteOffset !== 0) {
@@ -101,24 +101,3 @@ export class JbodScanner {
   }
   [key: number]: DataReader;
 }
-
-interface JbodScanValue<V = unknown> {
-  dataType: number;
-  key: string | number;
-  value: V;
-  isIterator: false;
-}
-interface JbodScanArrayValue {
-  dataType: DataType.array;
-  key: number;
-  value: AsyncGenerator<JbodScanItem, void, void>;
-  isIterator: true;
-}
-interface JbodScanMapValue {
-  dataType: DataType.map;
-  key: string;
-  value: AsyncGenerator<JbodScanItem, void, void>;
-  isIterator: true;
-}
-/** @public */
-export type JbodScanItem = JbodScanArrayValue | JbodScanMapValue | JbodScanValue;

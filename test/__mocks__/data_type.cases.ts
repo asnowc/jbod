@@ -12,7 +12,10 @@ export const baseDataTypes = {
     { a: false, b: { a: 9, b: null } },
     { a: 8, b: false, q: [1, 3, "a", null], c: { a: 9 } },
   ],
-  array: [[1, 4, "2"]],
+  array: [
+    [1, 4, "2"],
+    [undefined, [1, 3, [8, 9], {}, 4]],
+  ],
   arrayBuffer: [new ArrayBuffer(5), new ArrayBuffer(0)],
   error: [new Error("abc"), new Error("abc", { cause: 23 })],
   objectId: [new ObjectId(88n), new ObjectId(0), new ObjectId(2 ** 32 + 1)],

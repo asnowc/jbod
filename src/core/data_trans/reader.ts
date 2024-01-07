@@ -1,4 +1,4 @@
-import { DLD } from "../dynamic_len_data.js";
+import { DBN } from "../dynamic_len_data.js";
 import { DataType, JbodError, ObjectId, UnsupportedDataTypeError, VOID } from "../../const.js";
 import { numTransf, strTransf } from "../../uint_array_util/mod.js";
 
@@ -13,7 +13,7 @@ export class JbodReader {
     return data;
   }
   private uInt8Array(buf: Uint8Array, offset: number): [Uint8Array, number] {
-    const [lenDesc, len] = DLD.readNumberSync(buf, offset);
+    const [lenDesc, len] = DBN.paseNumberSync(buf, offset);
     if (lenDesc <= 0) return [new Uint8Array(0), len];
     offset += len;
     return [buf.subarray(offset, lenDesc + offset), len + lenDesc];
@@ -43,13 +43,13 @@ export class JbodReader {
   }
 
   [DataType.objectId](buf: Uint8Array, offset: number): [ObjectId, number] {
-    const data = DLD.readBigIntSync(buf, offset);
+    const data = DBN.paseBigIntSync(buf, offset);
     (data as any)[0] = new ObjectId(data[0]);
     return data as any;
   }
 
   [DataType.arrayBuffer](buf: Uint8Array, offset: number): [ArrayBuffer, number] {
-    const [lenDesc, len] = DLD.readNumberSync(buf, offset);
+    const [lenDesc, len] = DBN.paseNumberSync(buf, offset);
     if (lenDesc <= 0) return [new ArrayBuffer(0), len];
     offset += len;
     const arrayBuffer = new ArrayBuffer(lenDesc);
