@@ -1,10 +1,10 @@
-import { DBN } from "../dynamic_len_data.js";
+import { DBN } from "../dynamic_binary_number.js";
 import { DataType, ObjectId, UnsupportedDataTypeError, VOID } from "../../const.js";
 import { numTransf, strTransf } from "../../uint_array_util/mod.js";
 const { numToBinary } = DBN;
 
 export class JbodWriter {
-  isNoContentData(type: number) {
+  private isNoContentData(type: number) {
     return type === DataType.true || type === DataType.false || type === DataType.null || type === DataType.undefined;
   }
   toType(data: any, safe?: boolean): number {
@@ -44,7 +44,7 @@ export class JbodWriter {
   }
 
   /** 支持写入void类型 */
-  writeArrayItem(data: unknown, write: StreamWriter, safe?: boolean): number {
+  writeItem(data: unknown, write: StreamWriter, safe?: boolean): number {
     if (data === VOID) {
       write(createDataTypeBuf(DataType.void));
       return 1;
@@ -105,7 +105,7 @@ export class JbodWriter {
   [DataType.array](array: unknown[], write: StreamWriter, ignoreVoid?: boolean): number {
     let writeTotalLen = 0;
     for (let i = 0; i < array.length; i++) {
-      writeTotalLen += this.writeArrayItem(array[i], write, true);
+      writeTotalLen += this.writeItem(array[i], write, true);
     }
     if (!ignoreVoid) write(createDataTypeBuf(DataType.void));
     return writeTotalLen + 1;

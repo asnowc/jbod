@@ -1,12 +1,15 @@
 import {
   DataType,
-  JBOD,
-  toArrayItemJBOD,
+  toJbod,
   JbodAsyncIteratorItem,
   UnsupportedDataTypeError,
   JbodError,
   ObjectId,
   VOID,
+  paseJbodSync,
+  paseJbod,
+  iteratorJbod,
+  getJbodType,
 } from "jbod";
 import { baseDataTypes, unsupportedData } from "./__mocks__/data_type.cases.js";
 import "./expects/expect.js";
@@ -15,8 +18,8 @@ import { describe, expect, test } from "vitest";
 describe("paseSync", function () {
   describe.each(Object.entries(baseDataTypes))("%s", function (type, cases) {
     test.each(cases as any[])("%s", function (data) {
-      const buf = toArrayItemJBOD(data);
-      const { data: transData, offset } = JBOD.paseSync(buf);
+      const buf = toJbod(data);
+      const { data: transData, offset } = paseJbodSync(buf);
       expect(transData).jbodEqual(data);
       expect(offset).toBe(buf.byteLength);
     });
@@ -24,13 +27,13 @@ describe("paseSync", function () {
 });
 
 test("不支持的数据类型", function () {
-  expect(() => toArrayItemJBOD(unsupportedData.function[0])).toThrowError(UnsupportedDataTypeError);
+  expect(() => toJbod(unsupportedData.function[0])).toThrowError(UnsupportedDataTypeError);
 });
 describe("pase", function () {
   describe.each(Object.entries(baseDataTypes))("%s", function (type, cases) {
     test.each(cases as any[])("%s", async function (data) {
-      const reader = createFixedStreamReader(toArrayItemJBOD(data));
-      const array = await JBOD.pase(reader);
+      const reader = createFixedStreamReader(toJbod(data));
+      const array = await paseJbod(reader);
       expect(array).jbodEqual(data);
     });
   });
@@ -38,11 +41,11 @@ describe("pase", function () {
 describe("iterator", function () {
   describe.each(Object.entries(baseDataTypes))("%s", async function (type, cases) {
     test.each(cases as any[])("%s", async function (data) {
-      const reader = createFixedStreamReader(toArrayItemJBOD(data));
+      const reader = createFixedStreamReader(toJbod(data));
       const expectPath = createIteratorPath(data, []);
       const expectKeyPath = expectPath.map((item) => item.key);
 
-      const array = await recordIteratorPath(JBOD.iterator(reader), []);
+      const array = await recordIteratorPath(iteratorJbod(reader), []);
       const actualKeyPath = array.map((item) => item.key);
       expect(actualKeyPath).toEqual(expectKeyPath);
       expect(array).toEqual(expectPath);
@@ -85,7 +88,7 @@ async function recordIteratorPath(
 
     res = await itr.next();
   }
-  path.push({ isEnd: true, dataType: DataType[JBOD.getJbodType(res.value)] });
+  path.push({ isEnd: true, dataType: DataType[getJbodType(res.value)] });
 
   return path;
 }
@@ -105,8 +108,8 @@ type IteratorPathItem =
 function createIteratorPath(data: any, path: IteratorPathItem[], key?: string | number): IteratorPathItem[] {
   const value = toMockValue(data);
   if (value !== VOID) {
-    if (key === undefined) path.push({ isEnd: true, dataType: DataType[JBOD.getJbodType(data)] });
-    else path.push({ isEnd: false, dataType: DataType[JBOD.getJbodType(data)], value, key });
+    if (key === undefined) path.push({ isEnd: true, dataType: DataType[getJbodType(data)] });
+    else path.push({ isEnd: false, dataType: DataType[getJbodType(data)], value, key });
     return path;
   }
   if (data instanceof Array) {

@@ -21,15 +21,12 @@ function readBigIntCore(desc: int, buf: Uint8Array): [bigint, int] {
   const lo = buf[offset++] * 2 ** 24 + (buf[offset++] << 16) + (buf[offset++] << 8) + buf[offset];
   return [(BigInt(hi) << 32n) + BigInt(lo), len];
 }
-/**
- * @public
- * @remarks Dynamic Binary Number.
- */
-export class DBN {
-  static readonly MAX_INT = Number.MAX_SAFE_INTEGER;
-  static readonly MAX_BIGINT = 0xffffffffffffffn;
 
-  static paseNumberSync(buf: Uint8Array, offset = 0): [int, int] {
+class DyBinNumber {
+  readonly MAX_INT = Number.MAX_SAFE_INTEGER;
+  readonly MAX_BIGINT = 0xffffffffffffffn;
+
+  paseNumberSync(buf: Uint8Array, offset = 0): [int, int] {
     if (offset > 0) buf = buf.subarray(offset);
 
     const desc = 0xff - buf[0];
@@ -42,7 +39,7 @@ export class DBN {
     if (res[0] > Number.MAX_SAFE_INTEGER) throw new Error("Integer over maximum");
     return [Number(res[0]), res[1]];
   }
-  static paseBigIntSync(buf: Uint8Array, offset = 0): [bigint, int] {
+  paseBigIntSync(buf: Uint8Array, offset = 0): [bigint, int] {
     if (buf[offset] === 0xff) return [readBigInt64BE(buf, offset), 9];
 
     if (offset > 0) buf = buf.subarray(offset);
@@ -54,9 +51,9 @@ export class DBN {
 
     return readBigIntCore(desc, buf);
   }
-  static async readBigInt(read: StreamReader, safe?: false): Promise<bigint>;
-  static async readBigInt(read: StreamReader, safe?: boolean): Promise<bigint | undefined>;
-  static async readBigInt(read: StreamReader, safe?: boolean) {
+  async readBigInt(read: StreamReader, safe?: false): Promise<bigint>;
+  async readBigInt(read: StreamReader, safe?: boolean): Promise<bigint | undefined>;
+  async readBigInt(read: StreamReader, safe?: boolean) {
     const head = await read(1, safe);
     if (!head) return;
     if (head[0] === 0xff) return readBigInt64BE(await read(8), 0);
@@ -75,9 +72,9 @@ export class DBN {
     const buf = await read(addLen);
     return this.paseBigIntSync(concatUint8Array([head, buf], 1 + addLen))[0];
   }
-  static async readNumber(read: StreamReader, safe?: false): Promise<number>;
-  static async readNumber(read: StreamReader, safe?: boolean): Promise<number | undefined>;
-  static async readNumber(read: StreamReader, safe?: boolean) {
+  async readNumber(read: StreamReader, safe?: false): Promise<number>;
+  async readNumber(read: StreamReader, safe?: boolean): Promise<number | undefined>;
+  async readNumber(read: StreamReader, safe?: boolean) {
     let bigInt = await this.readBigInt(read, safe);
     if (bigInt === undefined) return;
     if (bigInt > Number.MAX_SAFE_INTEGER) throw new Error("Integer over maximum");
@@ -87,7 +84,7 @@ export class DBN {
    * @public
    * @remarks 将整数转为动态二进制数据
    */
-  static numToBinary(data: number | bigint): Uint8Array {
+  numToBinary(data: number | bigint): Uint8Array {
     if (data < 0) throw new Error("The number cannot be less than 0");
     if (typeof data === "number") {
       if (data % 1 !== 0) throw new Error("The number must be an integer");
@@ -97,9 +94,12 @@ export class DBN {
     } else if (typeof data !== "bigint") throw new Error("Parameter type error");
     return bigIntToDLD(data);
   }
-
-  private constructor() {}
 }
+/**
+ * @public
+ * @remarks Dynamic Binary Number.
+ */
+export const DBN = new DyBinNumber();
 
 function bigIntToDLD(value: bigint): Uint8Array {
   if (value < 0x10000000) return numberToDLD(Number(value));

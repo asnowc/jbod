@@ -1,18 +1,22 @@
-import { DBN } from "../dynamic_len_data.js";
+import { DBN } from "../dynamic_binary_number.js";
 import { DataType, JbodError, ObjectId, UnsupportedDataTypeError, VOID } from "../../const.js";
 import { strTransf, numTransf } from "../../uint_array_util/mod.js";
 type StreamReader = (size: number) => Promise<Uint8Array>;
-type DataReader = (read: StreamReader) => Promise<unknown>;
+type AsyncParser = (read: StreamReader) => Promise<unknown>;
 
-export class JbodScanner {
+export class JbodAsyncParser implements Record<DataType, AsyncParser> {
   /** 如果读取到 void类型, 则返回VOID */
-  async readArrayItem(read: StreamReader) {
-    const type = (await read(1))[0];
-    if (type === DataType.void) return VOID;
+  async readItem(read: StreamReader) {
+    const type = (await read(1))[0] as DataType;
     if (typeof this[type] !== "function") throw new UnsupportedDataTypeError(DataType[type] ?? type);
     return this[type](read);
   }
-
+  async [DataType.function]() {
+    throw new UnsupportedDataTypeError("function");
+  }
+  async [DataType.void]() {
+    return VOID;
+  }
   async [DataType.undefined]() {
     return undefined;
   }
@@ -43,6 +47,7 @@ export class JbodScanner {
 
   async [DataType.arrayBuffer](read: StreamReader): Promise<ArrayBuffer> {
     const buffer = await this.uInt8Array(read);
+    if (buffer.byteLength === buffer.buffer.byteLength) return buffer.buffer;
     const arrayBuffer = new ArrayBuffer(buffer.byteLength);
     const view = new Uint8Array(arrayBuffer);
     view.set(buffer);
@@ -53,7 +58,7 @@ export class JbodScanner {
     return strTransf.readByUtf8(buf);
   }
   async [DataType.symbol](read: StreamReader): Promise<Symbol> {
-    const data = await this.readArrayItem(read);
+    const data = await this.readItem(read);
     if (data === VOID) return Symbol();
     else return Symbol(data as string);
   }
@@ -64,7 +69,7 @@ export class JbodScanner {
   async [DataType.array](read: StreamReader) {
     let arrayList: unknown[] = [];
     while (true) {
-      let value = await this.readArrayItem(read);
+      let value = await this.readItem(read);
       if (value === VOID) break;
       arrayList.push(value);
     }
@@ -74,7 +79,7 @@ export class JbodScanner {
     const map: Record<string, unknown> = {};
     let key: string;
     while (true) {
-      const type = (await read(1))[0];
+      const type = (await read(1))[0] as DataType;
       if (type === DataType.void) break;
       key = (await this[DataType.string](read)) as string;
       if (typeof this[type] !== "function") throw new UnsupportedDataTypeError(DataType[type] ?? type);
@@ -86,12 +91,7 @@ export class JbodScanner {
   private async uInt8Array(read: StreamReader): Promise<Uint8Array> {
     const len = await DBN.readNumber(read);
     if (len <= 0) return new Uint8Array(0);
-    let raw = await read(len);
-    if (raw.byteOffset !== 0) {
-      const arr = new Uint8Array(len);
-      arr.set(raw);
-      return arr;
-    } else return raw;
+    return read(len);
   }
   async [DataType.error](read: StreamReader) {
     const { message, cause, ...attr } = await this[DataType.map](read);
@@ -99,5 +99,5 @@ export class JbodScanner {
     Object.assign(error, attr);
     return error;
   }
-  [key: number]: DataReader;
+  [key: number]: AsyncParser;
 }

@@ -42,68 +42,29 @@ export enum DataType {
     void = 0
 }
 
+// Warning: (ae-forgotten-export) The symbol "DyBinNumber" needs to be exported by the entry point mod.d.ts
+//
 // @public (undocumented)
-export class DLD {
-    // (undocumented)
-    static readonly MAX_BIGINT = 72057594037927935n;
-    // (undocumented)
-    static readonly MAX_INT: number;
-    // Warning: (ae-forgotten-export) The symbol "StreamReader_2" needs to be exported by the entry point mod.d.ts
-    //
-    // (undocumented)
-    static readBigInt(read: StreamReader_2, safe?: false): Promise<bigint>;
-    // (undocumented)
-    static readBigInt(read: StreamReader_2, safe?: boolean): Promise<bigint | undefined>;
-    // (undocumented)
-    static readBigIntSync(buf: Uint8Array, offset?: number): [bigint, int];
-    // (undocumented)
-    static readNumber(read: StreamReader_2, safe?: false): Promise<number>;
-    // (undocumented)
-    static readNumber(read: StreamReader_2, safe?: boolean): Promise<number | undefined>;
-    // Warning: (ae-forgotten-export) The symbol "int" needs to be exported by the entry point mod.d.ts
-    //
-    // (undocumented)
-    static readNumberSync(buf: Uint8Array, offset?: number): [int, int];
-}
+export const DBN: DyBinNumber;
 
 // @public (undocumented)
-export class JBOD {
-    // Warning: (ae-forgotten-export) The symbol "StreamReader" needs to be exported by the entry point mod.d.ts
-    //
-    // (undocumented)
-    static readArray<T = unknown>(read: StreamReader): Promise<T[]>;
-    // (undocumented)
-    static readItem<T = unknown>(read: StreamReader): Promise<T>;
-    // (undocumented)
-    static readMap<T = unknown>(read: StreamReader): Promise<T>;
-    // Warning: (ae-forgotten-export) The symbol "scanArray" needs to be exported by the entry point mod.d.ts
-    //
-    // (undocumented)
-    static scanArray: typeof scanArray;
-    // Warning: (ae-forgotten-export) The symbol "scanMap" needs to be exported by the entry point mod.d.ts
-    //
-    // (undocumented)
-    static scanMap: typeof scanMap;
-    // (undocumented)
-    static toArray<T = unknown>(buffer: Uint8Array, offset?: number): T[];
-    static toArrayItem<T = unknown>(buffer: Uint8Array, offset?: number): [T, number];
-    // (undocumented)
-    static toMap<T = Record<string, unknown>>(buffer: Uint8Array, offset?: number): T;
-}
+export function getJbodType(data: any): number;
+
+// Warning: (ae-forgotten-export) The symbol "StreamReader" needs to be exported by the entry point mod.d.ts
+//
+// @public (undocumented)
+export function iteratorJbod<R = unknown>(read: StreamReader, type?: DataType): AsyncGenerator<JbodAsyncIteratorItem, R, void>;
+
+// Warning: (ae-forgotten-export) The symbol "JbodAsyncIteratorBasicItem" needs to be exported by the entry point mod.d.ts
+// Warning: (ae-forgotten-export) The symbol "JbodAsyncIteratorArrayItem" needs to be exported by the entry point mod.d.ts
+// Warning: (ae-forgotten-export) The symbol "JbodAsyncIteratorValue" needs to be exported by the entry point mod.d.ts
+//
+// @public (undocumented)
+export type JbodAsyncIteratorItem = JbodAsyncIteratorBasicItem | JbodAsyncIteratorArrayItem | JbodAsyncIteratorValue;
 
 // @public (undocumented)
 export class JbodError extends Error {
 }
-
-// Warning: (ae-forgotten-export) The symbol "JbodScanArrayValue" needs to be exported by the entry point mod.d.ts
-// Warning: (ae-forgotten-export) The symbol "JbodScanMapValue" needs to be exported by the entry point mod.d.ts
-// Warning: (ae-forgotten-export) The symbol "JbodScanValue" needs to be exported by the entry point mod.d.ts
-//
-// @public (undocumented)
-export type JbodScanItem = JbodScanArrayValue | JbodScanMapValue | JbodScanValue;
-
-// @public (undocumented)
-export function numToDLD(data: number | bigint): Uint8Array;
 
 // @public (undocumented)
 export class ObjectId {
@@ -117,13 +78,19 @@ export class ObjectId {
 }
 
 // @public (undocumented)
-export function toArrayItemJBOD(data: any): Uint8Array;
+export function paseJbod<T = unknown>(read: StreamReader, type?: DataType): Promise<T>;
 
 // @public (undocumented)
-export function toArrayJBOD(arr: any[], ignoreVoid?: boolean): Uint8Array;
+export function paseJbodSync<T = unknown>(buffer: Uint8Array, type?: DataType): {
+    data: T;
+    offset: number;
+};
 
 // @public (undocumented)
-export function toMapJBOD(arr: object, ignoreVoid?: boolean): Uint8Array;
+export function toJbod(data: any): Uint8Array;
+
+// @public (undocumented)
+export function toJbodContent(data: any): Uint8Array;
 
 // @public (undocumented)
 export class UnsupportedDataTypeError extends Error {
