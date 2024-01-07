@@ -9,7 +9,10 @@
     "noEmit": true,
     "allowJs": true,
     "isolatedModules": true,
-    "baseUrl": "."
+    "baseUrl": ".",
+    "paths": {
+      "jbod": ["./src/mod.js"]
+    }
   },
 
   "exclude": ["node_modules"]

@@ -3,8 +3,9 @@
   "version": "0.0.1",
   "description": "",
   "type": "module",
-  "main": "./out/mod.js",
   "scripts": {
+    "ci:test": "vitest run",
+    "test": "vitest",
     "ci:build": "tsc -p src/tsconfig.json",
     "api:extractor": "api-extractor run -c api-extractor.jsonc -v",
     "api:extractor-local": "pnpm run api:extractor -l",
@@ -20,10 +21,7 @@
     "vitest": "^1.1.3"
   },
   "exports": {
-    ".": {
-      "import": "./out/js_bson.js",
-      "types": "./out/js_bson.d.ts"
-    }
+    ".": "./out/mod.js"
   },
   "files": [
     "out/**/*.js",
