@@ -13,7 +13,7 @@ const writer = new JbodWriter();
  * @remarks 从 Uint8Array 解析数据
  * @param type - 指定解析的数据类型. 这会认为 buffer 的第一个字节是数据的值, 而不是数据类型
  */
-export function paseJbodSync<T = unknown>(buffer: Uint8Array, type?: DataType): { data: T; offset: number } {
+export function paseJbod<T = unknown>(buffer: Uint8Array, type?: DataType): { data: T; offset: number } {
   if (!(buffer instanceof Uint8Array)) throw new Error("The parameter must be of Uint8Array type");
   let res;
   if (type === undefined) res = syncParser.readItem(buffer, 0);
@@ -28,7 +28,7 @@ export function paseJbodSync<T = unknown>(buffer: Uint8Array, type?: DataType): 
  * @remarks 异步解析数据
  * @param type - 指定解析的数据类型. 这会认为 buffer 的第一个字节是数据的值, 而不是数据类型
  */
-export async function paseJbod<T = unknown>(read: StreamReader, type?: DataType): Promise<T> {
+export async function paseJbodAsync<T = unknown>(read: StreamReader, type?: DataType): Promise<T> {
   if (!type) type = (await read(1))[0];
   if (type === DataType.void) return VOID as any;
   if (typeof asyncParser[type] !== "function") throw new UnsupportedDataTypeError(DataType[type] ?? type);
@@ -38,11 +38,11 @@ export async function paseJbod<T = unknown>(read: StreamReader, type?: DataType)
  * @public
  * @remarks 使用迭代器迭代读取数据项
  */
-export function iteratorJbod<R = unknown>(
+export function scanJbodAsync<R = unknown>(
   read: StreamReader,
   type?: DataType
 ): AsyncGenerator<JbodAsyncIteratorItem, R, void>;
-export async function* iteratorJbod(
+export async function* scanJbodAsync(
   read: StreamReader,
   type?: DataType
 ): AsyncGenerator<JbodAsyncIteratorItem, unknown, void> {

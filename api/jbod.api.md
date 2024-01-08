@@ -50,11 +50,6 @@ export const DBN: DyBinNumber;
 // @public (undocumented)
 export function getJbodType(data: any): number;
 
-// Warning: (ae-forgotten-export) The symbol "StreamReader" needs to be exported by the entry point mod.d.ts
-//
-// @public (undocumented)
-export function iteratorJbod<R = unknown>(read: StreamReader, type?: DataType): AsyncGenerator<JbodAsyncIteratorItem, R, void>;
-
 // Warning: (ae-forgotten-export) The symbol "JbodAsyncIteratorBasicItem" needs to be exported by the entry point mod.d.ts
 // Warning: (ae-forgotten-export) The symbol "JbodAsyncIteratorArrayItem" needs to be exported by the entry point mod.d.ts
 // Warning: (ae-forgotten-export) The symbol "JbodAsyncIteratorValue" needs to be exported by the entry point mod.d.ts
@@ -78,13 +73,18 @@ export class ObjectId {
 }
 
 // @public (undocumented)
-export function paseJbod<T = unknown>(read: StreamReader, type?: DataType): Promise<T>;
-
-// @public (undocumented)
-export function paseJbodSync<T = unknown>(buffer: Uint8Array, type?: DataType): {
+export function paseJbod<T = unknown>(buffer: Uint8Array, type?: DataType): {
     data: T;
     offset: number;
 };
+
+// Warning: (ae-forgotten-export) The symbol "StreamReader" needs to be exported by the entry point mod.d.ts
+//
+// @public (undocumented)
+export function paseJbodAsync<T = unknown>(read: StreamReader, type?: DataType): Promise<T>;
+
+// @public (undocumented)
+export function scanJbodAsync<R = unknown>(read: StreamReader, type?: DataType): AsyncGenerator<JbodAsyncIteratorItem, R, void>;
 
 // @public (undocumented)
 export function toJbod(data: any): Uint8Array;

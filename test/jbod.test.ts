@@ -6,9 +6,9 @@ import {
   JbodError,
   ObjectId,
   VOID,
-  paseJbodSync,
   paseJbod,
-  iteratorJbod,
+  paseJbodAsync,
+  scanJbodAsync,
   getJbodType,
 } from "jbod";
 import { baseDataTypes, unsupportedData } from "./__mocks__/data_type.cases.js";
@@ -19,7 +19,7 @@ describe("paseSync", function () {
   describe.each(Object.entries(baseDataTypes))("%s", function (type, cases) {
     test.each(cases as any[])("%s", function (data) {
       const buf = toJbod(data);
-      const { data: transData, offset } = paseJbodSync(buf);
+      const { data: transData, offset } = paseJbod(buf);
       expect(transData).jbodEqual(data);
       expect(offset).toBe(buf.byteLength);
     });
@@ -33,7 +33,7 @@ describe("pase", function () {
   describe.each(Object.entries(baseDataTypes))("%s", function (type, cases) {
     test.each(cases as any[])("%s", async function (data) {
       const reader = createFixedStreamReader(toJbod(data));
-      const array = await paseJbod(reader);
+      const array = await paseJbodAsync(reader);
       expect(array).jbodEqual(data);
     });
   });
@@ -45,7 +45,7 @@ describe("iterator", function () {
       const expectPath = createIteratorPath(data, []);
       const expectKeyPath = expectPath.map((item) => item.key);
 
-      const array = await recordIteratorPath(iteratorJbod(reader), []);
+      const array = await recordIteratorPath(scanJbodAsync(reader), []);
       const actualKeyPath = array.map((item) => item.key);
       expect(actualKeyPath).toEqual(expectKeyPath);
       expect(array).toEqual(expectPath);

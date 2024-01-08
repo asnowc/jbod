@@ -61,7 +61,7 @@ export class JbodParser implements Record<DataType, Parser> {
   }
   [DataType.string](buf: Uint8Array, offset: number): [string, number] {
     const [buffer, newOffset] = this.uInt8Array(buf, offset);
-    return [strTransf.readByUtf8(buffer), newOffset];
+    return [strTransf.decodeUtf8(buffer), newOffset];
   }
   [DataType.symbol](buf: Uint8Array, offset: number): [Symbol, number] {
     const data = this.readItem(buf, offset);

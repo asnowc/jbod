@@ -55,7 +55,7 @@ export class JbodAsyncParser implements Record<DataType, AsyncParser> {
   }
   async [DataType.string](read: StreamReader): Promise<string> {
     const buf = await this.uInt8Array(read);
-    return strTransf.readByUtf8(buf);
+    return strTransf.decodeUtf8(buf);
   }
   async [DataType.symbol](read: StreamReader): Promise<Symbol> {
     const data = await this.readItem(read);

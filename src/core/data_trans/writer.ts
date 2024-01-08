@@ -87,7 +87,7 @@ export class JbodWriter {
     return data.byteLength + dld.byteLength;
   }
   [DataType.string](data: string, write: StreamWriter) {
-    return this[DataType.arrayBuffer](strTransf.writeByUtf8(data), write);
+    return this[DataType.arrayBuffer](strTransf.encodeUtf8(data), write);
   }
 
   [DataType.regExp](data: RegExp, write: StreamWriter) {
@@ -120,7 +120,7 @@ export class JbodWriter {
         writeTotalLen++;
 
         ///key
-        const keyBuf = strTransf.writeByUtf8(key);
+        const keyBuf = strTransf.encodeUtf8(key);
         const lenDesc = numToBinary(keyBuf.length);
         write(lenDesc);
         write(keyBuf);
