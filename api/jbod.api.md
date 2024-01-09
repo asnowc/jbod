@@ -48,7 +48,18 @@ export enum DataType {
 export const DBN: DyBinNumber;
 
 // @public (undocumented)
-export function getJbodType(data: any): number;
+const _default: {
+    pase: <T = unknown>(buffer: Uint8Array, type?: DataType) => {
+        data: T;
+        offset: number;
+    };
+    paseAsync: <T_1 = unknown>(read: StreamReader, type?: DataType) => Promise<T_1>;
+    scanAsync: typeof scanJbodAsync;
+    getType: (data: any) => number;
+    binaryify: (data: any) => Uint8Array;
+    binaryifyContent: (data: any) => Uint8Array;
+};
+export default _default;
 
 // Warning: (ae-forgotten-export) The symbol "JbodAsyncIteratorBasicItem" needs to be exported by the entry point mod.d.ts
 // Warning: (ae-forgotten-export) The symbol "JbodAsyncIteratorArrayItem" needs to be exported by the entry point mod.d.ts
@@ -62,43 +73,14 @@ export class JbodError extends Error {
 }
 
 // @public (undocumented)
-export class ObjectId {
-    constructor(value: bigint | number);
-    // (undocumented)
-    toString(): string;
-    // (undocumented)
-    get value(): bigint;
-    // (undocumented)
-    valueOf(): bigint;
-}
-
-// @public (undocumented)
-export function paseJbod<T = unknown>(buffer: Uint8Array, type?: DataType): {
-    data: T;
-    offset: number;
-};
-
-// Warning: (ae-forgotten-export) The symbol "StreamReader" needs to be exported by the entry point mod.d.ts
-//
-// @public (undocumented)
-export function paseJbodAsync<T = unknown>(read: StreamReader, type?: DataType): Promise<T>;
-
-// @public (undocumented)
-export function scanJbodAsync<R = unknown>(read: StreamReader, type?: DataType): AsyncGenerator<JbodAsyncIteratorItem, R, void>;
-
-// @public (undocumented)
-export function toJbod(data: any): Uint8Array;
-
-// @public (undocumented)
-export function toJbodContent(data: any): Uint8Array;
-
-// @public (undocumented)
 export class UnsupportedDataTypeError extends Error {
     constructor(desc?: string | number);
 }
 
-// @public (undocumented)
-export const VOID: unique symbol;
+// Warnings were encountered during analysis:
+//
+// src/core/jbod.ts:62:3 - (ae-forgotten-export) The symbol "StreamReader" needs to be exported by the entry point mod.d.ts
+// src/core/jbod.ts:63:29 - (ae-forgotten-export) The symbol "scanJbodAsync" needs to be exported by the entry point mod.d.ts
 
 // (No @packageDocumentation comment for this package)
 

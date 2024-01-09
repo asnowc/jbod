@@ -1,3 +1,4 @@
 {
-  "cSpell.words": ["jbod"]
+  "cSpell.words": ["binaryify", "jbod"],
+  "deno.enablePaths": ["./scripts"]
 }

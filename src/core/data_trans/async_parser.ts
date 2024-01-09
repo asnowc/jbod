@@ -1,5 +1,6 @@
 import { DBN } from "../dynamic_binary_number.js";
-import { DataType, JbodError, ObjectId, UnsupportedDataTypeError, VOID } from "../../const.js";
+import { DataType, JbodError, UnsupportedDataTypeError } from "../../const.js";
+import { VOID, ObjectId } from "../internal_type.js";
 import { strTransf, numTransf } from "../../uint_array_util/mod.js";
 type StreamReader = (size: number) => Promise<Uint8Array>;
 type AsyncParser = (read: StreamReader) => Promise<unknown>;

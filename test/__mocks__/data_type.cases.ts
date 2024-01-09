@@ -1,5 +1,3 @@
-import { ObjectId } from "jbod";
-
 export const baseDataTypes = {
   noContent: [undefined, null, true, false],
   int: [-2147483648, -66, -1, 0, 1, , 2147483647],
@@ -18,7 +16,6 @@ export const baseDataTypes = {
   ],
   arrayBuffer: [new ArrayBuffer(5), new ArrayBuffer(0)],
   error: [new Error("abc"), new Error("abc", { cause: 23 })],
-  objectId: [new ObjectId(88n), new ObjectId(0), new ObjectId(2 ** 32 + 1)],
   regExp: [/\d+./],
   symbol: [Symbol("abc"), Symbol(""), Symbol()],
 };

@@ -1,5 +1,6 @@
 import { DBN } from "../dynamic_binary_number.js";
-import { DataType, ObjectId, UnsupportedDataTypeError, VOID } from "../../const.js";
+import { DataType, UnsupportedDataTypeError } from "../../const.js";
+import { ObjectId, VOID } from "../internal_type.js";
 import { numTransf, strTransf } from "../../uint_array_util/mod.js";
 const { numToBinary } = DBN;
 

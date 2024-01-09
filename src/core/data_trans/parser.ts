@@ -1,5 +1,6 @@
 import { DBN } from "../dynamic_binary_number.js";
-import { DataType, JbodError, ObjectId, UnsupportedDataTypeError, VOID } from "../../const.js";
+import { DataType, JbodError, UnsupportedDataTypeError } from "../../const.js";
+import { VOID, ObjectId } from "../internal_type.js";
 import { numTransf, strTransf } from "../../uint_array_util/mod.js";
 type Parser = (buf: Uint8Array, offset: number) => [data: unknown, readLength: number];
 export class JbodParser implements Record<DataType, Parser> {

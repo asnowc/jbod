@@ -1,16 +1,4 @@
-import {
-  DataType,
-  toJbod,
-  JbodAsyncIteratorItem,
-  UnsupportedDataTypeError,
-  JbodError,
-  ObjectId,
-  VOID,
-  paseJbod,
-  paseJbodAsync,
-  scanJbodAsync,
-  getJbodType,
-} from "jbod";
+import JBOD, { DataType, JbodAsyncIteratorItem, UnsupportedDataTypeError, JbodError } from "jbod";
 import { baseDataTypes, unsupportedData } from "./__mocks__/data_type.cases.js";
 import "./expects/expect.js";
 import { describe, expect, test } from "vitest";
@@ -18,8 +6,8 @@ import { describe, expect, test } from "vitest";
 describe("paseSync", function () {
   describe.each(Object.entries(baseDataTypes))("%s", function (type, cases) {
     test.each(cases as any[])("%s", function (data) {
-      const buf = toJbod(data);
-      const { data: transData, offset } = paseJbod(buf);
+      const buf = JBOD.binaryify(data);
+      const { data: transData, offset } = JBOD.pase(buf);
       expect(transData).jbodEqual(data);
       expect(offset).toBe(buf.byteLength);
     });
@@ -27,13 +15,13 @@ describe("paseSync", function () {
 });
 
 test("不支持的数据类型", function () {
-  expect(() => toJbod(unsupportedData.function[0])).toThrowError(UnsupportedDataTypeError);
+  expect(() => JBOD.binaryify(unsupportedData.function[0])).toThrowError(UnsupportedDataTypeError);
 });
 describe("pase", function () {
   describe.each(Object.entries(baseDataTypes))("%s", function (type, cases) {
     test.each(cases as any[])("%s", async function (data) {
-      const reader = createFixedStreamReader(toJbod(data));
-      const array = await paseJbodAsync(reader);
+      const reader = createFixedStreamReader(JBOD.binaryify(data));
+      const array = await JBOD.paseAsync(reader);
       expect(array).jbodEqual(data);
     });
   });
@@ -41,11 +29,11 @@ describe("pase", function () {
 describe("iterator", function () {
   describe.each(Object.entries(baseDataTypes))("%s", async function (type, cases) {
     test.each(cases as any[])("%s", async function (data) {
-      const reader = createFixedStreamReader(toJbod(data));
+      const reader = createFixedStreamReader(JBOD.binaryify(data));
       const expectPath = createIteratorPath(data, []);
       const expectKeyPath = expectPath.map((item) => item.key);
 
-      const array = await recordIteratorPath(scanJbodAsync(reader), []);
+      const array = await recordIteratorPath(JBOD.scanAsync(reader), []);
       const actualKeyPath = array.map((item) => item.key);
       expect(actualKeyPath).toEqual(expectKeyPath);
       expect(array).toEqual(expectPath);
@@ -88,7 +76,7 @@ async function recordIteratorPath(
 
     res = await itr.next();
   }
-  path.push({ isEnd: true, dataType: DataType[getJbodType(res.value)] });
+  path.push({ isEnd: true, dataType: DataType[JBOD.getType(res.value)] });
 
   return path;
 }
@@ -107,9 +95,9 @@ type IteratorPathItem =
 /** 生成迭代器路径数据 */
 function createIteratorPath(data: any, path: IteratorPathItem[], key?: string | number): IteratorPathItem[] {
   const value = toMockValue(data);
-  if (value !== VOID) {
-    if (key === undefined) path.push({ isEnd: true, dataType: DataType[getJbodType(data)] });
-    else path.push({ isEnd: false, dataType: DataType[getJbodType(data)], value, key });
+  if (value !== Null) {
+    if (key === undefined) path.push({ isEnd: true, dataType: DataType[JBOD.getType(data)] });
+    else path.push({ isEnd: false, dataType: DataType[JBOD.getType(data)], value, key });
     return path;
   }
   if (data instanceof Array) {
@@ -131,9 +119,10 @@ function toMockValue(data: any): any {
     return type === "symbol" ? "symbol" : data;
   }
 
-  if (data instanceof Error || data instanceof RegExp || data instanceof ArrayBuffer || data instanceof ObjectId) {
+  if (data instanceof Error || data instanceof RegExp || data instanceof ArrayBuffer) {
     let valueName = data instanceof Error ? JbodError.name : data.constructor.name;
     return valueName;
   }
-  return VOID;
+  return Null;
 }
+const Null = Symbol("null");

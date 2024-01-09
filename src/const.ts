@@ -25,32 +25,7 @@ export enum DataType {
   error = 16,
   symbol = 17,
 }
-/** @public */
-export class ObjectId {
-  #value: bigint;
-  /** @remarks ObjectId的原始值 */
-  get value() {
-    return this.#value;
-  }
-  constructor(value: bigint | number) {
-    if (value < 0) throw new Error("The number cannot be negative");
-    if (typeof value === "number") {
-      if (value % 1 !== 0) throw new Error("Id must be an integer");
-      this.#value = BigInt(value);
-    } else this.#value = value;
-  }
-  valueOf(): bigint {
-    return this.#value;
-  }
-  toString() {
-    return this.#value.toString();
-  }
-}
-/**
- * @public
- * @remarks 代表void值，用于写入或响应 array 或 map 的结束标志
- */
-export const VOID = Symbol("void");
+
 /**
  * @public
  * @remarks 当读取到一个未知类型的错误
