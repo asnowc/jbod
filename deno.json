@@ -2,7 +2,9 @@
   "nodeModulesDir": false,
   "lock": false,
   "tasks": {
-    "versionSnapshot": "deno run -A scripts/version_snapshot.ts",
+    "ci:build": "deno task build dist/mod.js",
+    "build": "deno run -A scripts/build.ts",
+    "versionSnapshot": "deno task build benchmark/dist/before.js",
     "start_bench_ui": "deno run -A scripts/start_ui.ts"
   }
 }
