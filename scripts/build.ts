@@ -11,7 +11,19 @@ console.log("fetch ok");
 const tslib = await fetchRes.text();
 const { write } = await rollup({
   input: "./src/mod.ts",
-  plugins: [tsPlugin({ tslib, include: ["./src/**"], compilerOptions: { target: "ES2022", module: "nodenext" } })],
+  plugins: [
+    tsPlugin({
+      tslib,
+      include: ["./src/**"],
+      compilerOptions: {
+        target: "ES2022",
+        module: "nodenext",
+        declaration: true,
+        declarationDir: "dist",
+        declarationMap: true,
+      },
+    }),
+  ],
 });
 
 console.log("rollup to " + output);

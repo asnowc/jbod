@@ -7,10 +7,8 @@
     "benchmark": "vitest bench --watch false",
     "ci:test": "vitest run",
     "test": "vitest",
-    "ci:build": "tsc -p src/tsconfig.json",
-    "api:extractor": "api-extractor run -c api-extractor.jsonc -v",
-    "api:extractor-local": "pnpm run api:extractor -l",
-    "publish:test": "pnpm publish --no-git-checks --dry-run"
+    "api:check": "api-extractor run -c api-extractor.jsonc -v",
+    "api:check-local": "pnpm run api:check -l"
   },
   "devDependencies": {
     "@microsoft/api-extractor": "^7.39.1",
@@ -21,11 +19,11 @@
     "vitest": "^1.1.3"
   },
   "exports": {
-    ".": "./out/mod.js"
+    ".": "./dist/mod.js"
   },
   "files": [
-    "out/**/*.js",
-    "out/**/*d.ts"
+    "dist/**/*.js",
+    "dist/**/*d.ts"
   ],
   "publishConfig": {
     "access": "public",
