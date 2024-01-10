@@ -1,6 +1,6 @@
 {
   "name": "jbod",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "",
   "type": "module",
   "scripts": {
@@ -19,7 +19,10 @@
     "vitest": "^1.1.3"
   },
   "exports": {
-    ".": "./dist/mod.js"
+    ".": {
+      "import": "./dist/mod.js",
+      "types": "./dist/mod.d.ts"
+    }
   },
   "files": [
     "dist/**/*.js",
