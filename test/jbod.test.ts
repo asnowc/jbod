@@ -7,7 +7,7 @@ describe("paseSync", function () {
   describe.each(Object.entries(baseDataTypes))("%s", function (type, cases) {
     test.each(cases as any[])("%s", function (data) {
       const buf = JBOD.binaryify(data);
-      const { data: transData, offset } = JBOD.pase(buf);
+      const { data: transData, offset } = JBOD.parse(buf);
       expect(transData).jbodEqual(data);
       expect(offset).toBe(buf.byteLength);
     });
@@ -21,7 +21,7 @@ describe("pase", function () {
   describe.each(Object.entries(baseDataTypes))("%s", function (type, cases) {
     test.each(cases as any[])("%s", async function (data) {
       const reader = createFixedStreamReader(JBOD.binaryify(data));
-      const array = await JBOD.paseAsync(reader);
+      const array = await JBOD.parseAsync(reader);
       expect(array).jbodEqual(data);
     });
   });

@@ -49,11 +49,11 @@ export const DBN: DyBinNumber;
 
 // @public (undocumented)
 const _default: {
-    pase: <T = unknown>(buffer: Uint8Array, type?: DataType) => {
+    parse: <T = unknown>(buffer: Uint8Array, type?: DataType) => {
         data: T;
         offset: number;
     };
-    paseAsync: <T_1 = unknown>(read: StreamReader, type?: DataType) => Promise<T_1>;
+    parseAsync: <T_1 = unknown>(read: StreamReader, type?: DataType) => Promise<T_1>;
     scanAsync: typeof scanJbodAsync;
     getType: (data: any) => number;
     binaryify: (data: any) => Uint8Array;

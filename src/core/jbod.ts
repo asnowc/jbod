@@ -44,7 +44,7 @@ export default {
    * @remarks 从 Uint8Array 解析数据
    * @param type - 指定解析的数据类型. 这会认为 buffer 的第一个字节是数据的值, 而不是数据类型
    */
-  pase: function paseJbod<T = unknown>(buffer: Uint8Array, type?: DataType): { data: T; offset: number } {
+  parse: function paseJbod<T = unknown>(buffer: Uint8Array, type?: DataType): { data: T; offset: number } {
     if (!(buffer instanceof Uint8Array)) throw new Error("The parameter must be of Uint8Array type");
     let res;
     if (type === undefined) res = syncParser.readItem(buffer, 0);
@@ -59,7 +59,7 @@ export default {
    * @remarks 异步解析数据
    * @param type - 指定解析的数据类型. 这会认为 buffer 的第一个字节是数据的值, 而不是数据类型
    */
-  paseAsync: async function paseJbodAsync<T = unknown>(read: StreamReader, type?: DataType): Promise<T> {
+  parseAsync: async function paseJbodAsync<T = unknown>(read: StreamReader, type?: DataType): Promise<T> {
     if (!type) type = (await read(1))[0];
     if (type === DataType.void) return VOID as any;
     if (typeof asyncParser[type] !== "function") throw new UnsupportedDataTypeError(DataType[type] ?? type);
@@ -77,7 +77,8 @@ export default {
   /**
    * @public
    * @remarks 将数据转为带类型的的完整二进制数据
-   */ binaryify: function binaryifyJbod(data: any) {
+   */
+  binaryify: function binaryifyJbod(data: any) {
     const [write, concat] = collectDebris();
     writer.writeItem(data, write);
     return concat();

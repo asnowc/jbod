@@ -21,7 +21,7 @@ lineSuite(
   function ({ size, value }) {
     const data = toStr(createList(size, value));
     bench("JBOD", function () {
-      JBOD.pase(data.jbodData);
+      JBOD.parse(data.jbodData);
     });
     bench("JSON", function () {
       JSON.parse(data.jsonStr);
@@ -35,7 +35,7 @@ lineSuite(
   function ({ size, value }) {
     const { jbodData, jsonStr } = toStr(createMap(size, value));
     bench("JBOD", function () {
-      JBOD.pase(jbodData);
+      JBOD.parse(jbodData);
     });
     bench("JSON", function () {
       JSON.parse(jsonStr);

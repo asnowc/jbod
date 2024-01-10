@@ -15,10 +15,10 @@ lineSuite(
   samples,
   function ({ num, data }) {
     bench("Current" + num.toString(), function () {
-      JBOD.pase(data);
+      JBOD.parse(data);
     });
     bench("Before" + num.toString(), function () {
-      B_JBOD.pase(data);
+      B_JBOD.parse(data);
     });
   },
   (item) => String(item.num)
