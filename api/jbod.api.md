@@ -26,7 +26,7 @@ export enum DataType {
     map = 14,
     // (undocumented)
     null = 1,
-    // (undocumented)
+    // @internal
     objectId = 8,
     // (undocumented)
     regExp = 11,
@@ -38,7 +38,7 @@ export enum DataType {
     true = 3,
     // (undocumented)
     undefined = 2,
-    // (undocumented)
+    // @internal
     void = 0
 }
 

@@ -4,6 +4,7 @@
   "description": "",
   "type": "module",
   "scripts": {
+    "benchmark": "vitest bench --watch false",
     "ci:test": "vitest run",
     "test": "vitest",
     "ci:build": "tsc -p src/tsconfig.json",

@@ -3,6 +3,7 @@
  * @remarks JBOD 数据类型
  */
 export enum DataType {
+  /** @internal 内部类型*/
   void = 0,
   null = 1,
   undefined = 2,
@@ -12,12 +13,13 @@ export enum DataType {
   bigint = 6,
   double = 7,
 
+  /** @internal 保留类型*/
   objectId = 8,
 
   arrayBuffer = 9,
   string = 10,
   regExp = 11,
-  /** @internal 暂不支持*/
+  /** @internal 保留类型*/
   function = 12,
   array = 13,
   map = 14,
