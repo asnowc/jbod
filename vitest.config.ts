@@ -8,17 +8,18 @@ const isBench = args[0] === "bench";
 const root = __dirname;
 export default defineConfig({
   test: {
-    alias: [{ find: /^jbod$/, replacement: path.resolve(root, "src/mod.js") }, ...(isBench ? createBenchAlias() : [])],
+    alias: isBench ? createBenchAlias() : [{ find: /^jbod$/, replacement: path.resolve(root, "src/mod.js") }],
     benchmark: {
       reporters: [new Reporter(), "default"],
-      outputFile: "bench/dist/result.json",
+      outputFile: "scripts/bench_ui/public/result.json",
     },
   },
 });
 type Alias = NonNullable<NonNullable<UserConfig["test"]>["alias"]>;
 
-function createBenchAlias() {
+function createBenchAlias(): { find: RegExp; replacement: string }[] {
   return [
+    { find: /^jbod$/, replacement: path.resolve(root, "dist/mod.js") },
     {
       find: /^@jbod-before$/,
       replacement: path.resolve(root, "./benchmark/dist/before.js"),

@@ -2,10 +2,9 @@ import { rollup } from "npm:rollup@4";
 import esmTsPlugin from "npm:@rollup/plugin-typescript@11";
 
 const tsPlugin = esmTsPlugin as any as typeof esmTsPlugin.default;
-const output = Deno.args[0];
+const output = "dist/mod.js";
 
-if (!output) throw new Error("请指定输出位置");
-const fetchRes = await fetch("https://esm.sh/tslib@2");
+const fetchRes = await fetch("https://esm.sh/tslib@2/tslib.es6.mjs?raw");
 console.log("fetch ok");
 
 const tslib = await fetchRes.text();

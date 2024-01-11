@@ -13,10 +13,10 @@ const samples = [10 ** 2, 10 ** 3, 10 ** 4, 10 ** 5].map((num) => ({
 
 describe("binaryify", function () {
   samples.forEach(function ({ num, data }) {
-    bench("Current " + num.toString(), function () {
+    bench("Current", function () {
       JBOD.binaryify(data);
     });
-    bench("Before" + num.toString(), function () {
+    bench("Before", function () {
       B_JBOD.binaryify(data);
     });
   });
@@ -24,11 +24,11 @@ describe("binaryify", function () {
 lineSuite(
   "binaryify",
   samples,
-  function ({ num, data }) {
-    bench("Current" + num.toString(), function () {
+  function ({ data }) {
+    bench("Current", function () {
       JBOD.binaryify(data);
     });
-    bench("Before" + num.toString(), function () {
+    bench("Before", function () {
       JBOD.binaryify(data);
     });
   },

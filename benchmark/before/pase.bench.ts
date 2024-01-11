@@ -13,11 +13,11 @@ const samples = [10 ** 2, 10 ** 3, 10 ** 4, 10 ** 5].map((num) => ({
 lineSuite(
   "pase",
   samples,
-  function ({ num, data }) {
-    bench("Current" + num.toString(), function () {
+  function ({ data }) {
+    bench("Current", function () {
       JBOD.parse(data);
     });
-    bench("Before" + num.toString(), function () {
+    bench("Before", function () {
       B_JBOD.parse(data);
     });
   },
