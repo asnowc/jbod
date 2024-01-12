@@ -2,7 +2,7 @@ import { bench } from "vitest";
 import JBOD from "jbod";
 import { createList } from "../__mocks__/care_jbod_data.js";
 import before from "@jbod-before";
-import { lineSuite } from "@lineSuite";
+import { lineSuite } from "@eavid/vitest-tool";
 const B_JBOD: typeof JBOD = before as any;
 
 const value = null;

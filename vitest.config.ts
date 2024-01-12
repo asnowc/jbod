@@ -1,6 +1,6 @@
 import { defineConfig, UserConfig } from "vitest/config";
 import path from "node:path";
-import Reporter from "./utils/vitest_report/reporter.js";
+import { EChartsBenchmarkReporter } from "@eavid/vitest-tool/reporter";
 
 const args = process.argv.slice(2);
 const isBench = args[0] === "bench";
@@ -10,7 +10,7 @@ export default defineConfig({
   test: {
     alias: isBench ? createBenchAlias() : [{ find: /^jbod$/, replacement: path.resolve(root, "src/mod.js") }],
     benchmark: {
-      reporters: [new Reporter(), "default"],
+      reporters: [new EChartsBenchmarkReporter(), "default"],
       outputFile: "scripts/bench_ui/public/result.json",
     },
   },

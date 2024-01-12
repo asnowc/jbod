@@ -1,7 +1,7 @@
 import { createList, createMap } from "./__mocks__/care_jbod_data.js";
 import { bench } from "vitest";
 import JBOD from "../src/mod.js";
-import { lineSuite } from "@lineSuite";
+import { lineSuite } from "@eavid/vitest-tool";
 const cases = [
   { name: "number_8", size: 1000, value: 8 },
   { name: "number_0x1fffff", size: 1000, value: 0x1fffff },
