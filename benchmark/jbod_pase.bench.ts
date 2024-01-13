@@ -2,13 +2,8 @@ import { createList, createMap } from "./__mocks__/care_jbod_data.js";
 import { bench } from "vitest";
 import JBOD from "../src/mod.js";
 import { lineSuite } from "@eavid/vitest-tool";
-const cases = [
-  { name: "number_8", size: 1000, value: 8 },
-  { name: "number_0x1fffff", size: 1000, value: 0x1fffff },
-  { name: "double", size: 1000, value: 1.8237592 },
-  { name: "boolean", size: 1000, value: true },
-  { name: "string", size: 100, value: "中文".repeat(100) },
-];
+import { cases } from "./__mocks__/compare.cases.js";
+
 function toStr(data: any) {
   return {
     jbodData: JBOD.binaryify(data),
