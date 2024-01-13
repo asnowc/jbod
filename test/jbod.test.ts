@@ -3,7 +3,7 @@ import { baseDataTypes, unsupportedData } from "./__mocks__/data_type.cases.js";
 import "./expects/expect.js";
 import { describe, expect, test } from "vitest";
 
-describe("paseSync", function () {
+describe("binaryify-pase", function () {
   describe.each(Object.entries(baseDataTypes))("%s", function (type, cases) {
     test.each(cases as any[])("%s", function (data) {
       const buf = JBOD.binaryify(data);
@@ -17,7 +17,7 @@ describe("paseSync", function () {
 test("不支持的数据类型", function () {
   expect(() => JBOD.binaryify(unsupportedData.function[0])).toThrowError(UnsupportedDataTypeError);
 });
-describe("pase", function () {
+describe("parseAsync", function () {
   describe.each(Object.entries(baseDataTypes))("%s", function (type, cases) {
     test.each(cases as any[])("%s", async function (data) {
       const reader = createFixedStreamReader(JBOD.binaryify(data));
@@ -26,7 +26,7 @@ describe("pase", function () {
     });
   });
 });
-describe("iterator", function () {
+describe("scanAsync", function () {
   describe.each(Object.entries(baseDataTypes))("%s", async function (type, cases) {
     test.each(cases as any[])("%s", async function (data) {
       const reader = createFixedStreamReader(JBOD.binaryify(data));

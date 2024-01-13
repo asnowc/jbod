@@ -88,8 +88,9 @@ export default {
    * @remarks 将数据转为不带类型且无结尾(array 和 map 的结尾标识)的的的二进制数据
    */
   binaryifyContent: function binaryifyJbodContent(data: any) {
-    const [write, concat] = collectDebris();
     const type = writer.toType(data) as DataType;
+    if (writer.isNoContentData(type)) return new Uint8Array(0);
+    const [write, concat] = collectDebris();
     writer[type](data, write, true);
     return concat();
   },

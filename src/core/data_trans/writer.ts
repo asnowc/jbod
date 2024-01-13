@@ -5,7 +5,7 @@ import { numTransf, strTransf } from "../../uint_array_util/mod.js";
 const { numToBinary } = DBN;
 
 export class JbodWriter {
-  private isNoContentData(type: number) {
+  isNoContentData(type: number) {
     return type === DataType.true || type === DataType.false || type === DataType.null || type === DataType.undefined;
   }
   toType(data: any, safe?: boolean): number {
