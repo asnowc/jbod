@@ -76,7 +76,7 @@ export class JbodAsyncParser implements Record<DataType, AsyncParser> {
     }
     return arrayList;
   }
-  async [DataType.map](read: StreamReader) {
+  async [DataType.object](read: StreamReader) {
     const map: Record<string, unknown> = {};
     let key: string;
     while (true) {
@@ -95,10 +95,22 @@ export class JbodAsyncParser implements Record<DataType, AsyncParser> {
     return read(len);
   }
   async [DataType.error](read: StreamReader) {
-    const { message, cause, ...attr } = await this[DataType.map](read);
+    const { message, cause, ...attr } = await this[DataType.object](read);
     const error = new JbodError(message, { cause });
     Object.assign(error, attr);
     return error;
+  }
+  async [DataType.set](read: StreamReader) {
+    const arr = await this[DataType.array](read);
+    return new Set(arr);
+  }
+  async [DataType.map](read: StreamReader) {
+    const arr = await this[DataType.array](read);
+    const map = new Map();
+    for (let i = 0; i < arr.length; i += 2) {
+      map.set(arr[i], arr[i + 1]);
+    }
+    return new Set(arr);
   }
   [key: number]: AsyncParser;
 }

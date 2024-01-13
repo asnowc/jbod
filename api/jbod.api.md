@@ -23,17 +23,21 @@ export enum DataType {
     // (undocumented)
     int = 5,
     // (undocumented)
-    map = 14,
+    map = 17,
     // (undocumented)
     null = 1,
+    // (undocumented)
+    object = 14,
     // @internal
     objectId = 8,
     // (undocumented)
     regExp = 11,
     // (undocumented)
+    set = 18,
+    // (undocumented)
     string = 10,
     // (undocumented)
-    symbol = 17,
+    symbol = 15,
     // (undocumented)
     true = 3,
     // (undocumented)
@@ -53,7 +57,7 @@ const _default: {
         data: T;
         offset: number;
     };
-    parseAsync: <T_1 = unknown>(read: StreamReader, type?: DataType) => Promise<T_1>;
+    parseAsync: <T_1 = unknown>(read: StreamReader_2, type?: DataType) => Promise<T_1>;
     scanAsync: typeof scanJbodAsync;
     getType: (data: any) => number;
     binaryify: (data: any) => Uint8Array;
@@ -79,8 +83,8 @@ export class UnsupportedDataTypeError extends Error {
 
 // Warnings were encountered during analysis:
 //
-// src/core/jbod.ts:62:3 - (ae-forgotten-export) The symbol "StreamReader" needs to be exported by the entry point mod.d.ts
-// src/core/jbod.ts:63:29 - (ae-forgotten-export) The symbol "scanJbodAsync" needs to be exported by the entry point mod.d.ts
+// src/core/jbod.ts:63:3 - (ae-forgotten-export) The symbol "StreamReader_2" needs to be exported by the entry point mod.d.ts
+// src/core/jbod.ts:64:29 - (ae-forgotten-export) The symbol "scanJbodAsync" needs to be exported by the entry point mod.d.ts
 
 // (No @packageDocumentation comment for this package)
 

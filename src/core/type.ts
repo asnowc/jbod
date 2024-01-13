@@ -13,7 +13,7 @@ export interface JbodAsyncIteratorArrayItem<T = unknown> {
   isIterator: true;
 }
 export interface JbodAsyncIteratorValue<T = unknown> {
-  dataType: DataType.map;
+  dataType: DataType.object;
   key: string;
   value: AsyncGenerator<JbodIteratorItem, Record<string, T>, void>;
   isIterator: true;
@@ -31,7 +31,7 @@ export interface JbodIteratorArrayItem<T = unknown> {
   isIterator: true;
 }
 export interface JbodIteratorMapValue<T = unknown> {
-  dataType: DataType.map;
+  dataType: DataType.object;
   key: string;
   value: AsyncGenerator<JbodIteratorItem, Record<string, T>, void>;
   isIterator: true;

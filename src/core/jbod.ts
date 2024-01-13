@@ -33,7 +33,7 @@ async function* scanJbodAsync(
   if (type === DataType.void) return VOID;
 
   if (type === DataType.array) return yield* scanArray(read);
-  else if (type === DataType.map) return yield* scanMap(read);
+  else if (type === DataType.object) return yield* scanMap(read);
   else if (typeof asyncParser[type] !== "function") throw new UnsupportedDataTypeError(DataType[type] ?? type);
   else return asyncParser[type](read);
 }
@@ -113,7 +113,7 @@ async function genIteratorItem(read: StreamReader, type: DataType, key: string |
   let value: unknown;
   let isIterator = true;
   if (type === DataType.array) value = scanArray(read);
-  else if (type === DataType.map) value = scanMap(read);
+  else if (type === DataType.object) value = scanMap(read);
   else if (typeof asyncParser[type] !== "function") throw new UnsupportedDataTypeError(DataType[type] ?? type);
   else {
     value = await asyncParser[type](read);

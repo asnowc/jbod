@@ -22,10 +22,13 @@ export enum DataType {
   /** @internal 保留类型*/
   function = 12,
   array = 13,
-  map = 14,
+  object = 14,
+  symbol = 15,
 
   error = 16,
-  symbol = 17,
+
+  map = 17,
+  set = 18,
 }
 
 /**

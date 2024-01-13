@@ -87,7 +87,7 @@ export class JbodParser implements Record<DataType, Parser> {
     }
     return [arrayList, offset];
   }
-  [DataType.map](buf: Uint8Array, offset: number): [Object, number] {
+  [DataType.object](buf: Uint8Array, offset: number): [Object, number] {
     const map: Record<string, unknown> = {};
     let key: string;
     while (offset < buf.byteLength) {
@@ -107,10 +107,22 @@ export class JbodParser implements Record<DataType, Parser> {
   }
 
   [DataType.error](buf: Uint8Array, offset: number): [Error, number] {
-    let [{ message, cause, ...attr }, len] = this[DataType.map](buf, offset) as [Error, number];
+    let [{ message, cause, ...attr }, len] = this[DataType.object](buf, offset) as [Error, number];
     const error = new JbodError(message, { cause });
     Object.assign(error, attr);
     return [error, len];
+  }
+  [DataType.set](buf: Uint8Array, offset: number): [Set<unknown>, number] {
+    const arr = this[DataType.array](buf, offset);
+    return [new Set(arr), arr[1]];
+  }
+  [DataType.map](buf: Uint8Array, offset: number): [Map<unknown, unknown>, number] {
+    const [arr, len] = this[DataType.array](buf, offset);
+    const map = new Map();
+    for (let i = 0; i < arr.length; i += 2) {
+      map.set(arr[i], arr[i + 1]);
+    }
+    return [map, len];
   }
   [key: number]: Parser;
 }

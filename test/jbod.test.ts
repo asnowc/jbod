@@ -11,7 +11,7 @@ describe("binaryify", function () {
     const k1 = [DataType.int, 1, 97, 0, 0, 0, 1];
     const k2 = [DataType.int, 1, 98, 0, 0, 0, 2];
     const k3 = [DataType.int, 1, 99, 0, 0, 0, 3];
-    expect(Buffer.from(buf)).toEqual(Buffer.from([DataType.map, ...k1, ...k2, ...k3, DataType.void]));
+    expect(Buffer.from(buf)).toEqual(Buffer.from([DataType.object, ...k1, ...k2, ...k3, DataType.void]));
   });
   test("array", function () {
     const data = [1, "a", null];
@@ -130,7 +130,7 @@ function createIteratorPath(data: any, path: IteratorPathItem[], key?: string | 
     for (const [key, value] of Object.entries(data)) {
       createIteratorPath(value, path, key);
     }
-    path.push({ isEnd: true, dataType: DataType[DataType.map] });
+    path.push({ isEnd: true, dataType: DataType[DataType.object] });
   }
   return path;
 }

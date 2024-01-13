@@ -32,7 +32,7 @@ export function toType(data: any, safe?: boolean): number {
       else if (data instanceof RegExp) type = DataType.regExp;
       else if (data instanceof Error) type = DataType.error;
       else if (data instanceof ObjectId) type = DataType.objectId;
-      else type = DataType.map;
+      else type = DataType.object;
       break;
     default:
       if (safe) return DataType.undefined;
@@ -80,7 +80,7 @@ export class JbodLengthCalc {
         value,
       });
     }
-    return { dataLen: totalLen, preData, baseType: DataType.map, type: DataType.map };
+    return { dataLen: totalLen, preData, baseType: DataType.object, type: DataType.object };
   }
   calcArrayBuffer(data: Uint8Array): CalcRes<ArrayBufferPreData> {
     const lenBuf = numberToDLD(data.byteLength); //todo: 优化计算
@@ -124,7 +124,7 @@ export class JbodLengthCalc {
       }
       case DataType.array:
         return this.calcArray(data);
-      case DataType.map:
+      case DataType.object:
         return this.calcMap(data);
       case DataType.error: {
         const error = data as Error;
@@ -173,7 +173,7 @@ export class JbodWriter {
     }
     buf[offset++] = DataType.void;
   }
-  [DataType.map](map: MapPreData, buf: Uint8Array) {
+  [DataType.object](map: MapPreData, buf: Uint8Array) {
     let offset = 0;
     for (let i = 0; i < map.length; i++) {
       const { keyData, keyLenData, value } = map[i];
