@@ -1,4 +1,4 @@
-import { readBigInt64BE, writeBigInt64BE, writeUint32BE } from "../uint_array_util/number.js";
+import { readBigInt64BE, writeBigInt64BE, writeUint32BE, concatUint8Array } from "../uint_array_util/mod.js";
 
 /** 动态长度BigInt读取 */
 function readBigIntCore(desc: int, buf: Uint8Array): [bigint, int] {
@@ -77,7 +77,7 @@ class DyBinNumber {
   async readNumber(read: StreamReader, safe?: boolean) {
     let bigInt = await this.readBigInt(read, safe);
     if (bigInt === undefined) return;
-    if (bigInt > Number.MAX_SAFE_INTEGER) throw new Error("Integer over maximum");
+    if (bigInt > Number.MAX_SAFE_INTEGER) throw new OverMaximumError(bigInt);
     return Number(bigInt);
   }
   /**
@@ -89,9 +89,9 @@ class DyBinNumber {
     if (typeof data === "number") {
       if (data % 1 !== 0) throw new Error("The number must be an integer");
       //超过32位无法使用移位运算符
-      if (data > MAX_INT) return bigIntToDLD(BigInt(data));
+      if (data > 0xffffffff) return bigIntToDLD(BigInt(data));
       else return numberToDLD(data);
-    } else if (typeof data !== "bigint") throw new Error("Parameter type error");
+    } else if (typeof data !== "bigint") throw new TypeError("Parameter type error");
     return bigIntToDLD(data);
   }
 }
@@ -101,7 +101,7 @@ class DyBinNumber {
  */
 export const DBN = new DyBinNumber();
 
-function bigIntToDLD(value: bigint): Uint8Array {
+export function bigIntToDLD(value: bigint): Uint8Array {
   if (value < 0x10000000) return numberToDLD(Number(value));
   else if (value >= 0x10000000_00000000) {
     let buf: Uint8Array = new Uint8Array(9);
@@ -139,7 +139,8 @@ function bigIntToDLD(value: bigint): Uint8Array {
 
   return buf;
 }
-function numberToDLD(value: int): Uint8Array {
+
+export function numberToDLD(value: int): Uint8Array {
   let buf: Uint8Array;
   if (value < 0x80) {
     buf = new Uint8Array(1);
@@ -170,21 +171,6 @@ function numberToDLD(value: int): Uint8Array {
   }
   return buf;
 }
-const MAX_INT = 0xffffffff;
-
-function concatUint8Array(arr: Uint8Array[], useLen?: int) {
-  if (!useLen) {
-    useLen = 0;
-    for (let i = 0; i < arr.length; i++) useLen += arr[i].length;
-  }
-  const buf = new Uint8Array(useLen);
-  let offset = 0;
-  for (let i = 0; i < arr.length; i++) {
-    buf.set(arr[i], offset);
-    offset += arr[i].byteLength;
-  }
-  return buf;
-}
 
 interface StreamReader {
   (len: number, safe?: false): Promise<Uint8Array>;
@@ -192,3 +178,9 @@ interface StreamReader {
   (len: number, safe?: boolean): Promise<Uint8Array | null>;
 }
 type int = number;
+
+class OverMaximumError extends Error {
+  constructor(int: number | bigint) {
+    super(`Integer(${int}) over maximum`);
+  }
+}

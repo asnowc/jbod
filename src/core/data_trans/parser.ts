@@ -1,7 +1,7 @@
 import { DBN } from "../dynamic_binary_number.js";
 import { DataType, JbodError, UnsupportedDataTypeError } from "../../const.js";
 import { VOID, ObjectId } from "../internal_type.js";
-import { numTransf, strTransf } from "../../uint_array_util/mod.js";
+import { readInt32BE, readBigInt64BE, readDoubleBE, decodeUtf8 } from "../../uint_array_util/mod.js";
 type Parser = (buf: Uint8Array, offset: number) => [data: unknown, readLength: number];
 export class JbodParser implements Record<DataType, Parser> {
   /** 如果读取到 void类型, 则返回VOID */
@@ -36,13 +36,13 @@ export class JbodParser implements Record<DataType, Parser> {
   }
 
   [DataType.int](read: Uint8Array, offset: number): [number, number] {
-    return [numTransf.readInt32BE(read, offset), offset + 4];
+    return [readInt32BE(read, offset), offset + 4];
   }
   [DataType.bigint](read: Uint8Array, offset: number): [bigint, number] {
-    return [numTransf.readBigInt64BE(read, offset), offset + 8];
+    return [readBigInt64BE(read, offset), offset + 8];
   }
   [DataType.double](buf: Uint8Array, offset: number): [number, number] {
-    return [numTransf.readDoubleBE(buf, offset), offset + 8];
+    return [readDoubleBE(buf, offset), offset + 8];
   }
 
   [DataType.objectId](buf: Uint8Array, offset: number): [ObjectId, number] {
@@ -62,7 +62,7 @@ export class JbodParser implements Record<DataType, Parser> {
   }
   [DataType.string](buf: Uint8Array, offset: number): [string, number] {
     const [buffer, newOffset] = this.uInt8Array(buf, offset);
-    return [strTransf.decodeUtf8(buffer), newOffset];
+    return [decodeUtf8(buffer), newOffset];
   }
   [DataType.symbol](buf: Uint8Array, offset: number): [Symbol, number] {
     const data = this.readItem(buf, offset);

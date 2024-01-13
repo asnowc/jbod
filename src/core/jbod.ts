@@ -2,7 +2,7 @@ import { DataType, UnsupportedDataTypeError } from "../const.js";
 import { VOID } from "./internal_type.js";
 import { JbodAsyncParser } from "./data_trans/async_parser.js";
 import { JbodParser } from "./data_trans/parser.js";
-import { JbodWriter } from "./data_trans/writer.js";
+import { JbodWriter, JbodLengthCalc, isNoContentData, toType } from "./data_trans/writer.js";
 import type {
   JbodAsyncIteratorArrayItem,
   JbodAsyncIteratorItem,
@@ -15,6 +15,7 @@ type StreamReader = (size: number) => Promise<Uint8Array>;
 const syncParser = new JbodParser();
 const asyncParser = new JbodAsyncParser();
 const writer = new JbodWriter();
+const lengthCalc = new JbodLengthCalc();
 
 /**
  * @public
@@ -72,56 +73,41 @@ export default {
    * @remarks 获取数据对应的类型 ID
    */
   getType: function getJbodType(data: any) {
-    return writer.toType(data);
+    return toType(data);
   },
   /**
    * @public
    * @remarks 将数据转为带类型的的完整二进制数据
    */
   binaryify: function binaryifyJbod(data: any) {
-    const [write, concat] = collectDebris();
-    writer.writeItem(data, write);
-    return concat();
+    const type = toType(data);
+    if (isNoContentData(type)) {
+      const buf = new Uint8Array(1);
+      buf[0] = type;
+      return buf;
+    }
+
+    let { baseType, dataLen, preData } = lengthCalc.calc(data);
+    const buf = new Uint8Array(1 + dataLen);
+    writer[baseType](preData, buf.subarray(1));
+
+    buf[0] = type;
+    return buf;
   },
   /**
    * @public
-   * @remarks 将数据转为不带类型且无结尾(array 和 map 的结尾标识)的的的二进制数据
+   * @remarks 将数据转为不带类型的二进制数据
    */
   binaryifyContent: function binaryifyJbodContent(data: any) {
-    const type = writer.toType(data) as DataType;
-    if (writer.isNoContentData(type)) return new Uint8Array(0);
-    const [write, concat] = collectDebris();
-    writer[type](data, write, true);
-    return concat();
+    const type = toType(data);
+    if (isNoContentData(type)) return new Uint8Array(0);
+
+    let { baseType, dataLen, preData } = lengthCalc.calc(data);
+    const buf = new Uint8Array(dataLen);
+    writer[baseType](preData, buf);
+    return buf;
   },
 };
-function collectDebris(): [(data: Uint8Array) => void, () => Uint8Array] {
-  let bufferList: Uint8Array[] = [];
-  let totalSize = 0;
-  function write(data: Uint8Array) {
-    bufferList.push(data);
-    totalSize += data.byteLength;
-  }
-  function concat() {
-    if (bufferList.length === 1) {
-      let value = bufferList[0];
-      totalSize = 0;
-      bufferList = [];
-      return value;
-    }
-    const buf = new Uint8Array(totalSize);
-    let offset = 0;
-    for (let i = 0; i < bufferList.length; i++) {
-      buf.set(bufferList[i], offset);
-      offset += bufferList[i].byteLength;
-    }
-    totalSize = 0;
-    bufferList = [];
-    return buf;
-  }
-
-  return [write, concat];
-}
 
 async function genIteratorItem(read: StreamReader, type: DataType, key: string | number): Promise<JbodIteratorItem> {
   let value: unknown;

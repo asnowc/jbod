@@ -1,154 +1,199 @@
-import { DBN } from "../dynamic_binary_number.js";
+import { numberToDLD } from "../dynamic_binary_number.js";
 import { DataType, UnsupportedDataTypeError } from "../../const.js";
-import { ObjectId, VOID } from "../internal_type.js";
-import { numTransf, strTransf } from "../../uint_array_util/mod.js";
-const { numToBinary } = DBN;
+import { ObjectId } from "../internal_type.js";
+import { writeInt32BE, writeBigInt64BE, writeDoubleBE, encodeUtf8 } from "../../uint_array_util/mod.js";
+export function isNoContentData(type: number) {
+  return type === DataType.true || type === DataType.false || type === DataType.null || type === DataType.undefined;
+}
+export function toType(data: any, safe?: boolean): number {
+  let type: number;
+  switch (typeof data) {
+    case "undefined":
+      return DataType.undefined;
+    case "boolean":
+      return data ? DataType.true : DataType.false;
+    case "number":
+      if (data % 1 !== 0 || data < -2147483648 || data > 2147483647) type = DataType.double;
+      else type = DataType.int;
+      break;
+    case "string":
+      type = DataType.string;
+      break;
+    case "bigint":
+      type = DataType.bigint;
+      break;
+    case "symbol":
+      type = DataType.symbol;
+      break;
+    case "object":
+      if (data === null) return DataType.null;
+      if (Array.isArray(data)) type = DataType.array;
+      else if (data instanceof ArrayBuffer) type = DataType.arrayBuffer;
+      else if (data instanceof RegExp) type = DataType.regExp;
+      else if (data instanceof Error) type = DataType.error;
+      else if (data instanceof ObjectId) type = DataType.objectId;
+      else type = DataType.map;
+      break;
+    default:
+      if (safe) return DataType.undefined;
+      throw new UnsupportedDataTypeError(typeof data);
+  }
+  return type;
+}
+
+type CalcRes<T = any> = {
+  preData: T;
+  type: number;
+  baseType: number;
+  dataLen: number;
+};
+
+type ArrayPreData = CalcRes[];
+type MapPreData = { keyLenData: Uint8Array; keyData: Uint8Array; value: CalcRes }[];
+type ArrayBufferPreData = { strData: Uint8Array; strLen: Uint8Array };
+export class JbodLengthCalc {
+  calcArray(arr: any[]): CalcRes<ArrayPreData> {
+    let item: any;
+    let preData: ArrayPreData = [];
+    let totalLen = 1; // void
+    let res: CalcRes;
+    for (let i = 0; i < arr.length; i++) {
+      item = arr[i];
+      res = this.calc(item);
+      totalLen += res.dataLen + 1;
+      preData.push(res);
+    }
+    return { dataLen: totalLen, preData, baseType: DataType.array, type: DataType.array };
+  }
+  calcMap(data: Record<string, any>): CalcRes<MapPreData> {
+    const map = Object.keys(data);
+    let preData: MapPreData = [];
+    let totalLen = 1; // void
+    for (let i = 0; i < map.length; i++) {
+      const key = this.calcStr(map[i]);
+      const value = this.calc(data[map[i]]);
+      totalLen += 1 + key.dataLen + value.dataLen;
+
+      preData.push({
+        keyData: key.preData.strData,
+        keyLenData: key.preData.strLen,
+        value,
+      });
+    }
+    return { dataLen: totalLen, preData, baseType: DataType.map, type: DataType.map };
+  }
+  calcArrayBuffer(data: Uint8Array): CalcRes<ArrayBufferPreData> {
+    const lenBuf = numberToDLD(data.byteLength); //todo: 优化计算
+    return {
+      dataLen: data.byteLength + lenBuf.byteLength,
+      baseType: DataType.arrayBuffer,
+      type: DataType.arrayBuffer,
+      preData: { strData: data, strLen: lenBuf },
+    };
+  }
+  calcStr(data: string) {
+    const res = this.calcArrayBuffer(encodeUtf8(data)); //todo: 优化计算
+    res.type = DataType.string;
+    return res;
+  }
+
+  calc(data: any): CalcRes {
+    const type = toType(data);
+    if (isNoContentData(type)) return { preData: undefined, dataLen: 0, baseType: type, type };
+    switch (type) {
+      case DataType.int:
+        return { dataLen: 4, preData: data, baseType: type, type };
+      case DataType.bigint:
+        return { dataLen: 8, preData: data, baseType: type, type };
+      case DataType.double:
+        return { dataLen: 8, preData: data, baseType: type, type };
+      case DataType.arrayBuffer:
+        return this.calcArrayBuffer(data);
+      case DataType.string:
+        return this.calcStr(data as string);
+      case DataType.regExp:
+        return this.calcStr((data as RegExp).source);
+      case DataType.symbol: {
+        let desc = (data as Symbol).description;
+        if (desc === undefined) return { baseType: DataType.symbol, preData: desc, dataLen: 1, type: DataType.symbol };
+        const res = this.calcStr(desc);
+        res.dataLen++;
+        res.type = DataType.symbol;
+        res.baseType = DataType.symbol;
+        return res;
+      }
+      case DataType.array:
+        return this.calcArray(data);
+      case DataType.map:
+        return this.calcMap(data);
+      case DataType.error: {
+        const error = data as Error;
+        const errorMap = { ...error, message: error.message, name: error.name };
+        if (error.cause) errorMap.cause = error.cause;
+        return this.calcMap(errorMap);
+      }
+      default:
+        throw new Error("???");
+    }
+  }
+}
 
 export class JbodWriter {
-  isNoContentData(type: number) {
-    return type === DataType.true || type === DataType.false || type === DataType.null || type === DataType.undefined;
+  [DataType.int](data: number, buf: Uint8Array) {
+    writeInt32BE(buf, data);
   }
-  toType(data: any, safe?: boolean): number {
-    let type: number;
-    switch (typeof data) {
-      case "undefined":
-        return DataType.undefined;
-      case "boolean":
-        return data ? DataType.true : DataType.false;
-      case "number":
-        if (data % 1 !== 0 || data < -2147483648 || data > 2147483647) type = DataType.double;
-        else type = DataType.int;
-        break;
-      case "string":
-        type = DataType.string;
-        break;
-      case "bigint":
-        type = DataType.bigint;
-        break;
-      case "symbol":
-        type = DataType.symbol;
-        break;
-      case "object":
-        if (data === null) return DataType.null;
-        if (Array.isArray(data)) type = DataType.array;
-        else if (data instanceof ArrayBuffer) type = DataType.arrayBuffer;
-        else if (data instanceof RegExp) type = DataType.regExp;
-        else if (data instanceof Error) type = DataType.error;
-        else if (data instanceof ObjectId) type = DataType.objectId;
-        else type = DataType.map;
-        break;
-      default:
-        if (safe) return DataType.undefined;
-        throw new UnsupportedDataTypeError(typeof data);
-    }
-    return type;
+  [DataType.bigint](data: bigint, buf: Uint8Array) {
+    writeBigInt64BE(buf, data);
   }
-
-  /** 支持写入void类型 */
-  writeItem(data: unknown, write: StreamWriter, safe?: boolean): number {
-    if (data === VOID) {
-      write(createDataTypeBuf(DataType.void));
-      return 1;
-    }
-    const type = this.toType(data, safe);
-    write(createDataTypeBuf(type));
-    if (this.isNoContentData(type)) return 1;
-
-    if (typeof this[type] !== "function") throw new UnsupportedDataTypeError(DataType[type] ?? type);
-    return this[type](data, write);
+  [DataType.double](data: number, buf: Uint8Array) {
+    writeDoubleBE(buf, data);
   }
-  [DataType.int](data: number, write: StreamWriter) {
-    let buf = new Uint8Array(4);
-    numTransf.writeInt32BE(buf, data);
-    write(buf);
-    return 4;
+  [DataType.arrayBuffer](data: ArrayBufferPreData, buf: Uint8Array) {
+    buf.set(data.strLen);
+    buf.set(data.strData, data.strLen.byteLength);
   }
-  [DataType.bigint](data: bigint, write: StreamWriter) {
-    let buf = new Uint8Array(8);
-    numTransf.writeBigInt64BE(buf, data);
-    write(buf);
-    return 8;
-  }
-  [DataType.double](data: number, write: StreamWriter) {
-    let buf = new Uint8Array(8);
-    numTransf.writeDoubleBE(buf, data);
-    write(buf);
-    return 8;
-  }
-
-  [DataType.objectId](data: ObjectId, write: StreamWriter) {
-    const buf = numToBinary(data.value);
-    write(buf);
-    return buf.byteLength;
-  }
-  [DataType.arrayBuffer](data: ArrayBuffer, write: StreamWriter) {
-    const dld = numToBinary(data.byteLength);
-    write(dld);
-    write(new Uint8Array(data));
-    return data.byteLength + dld.byteLength;
-  }
-  [DataType.string](data: string, write: StreamWriter) {
-    return this[DataType.arrayBuffer](strTransf.encodeUtf8(data), write);
-  }
-
-  [DataType.regExp](data: RegExp, write: StreamWriter) {
-    return this[DataType.string](data.source, write);
-  }
-  [DataType.symbol](data: Symbol, write: StreamWriter) {
-    if (data.description === undefined) {
-      write(createDataTypeBuf(DataType.void));
-      return 1;
-    } else {
-      write(createDataTypeBuf(DataType.string));
-      return this[DataType.string](data.description, write) + 1;
+  [DataType.symbol](data: undefined | ArrayBufferPreData, buf: Uint8Array) {
+    if (data === undefined) buf[0] = DataType.void;
+    else {
+      buf[0] = DataType.string;
+      this[DataType.arrayBuffer](data, buf.subarray(1));
     }
   }
-  [DataType.array](array: unknown[], write: StreamWriter, ignoreVoid?: boolean): number {
-    let writeTotalLen = 0;
+
+  [DataType.array](array: ArrayPreData, buf: Uint8Array) {
+    let offset = 0;
     for (let i = 0; i < array.length; i++) {
-      writeTotalLen += this.writeItem(array[i], write, true);
-    }
-    if (!ignoreVoid) write(createDataTypeBuf(DataType.void));
-    return writeTotalLen + 1;
-  }
-  [DataType.map](map: Record<string, any>, write: StreamWriter, ignoreVoid?: boolean): number {
-    let writeTotalLen = 0;
-    for (const [key, data] of Object.entries(map)) {
-      const type = this.toType(data, true);
-      {
-        //type
-        write(createDataTypeBuf(type));
-        writeTotalLen++;
+      const value = array[i];
+      buf[offset++] = value.type;
 
-        ///key
-        const keyBuf = strTransf.encodeUtf8(key);
-        const lenDesc = numToBinary(keyBuf.length);
-        write(lenDesc);
-        write(keyBuf);
-        writeTotalLen += lenDesc.byteLength + keyBuf.byteLength;
+      if (!isNoContentData(value.type)) {
+        this[value.baseType](value.preData, buf.subarray(offset, offset + value.dataLen));
+        offset += value.dataLen;
       }
-
-      if (this.isNoContentData(type)) continue;
-      //value
-      if (typeof this[type] !== "function") throw new UnsupportedDataTypeError(DataType[type] ?? type);
-      writeTotalLen += this[type](data, write);
     }
-    if (!ignoreVoid) write(createDataTypeBuf(DataType.void));
-    return writeTotalLen + 1;
+    buf[offset++] = DataType.void;
+  }
+  [DataType.map](map: MapPreData, buf: Uint8Array) {
+    let offset = 0;
+    for (let i = 0; i < map.length; i++) {
+      const { keyData, keyLenData, value } = map[i];
+      buf[offset++] = value.type;
+
+      //key
+      buf.set(keyLenData, offset);
+      offset += keyLenData.byteLength;
+      buf.set(keyData, offset);
+      offset += keyData.byteLength;
+
+      if (!isNoContentData(value.type)) {
+        this[value.baseType](value.preData, buf.subarray(offset, offset + value.dataLen));
+        offset += value.dataLen;
+      }
+    }
+    buf[offset++] = DataType.void;
   }
 
-  [DataType.error](error: Error, write: StreamWriter) {
-    const errorMap = { ...error, message: error.message, name: error.name };
-    if (error.cause) errorMap.cause = error.cause;
-    return this[DataType.map](errorMap, write);
-  }
   [key: number]: DataWriter;
 }
-type StreamWriter = (chunk: Uint8Array) => void;
 
-type DataWriter = (data: any, write: StreamWriter) => number;
-function createDataTypeBuf(type: number) {
-  const buf = new Uint8Array(1);
-  buf[0] = type;
-  return buf;
-}
+type DataWriter = (data: any, buf: Uint8Array, ignoreVoid?: boolean) => void;

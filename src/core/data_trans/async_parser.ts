@@ -1,7 +1,7 @@
 import { DBN } from "../dynamic_binary_number.js";
 import { DataType, JbodError, UnsupportedDataTypeError } from "../../const.js";
 import { VOID, ObjectId } from "../internal_type.js";
-import { strTransf, numTransf } from "../../uint_array_util/mod.js";
+import { decodeUtf8, readInt32BE, readBigInt64BE, readDoubleBE } from "../../uint_array_util/mod.js";
 type StreamReader = (size: number) => Promise<Uint8Array>;
 type AsyncParser = (read: StreamReader) => Promise<unknown>;
 
@@ -32,13 +32,13 @@ export class JbodAsyncParser implements Record<DataType, AsyncParser> {
   }
 
   async [DataType.int](read: StreamReader) {
-    return numTransf.readInt32BE(await read(4));
+    return readInt32BE(await read(4));
   }
   async [DataType.bigint](read: StreamReader) {
-    return numTransf.readBigInt64BE(await read(8));
+    return readBigInt64BE(await read(8));
   }
   async [DataType.double](read: StreamReader) {
-    return numTransf.readDoubleBE(await read(8));
+    return readDoubleBE(await read(8));
   }
 
   async [DataType.objectId](read: StreamReader) {
@@ -56,7 +56,7 @@ export class JbodAsyncParser implements Record<DataType, AsyncParser> {
   }
   async [DataType.string](read: StreamReader): Promise<string> {
     const buf = await this.uInt8Array(read);
-    return strTransf.decodeUtf8(buf);
+    return decodeUtf8(buf);
   }
   async [DataType.symbol](read: StreamReader): Promise<Symbol> {
     const data = await this.readItem(read);

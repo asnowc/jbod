@@ -41,8 +41,7 @@ export function readByUtf8(buf: Uint8Array) {
   }
   return str;
 }
-export function writeByUtf8(str: string): Uint8Array {
-  if (str === "") return new Uint8Array(0);
+export function calcUtf8Length(str: string) {
   let utf8Len = 0;
   let code: number;
   for (let i = 0; i < str.length; i++) {
@@ -54,7 +53,13 @@ export function writeByUtf8(str: string): Uint8Array {
     else if (code < 0x4000000) utf8Len += 5;
     else utf8Len += 6;
   }
+  return utf8Len;
+}
+export function writeByUtf8(str: string): Uint8Array {
+  if (str === "") return new Uint8Array(0);
+  let utf8Len = calcUtf8Length(str);
 
+  let code: number;
   const buf = new Uint8Array(utf8Len);
   let offset = 0;
   for (let i = 0; i < str.length; i++) {
@@ -110,14 +115,14 @@ export function writeByUtf8(str: string): Uint8Array {
   return buf;
 }
 
-export const decodeUtf8 = (function () {
+export const decodeUtf8: (buf: Uint8Array) => string = (function () {
   const TextDecoder = (globalThis as any).TextDecoder;
   if (TextDecoder) {
     const textDecoder = new TextDecoder();
     return (buf: Uint8Array) => textDecoder.decode(buf);
   } else return readByUtf8;
 })();
-export const encodeUtf8 = (function () {
+export const encodeUtf8: (str: string) => Uint8Array = (function () {
   const TextEncoder = (globalThis as any).TextEncoder;
   if (TextEncoder) {
     const textEncoder = new TextEncoder();

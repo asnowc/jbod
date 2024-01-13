@@ -3,6 +3,27 @@ import { baseDataTypes, unsupportedData } from "./__mocks__/data_type.cases.js";
 import "./expects/expect.js";
 import { describe, expect, test } from "vitest";
 
+describe("binaryify", function () {
+  test("map", function () {
+    const data = { a: 1, b: 2, c: 3 };
+    const buf = JBOD.binaryify(data);
+
+    const k1 = [DataType.int, 1, 97, 0, 0, 0, 1];
+    const k2 = [DataType.int, 1, 98, 0, 0, 0, 2];
+    const k3 = [DataType.int, 1, 99, 0, 0, 0, 3];
+    expect(Buffer.from(buf)).toEqual(Buffer.from([DataType.map, ...k1, ...k2, ...k3, DataType.void]));
+  });
+  test("array", function () {
+    const data = [1, "a", null];
+    const buf = JBOD.binaryify(data);
+
+    const v1 = [DataType.int, 0, 0, 0, 1];
+    const v2 = [DataType.string, 1, 97];
+    const v3 = [DataType.null];
+    expect(Buffer.from(buf)).toEqual(Buffer.from([DataType.array, ...v1, ...v2, ...v3, DataType.void]));
+  });
+});
+
 describe("binaryify-pase", function () {
   describe.each(Object.entries(baseDataTypes))("%s", function (type, cases) {
     test.each(cases as any[])("%s", function (data) {

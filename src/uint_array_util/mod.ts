@@ -1,5 +1,3 @@
-import * as numTransf from "./number.js";
-
-import { decodeUtf8, encodeUtf8 } from "./string.js";
-export const strTransf = { decodeUtf8, encodeUtf8 };
-export { numTransf };
+export * from "./string.js";
+export * from "./number.js";
+export * from "./typed_array_tool.js";
