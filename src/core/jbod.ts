@@ -1,5 +1,4 @@
 import { DataType, IterableDataType, UnsupportedDataTypeError } from "../const.js";
-import { VOID } from "./internal_type.js";
 import { JbodAsyncParser } from "./data_trans/async_parser.js";
 import { JbodParser } from "./data_trans/parser.js";
 import { JbodWriter, JbodLengthCalc, isNoContentData, toType } from "./data_trans/writer.js";
@@ -26,8 +25,7 @@ export default {
       type = buffer[0];
       offset = 1;
     }
-    if (typeof asyncParser[type] !== "function") throw new UnsupportedDataTypeError(DataType[type] ?? type);
-    return syncParser[type](buffer, offset) as { data: T; offset: number };
+    return syncParser.paseItem(type, buffer, offset);
   },
   /**
    * @public
@@ -36,9 +34,7 @@ export default {
    */
   parseAsync: async function paseJbodAsync<T = unknown>(read: StreamReader, type?: DataType): Promise<T> {
     if (!type) type = (await read(1))[0];
-    if (type === DataType.void) return VOID as any;
-    if (typeof asyncParser[type] !== "function") throw new UnsupportedDataTypeError(DataType[type] ?? type);
-    return asyncParser[type](read);
+    return asyncParser.paseItem(type, read);
   },
   scanAsync: async function* scanJbodAsync(
     read: StreamReader,
@@ -117,15 +113,12 @@ async function genIteratorItem(read: StreamReader, type: DataType, key: any): Pr
       value = scanMap(read);
       break;
     default: {
-      if (typeof asyncParser[type] !== "function") throw new UnsupportedDataTypeError(DataType[type] ?? type);
-      else {
-        return {
-          key,
-          isIterator: false,
-          dataType: type,
-          value: await asyncParser[type](read),
-        };
-      }
+      return {
+        key,
+        isIterator: false,
+        dataType: type,
+        value: await asyncParser.paseItem(type, read),
+      };
     }
   }
   return { dataType: type, key, value, isIterator: true } as JbodAsyncIteratorItem;

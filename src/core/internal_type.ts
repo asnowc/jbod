@@ -18,7 +18,3 @@ export class ObjectId {
     return this.#value.toString();
   }
 }
-/**
- * @remarks 代表void值，用于写入或响应 array 或 map 的结束标志
- */
-export const VOID = Symbol("void");

@@ -1,25 +1,34 @@
-import { bench } from "vitest";
+import { bench, describe } from "vitest";
 import JBOD from "jbod";
-import { createList, linerList } from "../__mocks__/care_jbod_data.js";
+import { createList, createMap } from "../__mocks__/care_jbod_data.js";
 import before from "@jbod-before";
 import { lineSuite } from "@eavid/vitest-tool";
+import { cases } from "../__mocks__/compare.cases.js";
 const B_JBOD: typeof JBOD = before as any;
 
-const value = null;
-const samples = linerList(5, 500, 500).map((num) => ({
-  num,
-  data: JBOD.binaryify(createList(num, value)),
-}));
 lineSuite(
-  "pase",
-  samples,
-  function ({ data }) {
+  "parse",
+  cases,
+  function ({ size, value }) {
+    const listData = JBOD.binaryify(createList(size, value));
     bench("Current", function () {
-      JBOD.parse(data);
+      JBOD.parse(listData);
     });
     bench("Before", function () {
-      B_JBOD.parse(data);
+      B_JBOD.parse(listData);
     });
   },
-  (item) => String(item.num)
+  (item) => item.name
 );
+
+const value = "中文";
+const k = 6;
+const data = JBOD.binaryify(createMap(k, value, 6));
+describe("parse tree - " + (k ** 7 - 1) / (k - 1), function () {
+  bench("Current", function () {
+    JBOD.parse(data);
+  });
+  bench("Before", function () {
+    B_JBOD.parse(data);
+  });
+});
