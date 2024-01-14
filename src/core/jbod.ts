@@ -12,18 +12,6 @@ const asyncParser = new JbodAsyncParser();
 const writer = new JbodWriter();
 const lengthCalc = new JbodLengthCalc();
 
-async function* scanJbodAsync(
-  read: StreamReader,
-  type?: IterableDataType
-): AsyncGenerator<JbodAsyncIteratorItem, void, void> {
-  if (type === undefined) type = (await read(1))[0];
-
-  if (type === DataType.array || type === DataType.set) return yield* scanList(read);
-  else if (type === DataType.object) return yield* scanObject(read);
-  else if (type === DataType.map) return yield* scanMap(read);
-  throw new UnsupportedDataTypeError(DataType[type] ?? type);
-}
-
 export { type JbodAsyncIteratorItem };
 export default {
   /**
@@ -33,13 +21,13 @@ export default {
    */
   parse: function paseJbod<T = unknown>(buffer: Uint8Array, type?: DataType): { data: T; offset: number } {
     if (!(buffer instanceof Uint8Array)) throw new Error("The parameter must be of Uint8Array type");
-    let res;
-    if (type === undefined) res = syncParser.readItem(buffer, 0);
-    else res = syncParser[type](buffer, 0);
-    return {
-      data: res[0],
-      offset: res[1],
-    };
+    let offset = 0;
+    if (type === undefined) {
+      type = buffer[0];
+      offset = 1;
+    }
+    if (typeof asyncParser[type] !== "function") throw new UnsupportedDataTypeError(DataType[type] ?? type);
+    return syncParser[type](buffer, offset) as { data: T; offset: number };
   },
   /**
    * @public
@@ -52,7 +40,25 @@ export default {
     if (typeof asyncParser[type] !== "function") throw new UnsupportedDataTypeError(DataType[type] ?? type);
     return asyncParser[type](read);
   },
-  scanAsync: scanJbodAsync,
+  scanAsync: async function* scanJbodAsync(
+    read: StreamReader,
+    type?: IterableDataType
+  ): AsyncGenerator<JbodAsyncIteratorItem, void, void> {
+    if (type === undefined) type = (await read(1))[0];
+
+    switch (type) {
+      case DataType.array:
+        return yield* scanList(read);
+      case DataType.set:
+        return yield* scanList(read);
+      case DataType.object:
+        return yield* scanObject(read);
+      case DataType.map:
+        return yield* scanMap(read);
+      default:
+        throw new UnsupportedDataTypeError(DataType[type] ?? type);
+    }
+  },
   /**
    *
    * @public

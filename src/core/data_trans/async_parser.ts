@@ -6,12 +6,6 @@ type StreamReader = (size: number) => Promise<Uint8Array>;
 type AsyncParser = (read: StreamReader) => Promise<unknown>;
 
 export class JbodAsyncParser implements Record<DataType, AsyncParser> {
-  /** 如果读取到 void类型, 则返回VOID */
-  async readItem(read: StreamReader) {
-    const type = (await read(1))[0] as DataType;
-    if (typeof this[type] !== "function") throw new UnsupportedDataTypeError(DataType[type] ?? type);
-    return this[type](read);
-  }
   async [DataType.function]() {
     throw new UnsupportedDataTypeError("function");
   }
@@ -59,9 +53,10 @@ export class JbodAsyncParser implements Record<DataType, AsyncParser> {
     return decodeUtf8(buf);
   }
   async [DataType.symbol](read: StreamReader): Promise<Symbol> {
-    const data = await this.readItem(read);
-    if (data === VOID) return Symbol();
-    else return Symbol(data as string);
+    const type = (await read(1))[0];
+    if (type === DataType.void) return Symbol();
+    const data = await this[DataType.string](read);
+    return Symbol(data);
   }
   async [DataType.regExp](read: StreamReader) {
     const str = await this[DataType.string](read);
@@ -70,8 +65,11 @@ export class JbodAsyncParser implements Record<DataType, AsyncParser> {
   async [DataType.array](read: StreamReader) {
     let arrayList: unknown[] = [];
     while (true) {
-      let value = await this.readItem(read);
-      if (value === VOID) break;
+      const type = (await read(1))[0];
+      if (type === DataType.void) break;
+
+      if (typeof this[type] !== "function") throw new UnsupportedDataTypeError(DataType[type] ?? type);
+      let value = await this[type](read);
       arrayList.push(value);
     }
     return arrayList;
