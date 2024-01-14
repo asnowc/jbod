@@ -1,0 +1,8 @@
+{
+  "imports": {
+    "echarts": "https://esm.sh/echarts@5?bundle",
+    "echarts-comp": "https://esm.sh/echarts-comp@0.0.2?external=echarts",
+    "react": "https://esm.sh/react@18.2.0",
+    "react-dom/": "https://esm.sh/react-dom@18.2.0/"
+  }
+}

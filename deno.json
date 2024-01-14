@@ -2,6 +2,9 @@
   "nodeModulesDir": false,
   "lock": false,
   "tasks": {
-    "previous_version": "deno run -A scripts/previous_version.ts"
-  }
+    "previous_version": "deno run -A scripts/previous_version.ts",
+    "version_snapshots": "deno run -A scripts/version_snapshots.ts",
+    "bench_ui": "deno run -A scripts/start_ui.ts"
+  },
+  "importMap": "./scripts/bench_ui/import_map.json"
 }

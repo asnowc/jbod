@@ -5,7 +5,7 @@ import { lineSuite } from "@eavid/vitest-tool";
 import { cases } from "./__mocks__/compare.cases.js";
 
 lineSuite(
-  "Encode Array",
+  "JBOD.binaryify:JSON.stringify (Array)",
   cases,
   function ({ size, value }) {
     const listData = createList(size, value);
@@ -19,7 +19,7 @@ lineSuite(
   (item) => item.name
 );
 lineSuite(
-  "Encode Map",
+  "JBOD.binaryify:JSON.stringify (Object)",
   cases,
   function ({ size, value }) {
     const mapData = createMap(size, value);

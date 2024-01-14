@@ -11,7 +11,7 @@ function toStr(data: any) {
   };
 }
 lineSuite(
-  "Decode Array",
+  "JBOD.parse:JSON.parse (Array)",
   cases,
   function ({ size, value }) {
     const data = toStr(createList(size, value));
@@ -25,7 +25,7 @@ lineSuite(
   (item) => item.name
 );
 lineSuite(
-  "Decode Map",
+  "JBOD.parse:JSON.parse (Object)",
   cases,
   function ({ size, value }) {
     const { jbodData, jsonStr } = toStr(createMap(size, value));
