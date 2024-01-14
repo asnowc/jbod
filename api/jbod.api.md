@@ -86,7 +86,7 @@ export class UnsupportedDataTypeError extends Error {
 
 // Warnings were encountered during analysis:
 //
-// src/core/jbod.ts:37:3 - (ae-forgotten-export) The symbol "StreamReader_2" needs to be exported by the entry point mod.d.ts
+// src/core/jbod.ts:35:3 - (ae-forgotten-export) The symbol "StreamReader_2" needs to be exported by the entry point mod.d.ts
 
 // (No @packageDocumentation comment for this package)
 
