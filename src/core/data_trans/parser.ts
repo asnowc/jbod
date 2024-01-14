@@ -114,7 +114,7 @@ export class JbodParser implements Record<DataType, Parser> {
   }
   [DataType.set](buf: Uint8Array, offset: number): [Set<unknown>, number] {
     const arr = this[DataType.array](buf, offset);
-    return [new Set(arr), arr[1]];
+    return [new Set(arr[0]), arr[1]];
   }
   [DataType.map](buf: Uint8Array, offset: number): [Map<unknown, unknown>, number] {
     const [arr, len] = this[DataType.array](buf, offset);

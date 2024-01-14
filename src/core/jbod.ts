@@ -1,14 +1,9 @@
-import { DataType, UnsupportedDataTypeError } from "../const.js";
+import { DataType, IterableDataType, UnsupportedDataTypeError } from "../const.js";
 import { VOID } from "./internal_type.js";
 import { JbodAsyncParser } from "./data_trans/async_parser.js";
 import { JbodParser } from "./data_trans/parser.js";
 import { JbodWriter, JbodLengthCalc, isNoContentData, toType } from "./data_trans/writer.js";
-import type {
-  JbodAsyncIteratorArrayItem,
-  JbodAsyncIteratorItem,
-  JbodAsyncIteratorValue,
-  JbodIteratorItem,
-} from "./type.js";
+import type { JbodAsyncIteratorArrayItem, JbodAsyncIteratorItem, JbodAsyncIteratorValue } from "./type.js";
 
 type StreamReader = (size: number) => Promise<Uint8Array>;
 
@@ -17,25 +12,16 @@ const asyncParser = new JbodAsyncParser();
 const writer = new JbodWriter();
 const lengthCalc = new JbodLengthCalc();
 
-/**
- * @public
- * @remarks 使用迭代器迭代读取数据项
- */
-function scanJbodAsync<R = unknown>(
-  read: StreamReader,
-  type?: DataType
-): AsyncGenerator<JbodAsyncIteratorItem, R, void>;
 async function* scanJbodAsync(
   read: StreamReader,
-  type?: DataType
-): AsyncGenerator<JbodAsyncIteratorItem, unknown, void> {
+  type?: IterableDataType
+): AsyncGenerator<JbodAsyncIteratorItem, void, void> {
   if (type === undefined) type = (await read(1))[0];
-  if (type === DataType.void) return VOID;
 
-  if (type === DataType.array) return yield* scanArray(read);
-  else if (type === DataType.object) return yield* scanMap(read);
-  else if (typeof asyncParser[type] !== "function") throw new UnsupportedDataTypeError(DataType[type] ?? type);
-  else return asyncParser[type](read);
+  if (type === DataType.array || type === DataType.set) return yield* scanList(read);
+  else if (type === DataType.object) return yield* scanObject(read);
+  else if (type === DataType.map) return yield* scanMap(read);
+  throw new UnsupportedDataTypeError(DataType[type] ?? type);
 }
 
 export { type JbodAsyncIteratorItem };
@@ -109,44 +95,59 @@ export default {
   },
 };
 
-async function genIteratorItem(read: StreamReader, type: DataType, key: string | number): Promise<JbodIteratorItem> {
-  let value: unknown;
-  let isIterator = true;
-  if (type === DataType.array) value = scanArray(read);
-  else if (type === DataType.object) value = scanMap(read);
-  else if (typeof asyncParser[type] !== "function") throw new UnsupportedDataTypeError(DataType[type] ?? type);
-  else {
-    value = await asyncParser[type](read);
-    isIterator = false;
+async function genIteratorItem(read: StreamReader, type: DataType, key: any): Promise<JbodAsyncIteratorItem> {
+  let value: any;
+  switch (type) {
+    case DataType.array:
+      value = scanList(read);
+      break;
+    case DataType.set:
+      value = scanList(read);
+      break;
+    case DataType.object:
+      value = scanObject(read);
+      break;
+    case DataType.map:
+      value = scanMap(read);
+      break;
+    default: {
+      if (typeof asyncParser[type] !== "function") throw new UnsupportedDataTypeError(DataType[type] ?? type);
+      else {
+        return {
+          key,
+          isIterator: false,
+          dataType: type,
+          value: await asyncParser[type](read),
+        };
+      }
+    }
   }
-  return { dataType: type, key, value, isIterator } as JbodIteratorItem;
+  return { dataType: type, key, value, isIterator: true } as JbodAsyncIteratorItem;
 }
-async function* scanArray(read: StreamReader): JbodAsyncIteratorArrayItem["value"] {
-  const arr: unknown[] = [];
+async function* scanList(read: StreamReader): JbodAsyncIteratorArrayItem["value"] {
   let key = 0;
   do {
     const type = (await read(1))[0];
     if (type === DataType.void) break;
-    const item = await genIteratorItem(read, type, key);
-    const value = item.value;
-    yield item;
-    arr[key++] = value;
+    yield genIteratorItem(read, type, key++);
   } while (true);
-
-  return arr;
 }
-async function* scanMap(read: StreamReader): JbodAsyncIteratorValue["value"] {
-  const map: Record<string, unknown> = {};
+async function* scanObject(read: StreamReader): JbodAsyncIteratorValue["value"] {
   let key: string;
   do {
     const type = (await read(1))[0];
     if (type === DataType.void) break;
     key = (await asyncParser[DataType.string](read)) as string;
-    const item = await genIteratorItem(read, type, key);
-    let value = item.value;
-    yield item;
-    map[key] = value;
+    yield genIteratorItem(read, type, key);
   } while (true);
+}
+async function* scanMap(read: StreamReader): JbodAsyncIteratorValue["value"] {
+  do {
+    const keyType = (await read(1))[0];
+    if (keyType === DataType.void) break;
+    const key = await asyncParser[keyType](read); //todo: 异常处理
+    const type = (await read(1))[0];
 
-  return map as any;
+    yield genIteratorItem(read, type, key);
+  } while (true);
 }

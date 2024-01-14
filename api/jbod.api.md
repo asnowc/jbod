@@ -65,12 +65,15 @@ const _default: {
 };
 export default _default;
 
-// Warning: (ae-forgotten-export) The symbol "JbodAsyncIteratorBasicItem" needs to be exported by the entry point mod.d.ts
+// @public (undocumented)
+export type IterableDataType = DataType.array | DataType.object | DataType.set | DataType.map;
+
+// Warning: (ae-forgotten-export) The symbol "JbodIteratorBasicItem" needs to be exported by the entry point mod.d.ts
 // Warning: (ae-forgotten-export) The symbol "JbodAsyncIteratorArrayItem" needs to be exported by the entry point mod.d.ts
 // Warning: (ae-forgotten-export) The symbol "JbodAsyncIteratorValue" needs to be exported by the entry point mod.d.ts
 //
 // @public (undocumented)
-export type JbodAsyncIteratorItem = JbodAsyncIteratorBasicItem | JbodAsyncIteratorArrayItem | JbodAsyncIteratorValue;
+export type JbodAsyncIteratorItem = JbodIteratorBasicItem | JbodAsyncIteratorArrayItem | JbodAsyncIteratorValue;
 
 // @public (undocumented)
 export class JbodError extends Error {
@@ -83,8 +86,8 @@ export class UnsupportedDataTypeError extends Error {
 
 // Warnings were encountered during analysis:
 //
-// src/core/jbod.ts:63:3 - (ae-forgotten-export) The symbol "StreamReader_2" needs to be exported by the entry point mod.d.ts
-// src/core/jbod.ts:64:29 - (ae-forgotten-export) The symbol "scanJbodAsync" needs to be exported by the entry point mod.d.ts
+// src/core/jbod.ts:49:3 - (ae-forgotten-export) The symbol "StreamReader_2" needs to be exported by the entry point mod.d.ts
+// src/core/jbod.ts:50:29 - (ae-forgotten-export) The symbol "scanJbodAsync" needs to be exported by the entry point mod.d.ts
 
 // (No @packageDocumentation comment for this package)
 

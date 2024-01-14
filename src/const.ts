@@ -30,7 +30,8 @@ export enum DataType {
   map = 17,
   set = 18,
 }
-
+/** @public */
+export type IterableDataType = DataType.array | DataType.object | DataType.set | DataType.map;
 /**
  * @public
  * @remarks 当读取到一个未知类型的错误

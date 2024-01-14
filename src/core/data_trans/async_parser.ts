@@ -110,7 +110,7 @@ export class JbodAsyncParser implements Record<DataType, AsyncParser> {
     for (let i = 0; i < arr.length; i += 2) {
       map.set(arr[i], arr[i + 1]);
     }
-    return new Set(arr);
+    return map;
   }
   [key: number]: AsyncParser;
 }

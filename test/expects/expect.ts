@@ -4,13 +4,15 @@ import { JbodError } from "jbod";
 
 interface CustomMatchers<R = unknown> {
   isJbodSymbol(num: number): R;
-  isJbodMap(val: Object): R;
+  isJbodObject(val: Object): R;
   isJbodArray(val: any[]): R;
   isJbodRegExp(val: RegExp): R;
   isJbodArrayBuffer(val: ArrayBuffer): R;
   isJbodError(val: Error): R;
   /** 断言是由原始值转换而来 */
   jbodEqual(val: any): R;
+  isJbodSet(val: Set<any>): R;
+  isJbodMap(val: Map<any, any>): R;
 }
 
 declare module "vitest" {
@@ -86,7 +88,7 @@ expect.extend({
       pass: true,
     };
   },
-  isJbodMap(received, expected: Object) {
+  isJbodObject(received, expected: Object) {
     const redundantKeys = new Set(Object.keys(received));
     const items = Object.entries(expected);
     const notEqIndex: Record<string, any> = {};
@@ -123,6 +125,22 @@ expect.extend({
       pass: Object.keys(notEqIndex).length === 0,
     };
   },
+  isJbodSet(received, expected: Set<any>) {
+    expect(received).toBeInstanceOf(Set);
+    expect(Array.from(received)).isJbodArray(Array.from(expected));
+    return {
+      message: () => "",
+      pass: true,
+    };
+  },
+  isJbodMap(received: Map<any, any>, expected: Map<any, any>) {
+    expect(received).toBeInstanceOf(Map);
+    expect(Array.from(received.entries()).flat()).isJbodArray(Array.from(expected).flat());
+    return {
+      message: () => "",
+      pass: true,
+    };
+  },
 });
 interface SyncExpectationResult {
   pass: boolean;
@@ -155,8 +173,12 @@ function jbodEqual(received: any, expected: any) {
         expect(received).isJbodArrayBuffer(expected);
       } else if (expected instanceof Array) {
         expect(received).isJbodArray(expected);
-      } else {
+      } else if (expected instanceof Set) {
+        expect(received).isJbodSet(expected);
+      } else if (expected instanceof Map) {
         expect(received).isJbodMap(expected);
+      } else {
+        expect(received).isJbodObject(expected);
       }
     } else if (expType === "symbol") {
       expect(received).isJbodSymbol(expected);

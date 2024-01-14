@@ -1,4 +1,4 @@
-import JBOD, { DataType, JbodAsyncIteratorItem, UnsupportedDataTypeError, JbodError } from "jbod";
+import JBOD, { DataType, JbodAsyncIteratorItem, UnsupportedDataTypeError, JbodError, IterableDataType } from "jbod";
 import { baseDataTypes, unsupportedData } from "./__mocks__/data_type.cases.js";
 import "./expects/expect.js";
 import { describe, expect, test } from "vitest";
@@ -48,16 +48,24 @@ describe("parseAsync", function () {
   });
 });
 describe("scanAsync", function () {
-  describe.each(Object.entries(baseDataTypes))("%s", async function (type, cases) {
-    test.each(cases as any[])("%s", async function (data) {
-      const reader = createFixedStreamReader(JBOD.binaryify(data));
-      const expectPath = createIteratorPath(data, []);
-      const expectKeyPath = expectPath.map((item) => item.key);
+  const iterableDataType = [
+    { data: baseDataTypes.array, type: "array" },
+    { data: baseDataTypes.set, type: "set" },
+    { data: baseDataTypes.map, type: "map" },
+    { data: baseDataTypes.object, type: "object" },
+  ];
+  describe.each(iterableDataType)("$type", async function ({ data: cases, type }) {
+    cases.forEach((data) => {
+      test(JSON.stringify(data), async function () {
+        const reader = createFixedStreamReader(JBOD.binaryify(data));
+        const expectItems = createIteratorPath(data).value as Map<any, TestItrItem>;
+        const expectKeys = Array.from(expectItems.keys());
 
-      const array = await recordIteratorPath(JBOD.scanAsync(reader), []);
-      const actualKeyPath = array.map((item) => item.key);
-      expect(actualKeyPath).toEqual(expectKeyPath);
-      expect(array).toEqual(expectPath);
+        const map = await collectIterator(JBOD.scanAsync(reader));
+        const actualKeyPath = Array.from(map.keys());
+        expect(actualKeyPath).toEqual(expectKeys);
+        expect(map).toEqual(expectItems);
+      });
     });
   });
 });
@@ -73,77 +81,45 @@ function createFixedStreamReader(buffer: Uint8Array) {
     return buf;
   };
 }
-/** 记录迭代器路径数据 */
-async function recordIteratorPath(
-  iterable: AsyncIterable<JbodAsyncIteratorItem>,
-  path: IteratorPathItem[]
-): Promise<IteratorPathItem[]> {
-  const itr = iterable[Symbol.asyncIterator]();
-  let res = await itr.next();
-  while (!res.done) {
-    const item = res.value;
 
-    const mockValue = toMockValue(item.value);
-    if (item.isIterator) {
-      await recordIteratorPath(item.value, path);
-    } else {
-      path.push({
-        isEnd: false,
-        dataType: DataType[item.dataType],
-        key: item.key,
-        value: mockValue,
-      });
-    }
-
-    res = await itr.next();
-  }
-  path.push({ isEnd: true, dataType: DataType[JBOD.getType(res.value)] });
-
-  return path;
-}
-type IteratorPathItem =
-  | {
-      isEnd: false;
-      dataType: string;
-      key?: number | string;
-      value: any;
-    }
-  | {
-      isEnd: true;
-      key?: number | string;
-      dataType: string;
-    };
+type TestItrItem = {
+  dataType: number;
+  value: any;
+  isItr: boolean;
+};
 /** 生成迭代器路径数据 */
-function createIteratorPath(data: any, path: IteratorPathItem[], key?: string | number): IteratorPathItem[] {
-  const value = toMockValue(data);
-  if (value !== Null) {
-    if (key === undefined) path.push({ isEnd: true, dataType: DataType[JBOD.getType(data)] });
-    else path.push({ isEnd: false, dataType: DataType[JBOD.getType(data)], value, key });
-    return path;
+function createIteratorPath(data: any): TestItrItem {
+  if (typeof data !== "object" || data === null) {
+    return { dataType: JBOD.getType(data), isItr: false, value: data };
   }
-  if (data instanceof Array) {
-    for (let i = 0; i < data.length; i++) {
-      createIteratorPath(data[i], path, i);
+  const map = new Map<any, TestItrItem>();
+  if (data instanceof Array || data instanceof Set) {
+    let i = 0;
+    for (const item of data) {
+      map.set(i++, createIteratorPath(item));
     }
-    path.push({ isEnd: true, dataType: DataType[DataType.array] });
   } else {
-    for (const [key, value] of Object.entries(data)) {
-      createIteratorPath(value, path, key);
+    const itr = data instanceof Map ? data : Object.entries(data);
+    for (const [key, value] of itr) {
+      map.set(key, createIteratorPath(value));
     }
-    path.push({ isEnd: true, dataType: DataType[DataType.object] });
+  }
+
+  return {
+    dataType: JBOD.getType(data),
+    isItr: true,
+    value: map,
+  };
+}
+async function collectIterator(
+  data: AsyncGenerator<JbodAsyncIteratorItem, void, void>
+): Promise<Map<any, TestItrItem>> {
+  const path: Map<any, TestItrItem> = new Map();
+  for await (const item of data) {
+    let value;
+    if (!item.isIterator) value = item.value;
+    else value = await collectIterator(item.value);
+    path.set(item.key, { dataType: item.dataType, isItr: item.isIterator, value });
   }
   return path;
 }
-function toMockValue(data: any): any {
-  const type = typeof data;
-  if (type !== "object" || data === null) {
-    return type === "symbol" ? "symbol" : data;
-  }
-
-  if (data instanceof Error || data instanceof RegExp || data instanceof ArrayBuffer) {
-    let valueName = data instanceof Error ? JbodError.name : data.constructor.name;
-    return valueName;
-  }
-  return Null;
-}
-const Null = Symbol("null");
