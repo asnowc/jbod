@@ -35,21 +35,18 @@ export class JbodAsyncParser implements Record<DataType, AsyncParser> {
     return readDoubleBE(await read(8));
   }
 
-  async [DataType.objectId](read: StreamReader) {
+  async [DataType.id](read: StreamReader) {
     const data = await DBN.readBigInt(read);
     return new ObjectId(data);
   }
 
-  async [DataType.arrayBuffer](read: StreamReader): Promise<ArrayBuffer> {
-    const buffer = await this.uInt8Array(read);
-    if (buffer.byteLength === buffer.buffer.byteLength) return buffer.buffer;
-    const arrayBuffer = new ArrayBuffer(buffer.byteLength);
-    const view = new Uint8Array(arrayBuffer);
-    view.set(buffer);
-    return arrayBuffer;
+  async [DataType.uInt8Arr](read: StreamReader): Promise<Uint8Array> {
+    const len = await DBN.readNumber(read);
+    if (len <= 0) return new Uint8Array(0);
+    return read(len);
   }
   async [DataType.string](read: StreamReader): Promise<string> {
-    const buf = await this.uInt8Array(read);
+    const buf = await this[DataType.uInt8Arr](read);
     return decodeUtf8(buf);
   }
   async [DataType.symbol](read: StreamReader): Promise<Symbol> {
@@ -87,11 +84,7 @@ export class JbodAsyncParser implements Record<DataType, AsyncParser> {
 
     return map as any;
   }
-  private async uInt8Array(read: StreamReader): Promise<Uint8Array> {
-    const len = await DBN.readNumber(read);
-    if (len <= 0) return new Uint8Array(0);
-    return read(len);
-  }
+
   async [DataType.error](read: StreamReader) {
     const { message, cause, ...attr } = await this[DataType.object](read);
     const error = new JbodError(message, { cause });

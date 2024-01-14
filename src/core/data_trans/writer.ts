@@ -27,7 +27,7 @@ export function toType(data: any, safe?: boolean): number {
     case "object":
       if (data === null) return DataType.null;
       if (Array.isArray(data)) type = DataType.array;
-      else if (data instanceof ArrayBuffer) type = DataType.arrayBuffer;
+      else if (data instanceof Uint8Array) type = DataType.uInt8Arr;
       else if (data instanceof RegExp) type = DataType.regExp;
       else if (data instanceof Error) type = DataType.error;
       else if (data instanceof Set) type = DataType.set;
@@ -50,7 +50,7 @@ type CalcRes<T = any> = {
 
 type ArrayPreData = CalcRes[];
 type MapPreData = { keyLenData: Uint8Array; keyData: Uint8Array; value: CalcRes }[];
-type ArrayBufferPreData = { strData: Uint8Array; strLen: Uint8Array };
+type Uint8ArrPreData = { strData: Uint8Array; strLen: Uint8Array };
 export class JbodLengthCalc {
   calcArray(arr: any[], type: DataType): CalcRes<ArrayPreData> {
     let item: any;
@@ -82,17 +82,17 @@ export class JbodLengthCalc {
     }
     return { dataLen: totalLen, preData, baseType: DataType.object, type };
   }
-  calcArrayBuffer(data: Uint8Array, type: DataType): CalcRes<ArrayBufferPreData> {
+  calcUint8Arr(data: Uint8Array, type: DataType): CalcRes<Uint8ArrPreData> {
     const lenBuf = numberToDLD(data.byteLength); //todo: 优化计算
     return {
       dataLen: data.byteLength + lenBuf.byteLength,
-      baseType: DataType.arrayBuffer,
+      baseType: DataType.uInt8Arr,
       type,
       preData: { strData: data, strLen: lenBuf },
     };
   }
   calcStr(data: string, type: DataType) {
-    return this.calcArrayBuffer(encodeUtf8(data), type); //todo: 优化计算
+    return this.calcUint8Arr(encodeUtf8(data), type); //todo: 优化计算
   }
 
   calc(data: any): CalcRes {
@@ -105,8 +105,8 @@ export class JbodLengthCalc {
         return { dataLen: 8, preData: data, baseType: type, type };
       case DataType.double:
         return { dataLen: 8, preData: data, baseType: type, type };
-      case DataType.arrayBuffer:
-        return this.calcArrayBuffer(data, DataType.arrayBuffer);
+      case DataType.uInt8Arr:
+        return this.calcUint8Arr(data, DataType.uInt8Arr);
       case DataType.string:
         return this.calcStr(data as string, DataType.string);
       case DataType.regExp:
@@ -158,15 +158,15 @@ export class JbodWriter {
   [DataType.double](data: number, buf: Uint8Array) {
     writeDoubleBE(buf, data);
   }
-  [DataType.arrayBuffer](data: ArrayBufferPreData, buf: Uint8Array) {
+  [DataType.uInt8Arr](data: Uint8ArrPreData, buf: Uint8Array) {
     buf.set(data.strLen);
     buf.set(data.strData, data.strLen.byteLength);
   }
-  [DataType.symbol](data: undefined | ArrayBufferPreData, buf: Uint8Array) {
+  [DataType.symbol](data: undefined | Uint8ArrPreData, buf: Uint8Array) {
     if (data === undefined) buf[0] = DataType.void;
     else {
       buf[0] = DataType.string;
-      this[DataType.arrayBuffer](data, buf.subarray(1));
+      this[DataType.uInt8Arr](data, buf.subarray(1));
     }
   }
 

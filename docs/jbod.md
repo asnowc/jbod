@@ -4,24 +4,24 @@
 
 0000_xxxx :
 
-| DEC | BIN  | type        | content length                              |
-| --- | ---- | ----------- | ------------------------------------------- |
-| 0   | 0000 | void        | 0 (Represents termination in map and array) |
-| 1   | 0001 | null        | 0                                           |
-| 2   | 0010 | undefined   | 0                                           |
-| 3   | 0011 | true        | 0                                           |
-| 4   | 0100 | false       | 0                                           |
-| 5   | 0101 | int         | 4                                           |
-| 6   | 0110 | bigint      | 8                                           |
-| 7   | 0111 | double      | 8                                           |
-| 8   | 1000 | \*objectId  | dynamicLenData                              |
-| 9   | 1001 | arrayBuffer | contentLen(dynamicLenData) + content        |
-| 10  | 1010 | \*string    | arrayBuffer                                 |
-| 11  | 1011 | \*regExp    | string                                      |
-| 12  | 1100 | function    | string[]&string //暂未实现                  |
-| 13  | 1101 | array       | n                                           |
-| 14  | 1110 | object      | n                                           |
-| 15  | 1111 | \*symbol    |                                             |
+| DEC | BIN  | type       | content length                              |
+| --- | ---- | ---------- | ------------------------------------------- |
+| 0   | 0000 | void       | 0 (Represents termination in map and array) |
+| 1   | 0001 | null       | 0                                           |
+| 2   | 0010 | undefined  | 0                                           |
+| 3   | 0011 | true       | 0                                           |
+| 4   | 0100 | false      | 0                                           |
+| 5   | 0101 | int        | 4                                           |
+| 6   | 0110 | bigint     | 8                                           |
+| 7   | 0111 | double     | 8                                           |
+| 8   | 1000 | id         | DBN                                         |
+| 9   | 1001 | uInt8Arr   | contentLen(DBN) + content                   |
+| 10  | 1010 | \*string   | uInt8Arr                                    |
+| 11  | 1011 | \*regExp   | string                                      |
+| 12  | 1100 | \*function | string[]&string //未实现                    |
+| 13  | 1101 | array      | item, item, ..., void                       |
+| 14  | 1110 | object     | item, item, ..., void                       |
+| 15  | 1111 | \*symbol   |                                             |
 
 0001_xxxx:
 
@@ -44,6 +44,27 @@
 | 30  | 1110 |         |                               |
 | 31  | 1111 |         |                               |
 
+0010_xxxx:
+
+| DEC | BIN  | type             | content length |
+| --- | ---- | ---------------- | -------------- |
+| 16  | 0000 | \*Int8Array      | map            |
+| 17  | 0001 | \*Uint8Array     |                |
+| 18  | 0010 | \*Int16Array     |                |
+| 19  | 0011 | \*Uint16Array    |                |
+| 20  | 0100 | \*Int32Array     |                |
+| 21  | 0101 | \*Uint32Array    |                |
+| 22  | 0110 | \*Float32Array   |                |
+| 23  | 0111 | \*Float64Array   |                |
+| 24  | 1000 | \*BigInt64Array  |                |
+| 25  | 1001 | \*BigUint64Array |                |
+| 26  | 1010 |                  |                |
+| 27  | 1011 |                  |                |
+| 28  | 1100 |                  |                |
+| 29  | 1101 |                  |                |
+| 30  | 1110 |                  |                |
+| 31  | 1111 |                  |                |
+
 #### JBOD Array:
 
 ```
@@ -60,7 +81,7 @@
 
 ```
 
-#### dynamicLenData
+#### Dynamic Binary Number
 
 | byte | max               | real    | content                          |
 | ---- | ----------------- | ------- | -------------------------------- |
@@ -78,8 +99,8 @@
 number(47 bit): 0~512 TB - 1
 id(7 bytes): 0~65535 TB -1
 
-#### dynamicContent
+#### DBN Content
 
 ```
-<dynamicLenData> content
+<DBN> content
 ```

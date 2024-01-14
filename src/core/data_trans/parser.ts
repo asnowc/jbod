@@ -5,12 +5,6 @@ import { readInt32BE, readBigInt64BE, readDoubleBE, decodeUtf8 } from "../../uin
 type ParseResult<T = any> = { data: T; offset: number };
 type Parser = (buf: Uint8Array, offset: number) => ParseResult<any>;
 export class JbodParser implements Record<DataType, Parser> {
-  private uInt8Array(buf: Uint8Array, offset: number): [Uint8Array, number] {
-    const [lenDesc, len] = DBN.paseNumberSync(buf, offset);
-    if (lenDesc <= 0) return [new Uint8Array(0), offset + len];
-    offset += len;
-    return [buf.subarray(offset, lenDesc + offset), lenDesc + offset];
-  }
   [DataType.void](buf: Uint8Array, offset: number): ParseResult<Symbol> {
     return { data: VOID, offset };
   }
@@ -40,24 +34,21 @@ export class JbodParser implements Record<DataType, Parser> {
     return { data: readDoubleBE(buf, offset), offset: offset + 8 };
   }
 
-  [DataType.objectId](buf: Uint8Array, offset: number): ParseResult<ObjectId> {
+  [DataType.id](buf: Uint8Array, offset: number): ParseResult<ObjectId> {
     const [data, len] = DBN.paseBigIntSync(buf, offset);
     return { data: new ObjectId(data), offset: offset + len };
   }
 
-  [DataType.arrayBuffer](buf: Uint8Array, offset: number): ParseResult<ArrayBuffer> {
+  [DataType.uInt8Arr](buf: Uint8Array, offset: number): ParseResult<ArrayBuffer> {
     const [lenDesc, len] = DBN.paseNumberSync(buf, offset);
     offset += len;
     if (lenDesc <= 0) return { data: new ArrayBuffer(0), offset };
-    const arrayBuffer = new ArrayBuffer(lenDesc);
-    const view = new Uint8Array(arrayBuffer);
-    view.set(buf.subarray(offset, offset + lenDesc));
-
-    return { data: arrayBuffer, offset: offset + lenDesc };
+    return { data: buf.subarray(offset, offset + lenDesc), offset: offset + lenDesc };
   }
   [DataType.string](buf: Uint8Array, offset: number): ParseResult<string> {
-    const [buffer, newOffset] = this.uInt8Array(buf, offset);
-    return { data: decodeUtf8(buffer), offset: newOffset };
+    const res: ParseResult = this[DataType.uInt8Arr](buf, offset);
+    res.data = decodeUtf8(res.data);
+    return res;
   }
   [DataType.symbol](buf: Uint8Array, offset: number): ParseResult<Symbol> {
     const type = buf[offset++];

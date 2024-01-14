@@ -7,7 +7,7 @@ interface CustomMatchers<R = unknown> {
   isJbodObject(val: Object): R;
   isJbodArray(val: any[]): R;
   isJbodRegExp(val: RegExp): R;
-  isJbodArrayBuffer(val: ArrayBuffer): R;
+  isJbodUint8Arr(val: Uint8Array): R;
   isJbodError(val: Error): R;
   /** 断言是由原始值转换而来 */
   jbodEqual(val: any): R;
@@ -47,22 +47,22 @@ expect.extend({
     }
     return res;
   },
-  isJbodArrayBuffer(received, expected: ArrayBuffer) {
+  isJbodUint8Arr(received, expected: Uint8Array) {
     let msg = "";
     const res: SyncExpectationResult = {
       message: () => msg,
       pass: false,
     };
-    if (received instanceof ArrayBuffer) {
+    if (received instanceof Uint8Array) {
       const rec = Buffer.from(received).toString("hex");
       const exp = Buffer.from(expected).toString("hex");
       res.pass = rec === exp;
       res.actual = rec;
       res.expected = exp;
     } else {
-      msg = `${received} is not ArrayBuffer instance`;
+      msg = `${received} is not Uint8Array instance`;
       res.actual = type(received);
-      res.expected = "ArrayBuffer";
+      res.expected = "Uint8Array";
     }
     return res;
   },
@@ -169,8 +169,8 @@ function jbodEqual(received: any, expected: any) {
     if (expType === "object") {
       if (expected instanceof Error) {
         expect(received).isJbodError(expected);
-      } else if (expected instanceof ArrayBuffer) {
-        expect(received).isJbodArrayBuffer(expected);
+      } else if (expected instanceof Uint8Array) {
+        expect(received).isJbodUint8Arr(expected);
       } else if (expected instanceof Array) {
         expect(received).isJbodArray(expected);
       } else if (expected instanceof Set) {

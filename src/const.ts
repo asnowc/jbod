@@ -14,9 +14,9 @@ export enum DataType {
   double = 7,
 
   /** @internal 保留类型*/
-  objectId = 8,
+  id = 8,
 
-  arrayBuffer = 9,
+  uInt8Arr = 9,
   string = 10,
   regExp = 11,
   /** @internal 保留类型*/
