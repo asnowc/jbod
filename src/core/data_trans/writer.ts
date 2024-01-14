@@ -1,6 +1,13 @@
-import { numberToDLD } from "../dynamic_binary_number.js";
+import { calcNumByteLen, numberToDldInto } from "../dynamic_binary_number.js";
+
 import { DataType, UnsupportedDataTypeError } from "../../const.js";
-import { writeInt32BE, writeBigInt64BE, writeDoubleBE, encodeUtf8 } from "../../uint_array_util/mod.js";
+import {
+  writeInt32BE,
+  writeBigInt64BE,
+  writeDoubleBE,
+  calcUtf8Length,
+  encodeUtf8Into,
+} from "../../uint_array_util/mod.js";
 export function isNoContentData(type: number) {
   return type === DataType.true || type === DataType.false || type === DataType.null || type === DataType.undefined;
 }
@@ -49,8 +56,9 @@ type CalcRes<T = any> = {
 };
 
 type ArrayPreData = CalcRes[];
-type MapPreData = { keyLenData: Uint8Array; keyData: Uint8Array; value: CalcRes }[];
-type Uint8ArrPreData = { strData: Uint8Array; strLen: Uint8Array };
+type MapPreData = { key: string; keyDbnLen: number; keyLen: number; value: CalcRes }[];
+type Uint8ArrPreData = { uInt8Arr: Uint8Array; dbnLen: number; contentLen: number };
+type StrPreData = { str: string; dbnLen: number; contentLen: number };
 export class JbodLengthCalc {
   calcArray(arr: any[], type: DataType): CalcRes<ArrayPreData> {
     let item: any;
@@ -75,24 +83,33 @@ export class JbodLengthCalc {
       totalLen += 1 + key.dataLen + value.dataLen;
 
       preData.push({
-        keyData: key.preData.strData,
-        keyLenData: key.preData.strLen,
+        key: key.preData.str,
+        keyDbnLen: key.preData.dbnLen,
+        keyLen: key.preData.contentLen,
         value,
       });
     }
     return { dataLen: totalLen, preData, baseType: DataType.object, type };
   }
   calcUint8Arr(data: Uint8Array, type: DataType): CalcRes<Uint8ArrPreData> {
-    const lenBuf = numberToDLD(data.byteLength); //todo: 优化计算
+    const len = data.byteLength;
+    const dbnLen = calcNumByteLen(len);
     return {
-      dataLen: data.byteLength + lenBuf.byteLength,
+      dataLen: dbnLen + data.byteLength,
       baseType: DataType.uInt8Arr,
       type,
-      preData: { strData: data, strLen: lenBuf },
+      preData: { uInt8Arr: data, dbnLen, contentLen: len },
     };
   }
-  calcStr(data: string, type: DataType) {
-    return this.calcUint8Arr(encodeUtf8(data), type); //todo: 优化计算
+  calcStr(data: string, type: DataType): CalcRes<StrPreData> {
+    const len = calcUtf8Length(data);
+    const dbnLen = calcNumByteLen(len);
+    return {
+      dataLen: dbnLen + len,
+      baseType: DataType.string,
+      type,
+      preData: { str: data, dbnLen: dbnLen, contentLen: len },
+    };
   }
 
   calc(data: any): CalcRes {
@@ -159,14 +176,20 @@ export class JbodWriter {
     writeDoubleBE(buf, data);
   }
   [DataType.uInt8Arr](data: Uint8ArrPreData, buf: Uint8Array) {
-    buf.set(data.strLen);
-    buf.set(data.strData, data.strLen.byteLength);
+    let dbnLen = data.dbnLen;
+    numberToDldInto(dbnLen, buf.subarray(0, dbnLen));
+    buf.set(data.uInt8Arr, dbnLen);
   }
-  [DataType.symbol](data: undefined | Uint8ArrPreData, buf: Uint8Array) {
+  [DataType.string](data: StrPreData, buf: Uint8Array) {
+    let dbnLen = data.dbnLen;
+    numberToDldInto(data.contentLen, buf.subarray(0, dbnLen));
+    encodeUtf8Into(data.str, buf.subarray(dbnLen));
+  }
+  [DataType.symbol](data: undefined | StrPreData, buf: Uint8Array) {
     if (data === undefined) buf[0] = DataType.void;
     else {
       buf[0] = DataType.string;
-      this[DataType.uInt8Arr](data, buf.subarray(1));
+      this[DataType.string](data, buf.subarray(1));
     }
   }
 
@@ -186,14 +209,14 @@ export class JbodWriter {
   [DataType.object](map: MapPreData, buf: Uint8Array) {
     let offset = 0;
     for (let i = 0; i < map.length; i++) {
-      const { keyData, keyLenData, value } = map[i];
+      const { key, keyLen, value, keyDbnLen } = map[i];
       buf[offset++] = value.type;
 
       //key
-      buf.set(keyLenData, offset);
-      offset += keyLenData.byteLength;
-      buf.set(keyData, offset);
-      offset += keyData.byteLength;
+      numberToDldInto(keyLen, buf.subarray(offset, offset + keyDbnLen));
+      offset += keyDbnLen;
+      encodeUtf8Into(key, buf.subarray(offset, offset + keyLen));
+      offset += keyLen;
 
       if (!isNoContentData(value.type)) {
         this[value.baseType](value.preData, buf.subarray(offset, offset + value.dataLen));

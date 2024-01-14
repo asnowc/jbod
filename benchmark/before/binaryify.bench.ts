@@ -8,7 +8,7 @@ const B_JBOD: typeof JBOD = before as any;
 const value = 4;
 
 describe("binaryify", function () {
-  const data = createList(10000, value);
+  const data = createList(50000, value);
   bench("Current", function () {
     JBOD.binaryify(data);
   });
@@ -17,8 +17,9 @@ describe("binaryify", function () {
   });
 });
 
-const data = createMap(5, value, 6);
-describe("binaryify tree - " + (5 ** 7 - 1) / 4, function () {
+const k = 6;
+const data = createMap(k, value, 6);
+describe("binaryify tree - " + (k ** 7 - 1) / (k - 1), function () {
   bench("Current", function () {
     JBOD.binaryify(data);
   });

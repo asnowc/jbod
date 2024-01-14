@@ -101,7 +101,7 @@ class DyBinNumber {
  */
 export const DBN = new DyBinNumber();
 
-export function bigIntToDLD(value: bigint): Uint8Array {
+function bigIntToDLD(value: bigint): Uint8Array {
   if (value < 0x10000000) return numberToDLD(Number(value));
   else if (value >= 0x10000000_00000000) {
     let buf: Uint8Array = new Uint8Array(9);
@@ -139,8 +139,41 @@ export function bigIntToDLD(value: bigint): Uint8Array {
 
   return buf;
 }
-
-export function numberToDLD(value: int): Uint8Array {
+export function calcNumByteLen(value: int) {
+  if (value < 0x80) return 1;
+  else if (value < 0x4000) return 2;
+  else if (value < 0x200000) return 3;
+  else if (value < 0x10000000) return 4;
+  else throw new OverMaximumError(value);
+}
+export function numberToDldInto(value: int, buf: Uint8Array) {
+  switch (buf.byteLength) {
+    case 1:
+      buf[0] = value;
+      break;
+    case 2:
+      buf[1] = value;
+      value >>= 8;
+      buf[0] = value + 0x80;
+      break;
+    case 3:
+      buf[2] = value;
+      value >>= 8;
+      buf[1] = value;
+      value >>= 8;
+      break;
+    default:
+      buf[3] = value;
+      value >>= 8;
+      buf[2] = value;
+      value >>= 8;
+      buf[1] = value;
+      value >>= 8;
+      buf[0] = 0b11100000 + value;
+      break;
+  }
+}
+function numberToDLD(value: int): Uint8Array {
   let buf: Uint8Array;
   if (value < 0x80) {
     buf = new Uint8Array(1);
