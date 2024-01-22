@@ -39,10 +39,8 @@ export class JbodAsyncParser {
     return decodeUtf8(buf);
   }
   async [DataType.symbol](read: StreamReader): Promise<Symbol> {
-    const type = (await read(1))[0];
-    if (type === DataType.void) return Symbol();
-    const data = await this[DataType.string](read);
-    return Symbol(data);
+    const data = await this[DataType.array](read);
+    return Symbol(data[0] as any);
   }
   async [DataType.regExp](read: StreamReader) {
     const str = await this[DataType.string](read);

@@ -42,15 +42,9 @@ export class JbodParser {
     return res;
   }
   [DataType.symbol](buf: Uint8Array, offset: number): ParseResult<Symbol> {
-    const type = buf[offset++];
-    let value: Symbol;
-    if (type === DataType.void) value = Symbol();
-    else {
-      const res: ParseResult = this[DataType.string](buf, offset);
-      value = Symbol(res.data);
-      offset = res.offset;
-    }
-    return { data: value, offset };
+    const data = this[DataType.array](buf, offset) as ParseResult<any>;
+    data.data = Symbol(data.data[0]);
+    return data;
   }
   [DataType.regExp](buf: Uint8Array, offset: number): ParseResult<RegExp> {
     const res: ParseResult = this[DataType.string](buf, offset);

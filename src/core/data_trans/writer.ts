@@ -56,7 +56,7 @@ type CalcRes<T = any> = {
 };
 
 type ArrayPreData = CalcRes[];
-type MapPreData = { key: string; keyDbnLen: number; keyLen: number; value: CalcRes }[];
+type MapPreData = { key: StrPreData; value: CalcRes }[];
 type Uint8ArrPreData = { uInt8Arr: Uint8Array; dbnLen: number; contentLen: number };
 type StrPreData = { str: string; dbnLen: number; contentLen: number };
 export class JbodLengthCalc {
@@ -83,9 +83,7 @@ export class JbodLengthCalc {
       totalLen += 1 + key.dataLen + value.dataLen;
 
       preData.push({
-        key: key.preData.str,
-        keyDbnLen: key.preData.dbnLen,
-        keyLen: key.preData.contentLen,
+        key: key.preData,
         value,
       });
     }
@@ -128,14 +126,8 @@ export class JbodLengthCalc {
         return this.calcStr(data as string, DataType.string);
       case DataType.regExp:
         return this.calcStr((data as RegExp).source, DataType.regExp);
-      case DataType.symbol: {
-        let desc = (data as Symbol).description;
-        if (desc === undefined) return { baseType: DataType.symbol, preData: desc, dataLen: 1, type: DataType.symbol };
-        const res = this.calcStr(desc, DataType.symbol);
-        res.dataLen++;
-        res.baseType = DataType.symbol;
-        return res;
-      }
+      case DataType.symbol:
+        return this.calcArray([(data as Symbol).description], DataType.symbol);
       case DataType.array:
         return this.calcArray(data, DataType.array);
       case DataType.object:
@@ -168,65 +160,52 @@ export class JbodLengthCalc {
 export class JbodWriter {
   [DataType.int](data: number, buf: Uint8Array) {
     writeInt32BE(buf, data);
+    return buf.subarray(4);
   }
   [DataType.bigint](data: bigint, buf: Uint8Array) {
     writeBigInt64BE(buf, data);
+    return buf.subarray(8);
   }
   [DataType.double](data: number, buf: Uint8Array) {
     writeDoubleBE(buf, data);
+    return buf.subarray(8);
   }
   [DataType.uInt8Arr](data: Uint8ArrPreData, buf: Uint8Array) {
-    let dbnLen = data.dbnLen;
-    numberToDldInto(dbnLen, buf.subarray(0, dbnLen));
-    buf.set(data.uInt8Arr, dbnLen);
+    numberToDldInto(data.contentLen, buf.subarray(0, data.dbnLen));
+    buf.set(data.uInt8Arr, data.dbnLen);
+    return buf.subarray(data.dbnLen + data.uInt8Arr.byteLength);
   }
   [DataType.string](data: StrPreData, buf: Uint8Array) {
-    let dbnLen = data.dbnLen;
-    numberToDldInto(data.contentLen, buf.subarray(0, dbnLen));
-    encodeUtf8Into(data.str, buf.subarray(dbnLen));
+    numberToDldInto(data.contentLen, buf.subarray(0, data.dbnLen));
+    encodeUtf8Into(data.str, buf.subarray(data.dbnLen));
+    return buf.subarray(data.dbnLen + data.contentLen);
   }
-  [DataType.symbol](data: undefined | StrPreData, buf: Uint8Array) {
-    if (data === undefined) buf[0] = DataType.void;
-    else {
-      buf[0] = DataType.string;
-      this[DataType.string](data, buf.subarray(1));
+  private writeItem(value: CalcRes<any>, buf: Uint8Array) {
+    if (!isNoContentData(value.type)) {
+      return this[value.baseType](value.preData, buf);
     }
+    return buf;
   }
-
   [DataType.array](array: ArrayPreData, buf: Uint8Array) {
-    let offset = 0;
     for (let i = 0; i < array.length; i++) {
-      const value = array[i];
-      buf[offset++] = value.type;
-
-      if (!isNoContentData(value.type)) {
-        this[value.baseType](value.preData, buf.subarray(offset, offset + value.dataLen));
-        offset += value.dataLen;
-      }
+      buf[0] = array[i].type;
+      buf = this.writeItem(array[i], buf.subarray(1));
     }
-    buf[offset++] = DataType.void;
+    buf[0] = DataType.void;
+    return buf.subarray(1);
   }
   [DataType.object](map: MapPreData, buf: Uint8Array) {
-    let offset = 0;
     for (let i = 0; i < map.length; i++) {
-      const { key, keyLen, value, keyDbnLen } = map[i];
-      buf[offset++] = value.type;
-
-      //key
-      numberToDldInto(keyLen, buf.subarray(offset, offset + keyDbnLen));
-      offset += keyDbnLen;
-      encodeUtf8Into(key, buf.subarray(offset, offset + keyLen));
-      offset += keyLen;
-
-      if (!isNoContentData(value.type)) {
-        this[value.baseType](value.preData, buf.subarray(offset, offset + value.dataLen));
-        offset += value.dataLen;
-      }
+      const { key, value } = map[i];
+      buf[0] = value.type;
+      buf = this[DataType.string](key, buf.subarray(1));
+      buf = this.writeItem(value, buf);
     }
-    buf[offset++] = DataType.void;
+    buf[0] = DataType.void;
+    return buf.subarray(1);
   }
 
   [key: number]: DataWriter;
 }
 
-type DataWriter = (data: any, buf: Uint8Array, ignoreVoid?: boolean) => void;
+type DataWriter = (data: any, buf: Uint8Array, ignoreVoid?: boolean) => Uint8Array;
