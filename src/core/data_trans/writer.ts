@@ -8,10 +8,12 @@ import {
   calcUtf8Length,
   encodeUtf8Into,
 } from "../../uint_array_util/mod.js";
-export function isNoContentData(type: number) {
-  return type === DataType.true || type === DataType.false || type === DataType.null || type === DataType.undefined;
+import { Serializer } from "../type.js";
+interface JbodSerializerConfig {
+  customType?: Record<number, { calc: Calc; bufTrans: BufTrans }>;
+  customObjetType: [object, number][];
 }
-export function toType(data: any, safe?: boolean): number {
+function toTypeCode(this: { toObjectCode(data: object): number }, data: any, safe?: boolean): number {
   let type: number;
   switch (typeof data) {
     case "undefined":
@@ -33,13 +35,9 @@ export function toType(data: any, safe?: boolean): number {
       break;
     case "object":
       if (data === null) return DataType.null;
-      if (Array.isArray(data)) type = DataType.array;
+      else if (data instanceof Array) type = DataType.array;
       else if (data instanceof Uint8Array) type = DataType.uInt8Arr;
-      else if (data instanceof RegExp) type = DataType.regExp;
-      else if (data instanceof Error) type = DataType.error;
-      else if (data instanceof Set) type = DataType.set;
-      else if (data instanceof Map) type = DataType.map;
-      else type = DataType.object;
+      else type = this.toObjectCode(data);
       break;
     default:
       if (safe) return DataType.undefined;
@@ -47,165 +45,218 @@ export function toType(data: any, safe?: boolean): number {
   }
   return type;
 }
+function toObjectCode(data: object): number {
+  let type: number;
+  if (data instanceof RegExp) type = DataType.regExp;
+  else if (data instanceof Error) type = DataType.error;
+  else if (data instanceof Set) type = DataType.set;
+  else if (data instanceof Map) type = DataType.map;
+  else type = DataType.object;
+  return type;
+}
 
-type CalcRes<T = any> = {
-  preData: T;
-  type: number;
-  baseType: number;
-  dataLen: number;
-};
-
-type ArrayPreData = CalcRes[];
-type MapPreData = { key: StrPreData; value: CalcRes }[];
-type Uint8ArrPreData = { uInt8Arr: Uint8Array; dbnLen: number; contentLen: number };
-type StrPreData = { str: string; dbnLen: number; contentLen: number };
-export class JbodLengthCalc {
-  calcArray(arr: any[], type: DataType): CalcRes<ArrayPreData> {
-    let item: any;
-    let preData: ArrayPreData = [];
-    let totalLen = 1; // void
-    let res: CalcRes;
-    for (let i = 0; i < arr.length; i++) {
-      item = arr[i];
-      res = this.calc(item);
-      totalLen += res.dataLen + 1;
-      preData.push(res);
-    }
-    return { dataLen: totalLen, preData, baseType: DataType.array, type };
-  }
-  calcMap(data: Record<string, any>, type: DataType): CalcRes<MapPreData> {
-    const map = Object.keys(data);
-    let preData: MapPreData = [];
-    let totalLen = 1; // void
-    for (let i = 0; i < map.length; i++) {
-      const key = this.calcStr(map[i], DataType.string);
-      const value = this.calc(data[map[i]]);
-      totalLen += 1 + key.dataLen + value.dataLen;
-
-      preData.push({
-        key: key.preData,
-        value,
-      });
-    }
-    return { dataLen: totalLen, preData, baseType: DataType.object, type };
-  }
-  calcUint8Arr(data: Uint8Array, type: DataType): CalcRes<Uint8ArrPreData> {
-    const len = data.byteLength;
-    const dbnLen = calcNumByteLen(len);
-    return {
-      dataLen: dbnLen + data.byteLength,
-      baseType: DataType.uInt8Arr,
-      type,
-      preData: { uInt8Arr: data, dbnLen, contentLen: len },
-    };
-  }
-  calcStr(data: string, type: DataType): CalcRes<StrPreData> {
-    const len = calcUtf8Length(data);
-    const dbnLen = calcNumByteLen(len);
-    return {
-      dataLen: dbnLen + len,
-      baseType: DataType.string,
-      type,
-      preData: { str: data, dbnLen: dbnLen, contentLen: len },
-    };
+class JbodSerializer implements Serializer<any, CalcRes> {
+  private serializer: BufTransTypeMap;
+  private calc: CalcTypeMap;
+  constructor(config?: JbodSerializerConfig) {
+    this.serializer = serializer;
+    this.toTypeCode = toTypeCode.bind({ toObjectCode });
+    this.calc = { ...calc, toTypeCode: this.toTypeCode };
   }
 
-  calc(data: any): CalcRes {
-    const type = toType(data);
-    if (isNoContentData(type)) return { preData: undefined, dataLen: 0, baseType: type, type };
-    switch (type) {
-      case DataType.int:
-        return { dataLen: 4, preData: data, baseType: type, type };
-      case DataType.bigint:
-        return { dataLen: 8, preData: data, baseType: type, type };
-      case DataType.double:
-        return { dataLen: 8, preData: data, baseType: type, type };
-      case DataType.uInt8Arr:
-        return this.calcUint8Arr(data, DataType.uInt8Arr);
-      case DataType.string:
-        return this.calcStr(data as string, DataType.string);
-      case DataType.regExp:
-        return this.calcStr((data as RegExp).source, DataType.regExp);
-      case DataType.symbol:
-        return this.calcArray([(data as Symbol).description], DataType.symbol);
-      case DataType.array:
-        return this.calcArray(data, DataType.array);
-      case DataType.object:
-        return this.calcMap(data, DataType.object);
-      case DataType.error: {
-        const error = data as Error;
-        const errorMap = { ...error, message: error.message, name: error.name };
-        if (error.cause) errorMap.cause = error.cause;
-        return this.calcMap(errorMap, DataType.error);
-      }
-      case DataType.map: {
-        const list: any[] = [];
-        let i = 0;
-        for (const item of data as Map<any, any>) {
-          list[i] = item[0];
-          list[i + 1] = item[1];
-          i += 2;
-        }
-        return this.calcArray(list, DataType.map);
-      }
-      case DataType.set:
-        return this.calcArray(Array.from(data), DataType.set);
+  binaryifyInto(value: CalcRes, buf: Uint8Array) {
+    return this.serializer[value.type](value.pretreatment, buf);
+  }
+  toTypeCode;
 
-      default:
-        throw new Error("???");
-    }
+  calcLen(data: any) {
+    const type = this.toTypeCode(data);
+    const res = this.calc[type](data);
+    res.type = type;
+    return res;
   }
 }
 
-export class JbodWriter {
+type CalcRes<T = any> = {
+  byteLength: number;
+  pretreatment: T;
+  type: number;
+};
+
+type ArrayPreData = CalcRes[];
+type MapPreData = { key: CalcRes<StrPreData>; value: CalcRes }[];
+type Uint8ArrPreData = { uInt8Arr: Uint8Array; dbnLen: number };
+type StrPreData = { str: string; dbnLen: number; contentLen: number };
+
+type Calc = (this: CalcTypeMap, data: any) => CalcRes;
+type CalcTypeMap = {
+  toTypeCode(data: any, safe?: boolean): number;
+  [key: number]: Calc;
+};
+
+const calc: CalcTypeMap = {
+  toTypeCode,
+  [DataType.uInt8Arr](data: Uint8Array): CalcRes<Uint8ArrPreData> {
+    const dbnLen = calcNumByteLen(data.byteLength);
+    return {
+      pretreatment: { uInt8Arr: data, dbnLen },
+      byteLength: dbnLen + data.byteLength,
+      type: DataType.uInt8Arr,
+    };
+  },
+  [DataType.string](data: string): CalcRes<StrPreData> {
+    const len = calcUtf8Length(data);
+    const dbnLen = calcNumByteLen(len);
+    return {
+      pretreatment: { str: data, dbnLen: dbnLen, contentLen: len },
+      byteLength: dbnLen + len,
+      type: DataType.string,
+    };
+  },
+
+  [DataType.array](arr: any[]): CalcRes<ArrayPreData> {
+    let item: any;
+    let preData: ArrayPreData = [];
+    let totalLen = 1; // void
+    let valueRes: CalcRes;
+
+    let itemType: number;
+    for (let i = 0; i < arr.length; i++) {
+      item = arr[i];
+
+      itemType = this.toTypeCode(item);
+      valueRes = this[itemType](item);
+      valueRes.type = itemType;
+
+      totalLen += valueRes.byteLength + 1;
+      preData.push(valueRes);
+    }
+
+    return { pretreatment: preData, byteLength: totalLen, type: DataType.array };
+  },
+  [DataType.object](data: Record<string, any>): CalcRes<MapPreData> {
+    const map = Object.keys(data);
+    let preData: MapPreData = [];
+    let totalLen = 1; // void
+
+    let item: any;
+    let keyRes: CalcRes;
+    let itemType: number;
+    let valueRes: CalcRes;
+
+    for (let i = 0; i < map.length; i++) {
+      item = data[map[i]];
+      keyRes = this[DataType.string](map[i]);
+
+      itemType = this.toTypeCode(item);
+      valueRes = this[itemType](item);
+      valueRes.type = itemType;
+
+      totalLen += 1 + keyRes.byteLength + valueRes.byteLength;
+
+      preData.push({
+        key: keyRes,
+        value: valueRes,
+      });
+    }
+    return { pretreatment: preData, byteLength: totalLen, type: DataType.object };
+  },
+
+  [DataType.map](data: Map<any, any>) {
+    const list: any[] = [];
+    let i = 0;
+    for (const item of data) {
+      list[i] = item[0];
+      list[i + 1] = item[1];
+      i += 2;
+    }
+    return this[DataType.array](list);
+  },
+  [DataType.set](data: Set<any>) {
+    return this[DataType.array](Array.from(data));
+  },
+  [DataType.error](error: Error) {
+    const errorMap = { ...error, message: error.message, name: error.name };
+    if (error.cause) errorMap.cause = error.cause;
+    return this[DataType.object](errorMap);
+  },
+  [DataType.symbol](data: symbol) {
+    return this[DataType.array]([data.description]);
+  },
+  [DataType.regExp](data: RegExp) {
+    return this[DataType.string](data.source);
+  },
+};
+calc[DataType.true] = () => ({ pretreatment: undefined, type: DataType.true, byteLength: 0 });
+calc[DataType.false] = () => ({ pretreatment: undefined, type: DataType.true, byteLength: 0 });
+calc[DataType.undefined] = () => ({ pretreatment: undefined, type: DataType.true, byteLength: 0 });
+calc[DataType.null] = () => ({ pretreatment: undefined, type: DataType.null, byteLength: 0 });
+
+calc[DataType.int] = (data) => ({ pretreatment: data, byteLength: 4, type: DataType.int });
+calc[DataType.bigint] = (data) => ({ pretreatment: data, byteLength: 8, type: DataType.bigint });
+calc[DataType.double] = (data) => ({ pretreatment: data, byteLength: 8, type: DataType.double });
+
+type BufTrans = (data: any, buf: Uint8Array) => Uint8Array;
+type BufTransTypeMap = Record<number, BufTrans>;
+const serializer: BufTransTypeMap = {
+  [DataType.undefined]: (data, buf) => buf,
   [DataType.int](data: number, buf: Uint8Array) {
     writeInt32BE(buf, data);
     return buf.subarray(4);
-  }
+  },
   [DataType.bigint](data: bigint, buf: Uint8Array) {
     writeBigInt64BE(buf, data);
     return buf.subarray(8);
-  }
+  },
   [DataType.double](data: number, buf: Uint8Array) {
     writeDoubleBE(buf, data);
     return buf.subarray(8);
-  }
+  },
   [DataType.uInt8Arr](data: Uint8ArrPreData, buf: Uint8Array) {
-    numberToDldInto(data.contentLen, buf.subarray(0, data.dbnLen));
+    numberToDldInto(data.uInt8Arr.byteLength, buf.subarray(0, data.dbnLen));
     buf.set(data.uInt8Arr, data.dbnLen);
     return buf.subarray(data.dbnLen + data.uInt8Arr.byteLength);
-  }
+  },
+
   [DataType.string](data: StrPreData, buf: Uint8Array) {
     numberToDldInto(data.contentLen, buf.subarray(0, data.dbnLen));
     encodeUtf8Into(data.str, buf.subarray(data.dbnLen));
     return buf.subarray(data.dbnLen + data.contentLen);
-  }
-  private writeItem(value: CalcRes<any>, buf: Uint8Array) {
-    if (!isNoContentData(value.type)) {
-      return this[value.baseType](value.preData, buf);
-    }
-    return buf;
-  }
+  },
+
   [DataType.array](array: ArrayPreData, buf: Uint8Array) {
     for (let i = 0; i < array.length; i++) {
       buf[0] = array[i].type;
-      buf = this.writeItem(array[i], buf.subarray(1));
+      buf = serializer[array[i].type](array[i].pretreatment, buf.subarray(1));
     }
     buf[0] = DataType.void;
     return buf.subarray(1);
-  }
+  },
   [DataType.object](map: MapPreData, buf: Uint8Array) {
+    let item: MapPreData[0];
     for (let i = 0; i < map.length; i++) {
-      const { key, value } = map[i];
-      buf[0] = value.type;
-      buf = this[DataType.string](key, buf.subarray(1));
-      buf = this.writeItem(value, buf);
+      item = map[i];
+      buf[0] = item.value.type;
+      buf = serializer[DataType.string](item.key.pretreatment, buf.subarray(1));
+      buf = serializer[item.value.type](item.value.pretreatment, buf);
     }
     buf[0] = DataType.void;
     return buf.subarray(1);
-  }
+  },
+};
+serializer[DataType.true] = serializer[DataType.undefined];
+serializer[DataType.false] = serializer[DataType.undefined];
+serializer[DataType.null] = serializer[DataType.undefined];
 
-  [key: number]: DataWriter;
-}
+serializer[DataType.error] = serializer[DataType.object];
+serializer[DataType.regExp] = serializer[DataType.string];
+serializer[DataType.set] = serializer[DataType.array];
+serializer[DataType.map] = serializer[DataType.array];
+serializer[DataType.symbol] = serializer[DataType.array];
 
-type DataWriter = (data: any, buf: Uint8Array, ignoreVoid?: boolean) => Uint8Array;
+export const defaultSerializer: JbodSerializer = new JbodSerializer();
+
+// 无内容
+// 固定长度
+// 动态固定长度
+// 动态不固定场

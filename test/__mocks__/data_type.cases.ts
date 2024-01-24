@@ -6,15 +6,13 @@ export const baseDataTypes = {
   arrayBuffer: [new ArrayBuffer(5), new ArrayBuffer(0)],
 
   object: [
+    {},
     { a: 1, b: 2, c: 3 },
     { a: false, b: [1, "a", null] },
     { a: false, b: { a: 9, b: null } },
     { a: 8, b: false, q: [1, 3, "a", null], c: { a: 9 } },
   ],
-  array: [
-    [1, 4, "2"],
-    [undefined, [1, 3, [8, 9], {}, 4]],
-  ],
+  array: [[], [1, 4, "2"], [undefined, [1, 3, [8, 9], {}, 4]]],
 
   string: ["abcd中文123", ""],
   set: [new Set([1, { a: null }, "xx"])],

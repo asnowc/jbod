@@ -33,3 +33,8 @@ export interface JbodIteratorMapValue<K = string> {
 export type JbodIteratorItem = JbodIteratorBasicItem | JbodIteratorArrayItem | JbodIteratorMapValue;
 /** @public */
 export type JbodAsyncIteratorItem = JbodIteratorBasicItem | JbodAsyncIteratorArrayItem | JbodAsyncIteratorValue;
+
+export interface Serializer<Q = any, T extends { byteLength: number } = { byteLength: number }> {
+  calcLen(data: Q): T;
+  binaryifyInto(calcRes: T, buf: Uint8Array): Uint8Array;
+}

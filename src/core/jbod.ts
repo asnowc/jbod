@@ -1,15 +1,13 @@
 import { DataType, IterableDataType, UnsupportedDataTypeError } from "../const.js";
 import { JbodAsyncParser } from "./data_trans/async_parser.js";
 import { JbodParser } from "./data_trans/parser.js";
-import { JbodWriter, JbodLengthCalc, isNoContentData, toType } from "./data_trans/writer.js";
+import { defaultSerializer } from "./data_trans/writer.js";
 import type { JbodAsyncIteratorArrayItem, JbodAsyncIteratorItem, JbodAsyncIteratorValue } from "./type.js";
 
 type StreamReader = (size: number) => Promise<Uint8Array>;
 
 const syncParser = new JbodParser();
 const asyncParser = new JbodAsyncParser();
-const writer = new JbodWriter();
-const lengthCalc = new JbodLengthCalc();
 
 export { type JbodAsyncIteratorItem };
 export default {
@@ -60,25 +58,16 @@ export default {
    * @public
    * @remarks 获取数据对应的类型 ID
    */
-  getType: function getJbodType(data: any) {
-    return toType(data);
-  },
+  getType: defaultSerializer.toTypeCode,
   /**
    * @public
    * @remarks 将数据转为带类型的的完整二进制数据
    */
   binaryify: function binaryifyJbod(data: any) {
-    const type = toType(data);
-    if (isNoContentData(type)) {
-      const buf = new Uint8Array(1);
-      buf[0] = type;
-      return buf;
-    }
-
-    let { baseType, dataLen, preData } = lengthCalc.calc(data);
-    const buf = new Uint8Array(1 + dataLen);
-    writer[baseType](preData, buf.subarray(1));
-
+    const type = defaultSerializer.toTypeCode(data);
+    let res = defaultSerializer.calcLen(data);
+    const buf = new Uint8Array(res.byteLength + 1);
+    defaultSerializer.binaryifyInto(res, buf.subarray(1));
     buf[0] = type;
     return buf;
   },
@@ -87,12 +76,9 @@ export default {
    * @remarks 将数据转为不带类型的二进制数据
    */
   binaryifyContent: function binaryifyJbodContent(data: any) {
-    const type = toType(data);
-    if (isNoContentData(type)) return new Uint8Array(0);
-
-    let { baseType, dataLen, preData } = lengthCalc.calc(data);
-    const buf = new Uint8Array(dataLen);
-    writer[baseType](preData, buf);
+    let res = defaultSerializer.calcLen(data);
+    const buf = new Uint8Array(res.byteLength);
+    defaultSerializer.binaryifyInto(res, buf);
     return buf;
   },
 };

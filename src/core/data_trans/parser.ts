@@ -54,8 +54,9 @@ export class JbodParser {
   [DataType.array](buf: Uint8Array, offset: number): ParseResult<any[]> {
     let arrayList: unknown[] = [];
     let res: ParseResult;
+    let type: number;
     while (offset < buf.byteLength) {
-      const type = buf[offset++];
+      type = buf[offset++];
       if (type === DataType.void) break;
       res = this.paseItem(type, buf, offset);
       offset = res.offset;
