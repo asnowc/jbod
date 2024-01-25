@@ -1,219 +1,147 @@
-import { readBigInt64BE, writeBigInt64BE, writeUint32BE, concatUint8Array } from "../uint_array_util/mod.js";
-
-/** 动态长度BigInt读取 */
-function readBigIntCore(desc: int, buf: Uint8Array): [bigint, int] {
-  let hi: number;
-  let offset: number;
-  if (desc > 0b111) {
-    offset = 1;
-    hi = buf[0] & 0b111;
-  } else if (desc > 0b11) {
-    offset = 2;
-    hi = ((buf[0] & 0b11) << 8) + buf[1];
-  } else if (desc > 0b1) {
-    offset = 3;
-    hi = ((buf[0] & 0b1) << 16) + (buf[1] << 8) + buf[2];
-  } else {
-    offset = 4;
-    hi = (buf[1] << 16) + (buf[2] << 8) + buf[3];
+/**
+ * @remarks 计算字无符号整型编码成DBN后的字节数
+ */
+export function calcU64DByte(value: u64) {
+  let len = 1;
+  while (value > 0b0111_1111) {
+    value >>= 7n;
+    len++;
   }
-  const len = 4 + offset;
-  const lo = buf[offset++] * 2 ** 24 + (buf[offset++] << 16) + (buf[offset++] << 8) + buf[offset];
-  return [(BigInt(hi) << 32n) + BigInt(lo), len];
-}
-
-class DyBinNumber {
-  readonly MAX_INT = Number.MAX_SAFE_INTEGER;
-  readonly MAX_BIGINT = 0xffffffffffffffn;
-
-  paseNumberSync(buf: Uint8Array, offset = 0): [int, int] {
-    if (offset > 0) buf = buf.subarray(offset);
-
-    const desc = 0xff - buf[0];
-    if (desc > 0b1111111) return [buf[0] & 0b1111111, 1];
-    else if (desc > 0b111111) return [((buf[0] & 0b111111) << 8) + buf[1], 2];
-    else if (desc > 0b11111) return [((buf[0] & 0b11111) << 16) + (buf[1] << 8) + buf[2], 3];
-    else if (desc > 0b1111) return [((buf[0] & 0b1111) << 24) + (buf[1] << 16) + (buf[2] << 8) + buf[3], 4];
-
-    const res = readBigIntCore(desc, buf);
-    if (res[0] > Number.MAX_SAFE_INTEGER) throw new Error("Integer over maximum");
-    return [Number(res[0]), res[1]];
-  }
-  paseBigIntSync(buf: Uint8Array, offset = 0): [bigint, int] {
-    if (buf[offset] === 0xff) return [readBigInt64BE(buf, offset), 9];
-
-    if (offset > 0) buf = buf.subarray(offset);
-    const desc = 0xff - buf[0];
-    if (desc > 0b1111111) return [BigInt(buf[0] & 0b1111111), 1];
-    else if (desc > 0b111111) return [BigInt(((buf[0] & 0b111111) << 8) + buf[1]), 2];
-    else if (desc > 0b11111) return [BigInt(((buf[0] & 0b11111) << 16) + (buf[1] << 8) + buf[2]), 3];
-    else if (desc > 0b1111) return [BigInt(((buf[0] & 0b1111) << 24) + (buf[1] << 16) + (buf[2] << 8) + buf[3]), 4];
-
-    return readBigIntCore(desc, buf);
-  }
-  async readBigInt(read: StreamReader, safe?: false): Promise<bigint>;
-  async readBigInt(read: StreamReader, safe?: boolean): Promise<bigint | undefined>;
-  async readBigInt(read: StreamReader, safe?: boolean) {
-    const head = await read(1, safe);
-    if (!head) return;
-    if (head[0] === 0xff) return readBigInt64BE(await read(8), 0);
-    const desc = 0xff - head[0];
-    if (desc > 0b111_1111) return BigInt(head[0] & 0b1111111);
-
-    let addLen: number;
-    if (desc > 0b11_1111) addLen = 1;
-    else if (desc > 0b1_1111) addLen = 2;
-    else if (desc > 0b1111) addLen = 3;
-    else if (desc > 0b111) addLen = 4;
-    else if (desc > 0b11) addLen = 5;
-    else if (desc > 0b1) addLen = 6;
-    else addLen = 7;
-
-    const buf = await read(addLen);
-    return this.paseBigIntSync(concatUint8Array([head, buf], 1 + addLen))[0];
-  }
-  async readNumber(read: StreamReader, safe?: false): Promise<number>;
-  async readNumber(read: StreamReader, safe?: boolean): Promise<number | undefined>;
-  async readNumber(read: StreamReader, safe?: boolean) {
-    let bigInt = await this.readBigInt(read, safe);
-    if (bigInt === undefined) return;
-    if (bigInt > Number.MAX_SAFE_INTEGER) throw new OverMaximumError(bigInt);
-    return Number(bigInt);
-  }
-  /**
-   * @public
-   * @remarks 将整数转为动态二进制数据
-   */
-  numToBinary(data: number | bigint): Uint8Array {
-    if (data < 0) throw new Error("The number cannot be less than 0");
-    if (typeof data === "number") {
-      if (data % 1 !== 0) throw new Error("The number must be an integer");
-      //超过32位无法使用移位运算符
-      if (data > 0xffffffff) return bigIntToDLD(BigInt(data));
-      else return numberToDLD(data);
-    } else if (typeof data !== "bigint") throw new TypeError("Parameter type error");
-    return bigIntToDLD(data);
-  }
+  return len;
 }
 /**
- * @public
- * @remarks Dynamic Binary Number.
+ * @param buf 要写入的Uint8Array. 传入的 Uint8Array 必须是计算后的字节数的长度，否则会造成异常
+ * @remarks 将无符号整型编码
  */
-export const DBN = new DyBinNumber();
-
-function bigIntToDLD(value: bigint): Uint8Array {
-  if (value < 0x10000000) return numberToDLD(Number(value));
-  else if (value >= 0x10000000_00000000) {
-    let buf: Uint8Array = new Uint8Array(9);
-    writeBigInt64BE(buf, value, 1);
-    buf[0] = 0xff;
+export function encodeU64DInto(value: u64, buf: Uint8Array) {
+  if (value < 0b1000_0000) {
+    buf[0] = Number(value);
+    return;
   }
-
-  let buf: Uint8Array;
-
-  if (value < 0x8_00000000) {
-    buf = new Uint8Array(5);
-    writeUint32BE(buf, Number(value & 0xffffffffn), 1);
-    buf[0] = Number(value >> 32n) + 0b11110000;
-  } else if (value < 0x400_00000000) {
-    buf = new Uint8Array(6);
-    writeUint32BE(buf, Number(value & 0xffffffffn), 2);
-    let hi = Number(value >> 32n);
-    buf[1] = hi;
-    hi >>= 8;
-    buf[0] = hi + 0b11111000;
-  } else if (value < 0x20000_00000000) {
-    buf = new Uint8Array(7);
-    writeUint32BE(buf, Number(value & 0xffffffffn), 3);
-    let hi = Number(value >> 32n);
-    buf[2] = hi;
-    hi >>= 8;
-    buf[1] = hi;
-    hi >>= 8;
-    buf[0] = hi + 0b11111100;
-  } else {
-    buf = new Uint8Array(8);
-    writeBigInt64BE(buf, value, 0);
-    buf[0] = 0b11111110;
+  let i = 0;
+  let max = buf.byteLength - 1;
+  while (i < max) {
+    buf[i++] = 0b1000_0000 + Number(value & 0b0111_1111n);
+    value >>= 7n;
   }
+  buf[i] = Number(value & 0b0111_1111n);
+}
 
+/**
+ * @remarks 计算字节数数并编码，返回Uint8Array
+ */
+export function encodeU64D(value: u64) {
+  const buf = new Uint8Array(calcU64DByte(value));
+  encodeU64DInto(value, buf);
   return buf;
 }
-export function calcNumByteLen(value: int) {
-  if (value < 0x80) return 1;
-  else if (value < 0x4000) return 2;
-  else if (value < 0x200000) return 3;
-  else if (value < 0x10000000) return 4;
-  else throw new OverMaximumError(value);
-}
-export function numberToDldInto(value: int, buf: Uint8Array) {
-  switch (buf.byteLength) {
-    case 1:
-      buf[0] = value;
-      break;
-    case 2:
-      buf[1] = value;
-      value >>= 8;
-      buf[0] = value + 0x80;
-      break;
-    case 3:
-      buf[2] = value;
-      value >>= 8;
-      buf[1] = value;
-      value >>= 8;
-      break;
-    default:
-      buf[3] = value;
-      value >>= 8;
-      buf[2] = value;
-      value >>= 8;
-      buf[1] = value;
-      value >>= 8;
-      buf[0] = 0b11100000 + value;
-      break;
+
+export function calcU32DByte(value: u32) {
+  let len = 1;
+  while (value > 0b0111_1111) {
+    value >>>= 7;
+    len++;
   }
+  return len;
 }
-function numberToDLD(value: int): Uint8Array {
-  let buf: Uint8Array;
-  if (value < 0x80) {
-    buf = new Uint8Array(1);
+export function encodeU32DInto(value: u32, buf: Uint8Array) {
+  if (value < 0b1000_0000) {
     buf[0] = value;
-  } else if (value < 0x4000) {
-    buf = new Uint8Array(2);
-    buf[1] = value;
-    value >>= 8;
-    buf[0] = value + 0x80;
-  } else if (value < 0x200000) {
-    buf = new Uint8Array(3);
-    buf[2] = value;
-    value >>= 8;
-    buf[1] = value;
-    value >>= 8;
-    buf[0] = 0b11000000 + value;
-  } else if (value < 0x10000000) {
-    buf = new Uint8Array(4);
-    buf[3] = value;
-    value >>= 8;
-    buf[2] = value;
-    value >>= 8;
-    buf[1] = value;
-    value >>= 8;
-    buf[0] = 0b11100000 + value;
-  } else {
-    return bigIntToDLD(BigInt(value));
+    return;
   }
+  let i = 0;
+  let max = buf.byteLength - 1;
+  while (i < max) {
+    buf[i++] = 0b1000_0000 + (value & 0b0111_1111);
+    value >>>= 7;
+  }
+  buf[i] = value & 0b0111_1111;
+}
+export function encodeU32D(value: u32) {
+  const buf = new Uint8Array(calcU32DByte(value));
+  encodeU32DInto(value, buf);
   return buf;
+}
+
+export function decodeU64D(buf: Uint8Array) {
+  let value: bigint = 0n;
+  let byte = 0;
+  let next = 0;
+  do {
+    next = buf[byte];
+    value += BigInt(next & 0b0111_1111) << BigInt(7 * byte);
+    byte++;
+  } while (next > 0b0111_1111);
+
+  return { value, byte };
+}
+export function decodeU32D(buf: Uint8Array) {
+  let value = 0;
+  let byte = 0;
+  let next = 0;
+  do {
+    next = buf[byte];
+    value += (next & 0b0111_1111) << (7 * byte);
+    byte++;
+  } while (next > 0b0111_1111);
+
+  return { value, byte };
+}
+
+/**
+ * @param buf 如果存在，直接写入。这必须是计算好长度的Uint8Array
+ */
+export function encodeDyNum(data: number | bigint, buf?: Uint8Array): Uint8Array {
+  if (typeof data === "number") {
+    if (data % 1 !== 0) throw new Error("The number must be an integer");
+    //超过32位无法使用移位运算符
+    if (data <= 0xffffffff) {
+      if (buf) {
+        encodeU32DInto(data, buf);
+        return buf;
+      }
+      return encodeU32D(data);
+    } else data = BigInt(data);
+  } else if (typeof data !== "bigint") throw new TypeError("Parameter type error");
+  if (buf) {
+    encodeU64DInto(data, buf);
+    return buf;
+  }
+  return encodeU64D(data);
+}
+
+async function asyncUpdateU64D(byte: bigint, value: bigint, read: StreamReader, safe?: boolean) {
+  const buf = new Uint8Array(1);
+  do {
+    let res = await read(buf, safe);
+    if (!res) return undefined;
+    value += BigInt(buf[0] & 0b0111_1111) << (7n * byte);
+    byte++;
+  } while (buf[0] > 0b0111_1111);
+
+  return value;
+}
+//todo
+export async function decodeDyNumAsync(read: StreamReader, safe?: false): Promise<number | bigint>;
+export async function decodeDyNumAsync(read: StreamReader, safe?: boolean): Promise<number | bigint | undefined>;
+export async function decodeDyNumAsync(read: StreamReader, safe?: boolean): Promise<number | bigint | undefined> {
+  let value: number = 0;
+  let byte = 0;
+  const buf = new Uint8Array(1);
+  do {
+    let res = await read(buf, safe);
+    if (!res) return undefined;
+    value += (buf[0] & 0b0111_1111) << (7 * byte);
+    byte++;
+  } while (buf[0] > 0b0111_1111 && value <= 0b1111_1111_1111);
+  if (buf[0] > 0b0111_1111) return asyncUpdateU64D(BigInt(byte), BigInt(value), read, safe);
+
+  return value;
 }
 
 interface StreamReader {
-  (len: number, safe?: false): Promise<Uint8Array>;
-  (len: number, safe: true): Promise<Uint8Array | null>;
-  (len: number, safe?: boolean): Promise<Uint8Array | null>;
+  (len: Uint8Array, safe?: false): Promise<Uint8Array>;
+  (len: Uint8Array, safe?: boolean): Promise<Uint8Array | null>;
 }
-type int = number;
-
-class OverMaximumError extends Error {
-  constructor(int: number | bigint) {
-    super(`Integer(${int}) over maximum`);
-  }
-}
+type u32 = number;
+type u64 = bigint;

@@ -1,10 +1,17 @@
-import { DBN } from "../dynamic_binary_number.js";
+import { decodeU32D } from "../dynamic_binary_number.js";
 import { DataType, JbodError, UnsupportedDataTypeError } from "../../const.js";
 import { decodeUtf8, readInt32BE, readBigInt64BE, readDoubleBE } from "../../uint_array_util/mod.js";
 type StreamReader = (size: number) => Promise<Uint8Array>;
 type AsyncParser = (read: StreamReader) => Promise<unknown>;
 async function paseUint8Arr(read: StreamReader) {
-  const len = await DBN.readNumber(read);
+  //todo: 异步读取DBN优化
+  let buf = new Uint8Array(4);
+  let chunk = await read(1);
+  let byte = 0;
+  do {
+    buf[byte] = chunk[0];
+  } while (chunk[0] > 0b0111_111);
+  const len = decodeU32D(buf).value;
   if (len <= 0) return new Uint8Array(0);
   return read(len);
 }

@@ -1,64 +1,59 @@
-import { DBN } from "jbod";
+import * as dbn from "../src/core/dynamic_binary_number.js";
 import "./expects/expect.js";
 import { describe, expect, test } from "vitest";
 
-describe("DLD", function () {
-  describe("numToBinary", function () {
+describe.only("DLD", function () {
+  describe("encode", function () {
     const cases: [number | bigint, string][] = [
       [1, "1"],
-      [0xff, "10000000_11111111"],
-      [0xffff, "11000000_11111111_11111111"],
-      [0xffffff, "11100000_11111111_11111111_11111111"],
-      [0xffffffff, "11110000_11111111_11111111_11111111_11111111"],
-      [0x1_00000000, "11110001_00000000_00000000_00000000_00000000"],
-      [0xff_ffffffff, "11111000_11111111_11111111_11111111_11111111_11111111"],
-      [0xffff_ffffffff, "11111100_11111111_11111111_11111111_11111111_11111111_11111111"],
-      [0xffffff_ffffffffn, "11111110_11111111_11111111_11111111_11111111_11111111_11111111_11111111"],
+      [0xff, "11111111_00000001"],
+      [0xffff, "11111111_11111111_00000011"],
+      [0xffffff, "11111111_11111111_11111111_00000111"],
+      [0xffffffff, "11111111_11111111_11111111_11111111_00001111"],
+      [0x1_00000000, "10000000_10000000_10000000_10000000_00010000"],
+      [0xff_ffffffff, "11111111_11111111_11111111_11111111_11111111_00011111"],
+      [0xffff_ffffffff, "11111111_11111111_11111111_11111111_11111111_11111111_00111111"],
+      [0xffffff_ffffffffn, "11111111_11111111_11111111_11111111_11111111_11111111_11111111_01111111"],
+      [
+        0xffffffff_ffffffffn,
+        "11111111_11111111_11111111_11111111_11111111_11111111_11111111_11111111_11111111_00000001",
+      ],
     ];
     test.each(cases)("%s", function (input, output) {
-      let buf = DBN.numToBinary(input);
-
-      expect(formatBin(buf), input.toString(16)).toBe(output);
+      expect(formatBin(dbn.encodeDyNum(input)), "u32d:" + input.toString(16)).toBe(output);
+      expect(formatBin(dbn.encodeU64D(BigInt(input))), "u64d:" + input.toString(16)).toBe(output);
     });
-    test("负数", () => expect(() => DBN.numToBinary(-1)).toThrowError());
-    test("小数", () => expect(() => DBN.numToBinary(2.25)).toThrowError());
+    test("小数", () => expect(() => dbn.encodeDyNum(2.25)).toThrowError());
   });
+
   /** 极值 */
-  const cases2 = [
-    0,
-    0x7f,
-    0x80,
-    0x3fff,
-    0x4000,
-    0x1fffff,
-    0x200000,
-    0xfffffff,
-    0x10000000,
-    0x7_ffffffff,
-    0x8_00000000,
-    0x3ff_ffffffff,
-    0x400_00000000,
-    0x1ffff_ffffffff,
-    0x20000_00000000,
+  const cases_int: number[] = [0, 0x7f, 0x80, 0x3fff, 0x4000, 0x1fffff, 0x200000, 0xfffffff, 0x10000000, 0xffffffff];
+  const cases_bigint = [
+    ...cases_int.map(BigInt),
+
+    0x7_ffffffffn,
+    0x8_00000000n,
+    0x3ff_ffffffffn,
+    0x400_00000000n,
+    0x1ffff_ffffffffn,
+    0x20000_00000000n,
     0xffffff_ffffffffn,
   ];
   describe("write/read:bigInt", function () {
-    cases2.forEach((input, i) => {
-      test(input.toString(16), function () {
-        const dldBuf = DBN.numToBinary(input);
-        let [data, len] = DBN.paseBigIntSync(dldBuf);
-        expect(data).toBe(BigInt(input));
-        expect(len).toBe(dldBuf.byteLength);
+    cases_bigint.forEach((value, i) => {
+      test(value + "-" + value.toString(16), function () {
+        const dldBuf = dbn.encodeU64D(value);
+        let res = dbn.decodeU64D(dldBuf);
+        expect(res).toEqual({ value, byte: dldBuf.byteLength });
       });
     });
   });
   describe("write/read:number", function () {
-    cases2.slice(0, -1).forEach((input, i) => {
-      test(input.toString(16), function () {
-        const dldBuf = DBN.numToBinary(input);
-        let [data, len] = DBN.paseNumberSync(dldBuf);
-        expect(data).toBe(input);
-        expect(len).toBe(dldBuf.byteLength);
+    cases_int.slice(0, -1).forEach((value, i) => {
+      test(value + "-" + value.toString(16), function () {
+        const dldBuf = dbn.encodeU32D(value as number);
+        let res = dbn.decodeU32D(dldBuf);
+        expect(res).toEqual({ value: value, byte: dldBuf.byteLength });
       });
     });
   });

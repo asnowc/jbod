@@ -1,4 +1,4 @@
-import JBOD, { DataType, JbodAsyncIteratorItem, UnsupportedDataTypeError, JbodError, IterableDataType } from "jbod";
+import JBOD, { DataType, JbodAsyncIteratorItem, UnsupportedDataTypeError } from "jbod";
 import { baseDataTypes, unsupportedData } from "./__mocks__/data_type.cases.js";
 import "./expects/expect.js";
 import { describe, expect, test } from "vitest";

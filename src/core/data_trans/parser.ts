@@ -1,14 +1,14 @@
-import { DBN } from "../dynamic_binary_number.js";
+import { decodeU32D } from "../dynamic_binary_number.js";
 import { DataType, JbodError, UnsupportedDataTypeError } from "../../const.js";
 import { readInt32BE, readBigInt64BE, readDoubleBE, decodeUtf8 } from "../../uint_array_util/mod.js";
 type ParseResult<T = any> = { data: T; offset: number };
 type Parser = (buf: Uint8Array, offset: number) => ParseResult<any>;
 
 function paseUint8Arr(buf: Uint8Array, offset: number): ParseResult<Uint8Array> {
-  const [lenDesc, len] = DBN.paseNumberSync(buf, offset);
-  offset += len;
-  if (lenDesc <= 0) return { data: new Uint8Array(0), offset };
-  return { data: buf.subarray(offset, offset + lenDesc), offset: offset + lenDesc };
+  const res = decodeU32D(buf.subarray(offset));
+  offset += res.byte;
+  if (res.value <= 0) return { data: new Uint8Array(0), offset };
+  return { data: buf.subarray(offset, offset + res.value), offset: offset + res.value };
 }
 export class JbodParser {
   paseItem(type: number, buf: Uint8Array, offset: number): ParseResult {

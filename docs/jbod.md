@@ -2,49 +2,72 @@
 
 ### Data Frame:
 
-0000_xxxx :
+type: 0000_0000 ~ 0111_111
 
-| DEC | BIN  | type       | content length                              |
-| --- | ---- | ---------- | ------------------------------------------- |
-| 0   | 0000 | void       | 0 (Represents termination in map and array) |
-| 1   | 0001 | null       | 0                                           |
-| 2   | 0010 | undefined  | 0                                           |
-| 3   | 0011 | true       | 0                                           |
-| 4   | 0100 | false      | 0                                           |
-| 5   | 0101 | int        | 4                                           |
-| 6   | 0110 | bigint     | 8                                           |
-| 7   | 0111 | double     | 8                                           |
-| 8   | 1000 | id         | DBN                                         |
-| 9   | 1001 | uInt8Arr   | contentLen(DBN) + content                   |
-| 10  | 1010 | \*string   | uInt8Arr                                    |
-| 11  | 1011 | \*regExp   | string                                      |
-| 12  | 1100 | \*function | string[]&string (未实现 )                   |
-| 13  | 1101 | array      | item, item, ..., void                       |
-| 14  | 1110 | object     | item, item, ..., void                       |
-| 15  | 1111 | \*symbol   |                                             |
+000_xxxx :
 
-0001_xxxx:
+| DEC | BIN  | type      | content length            |
+| --- | ---- | --------- | ------------------------- |
+| 0   | 0000 | void      |                           |
+| 1   | 0001 | null      | 0                         |
+| 2   | 0010 | undefined | 0                         |
+| 3   | 0011 |           |                           |
+| 4   | 0100 |           |                           |
+| 5   | 0101 |           |                           |
+| 6   | 0110 |           |                           |
+| 7   | 0111 |           |                           |
+| 8   | 1000 | id        | DBN                       |
+| 9   | 1001 | binary    | contentLen(DBN) + content |
+|     |      |           |                           |
+| 10  | 1010 | \*string  | uInt8Arr                  |
+| 11  | 1011 |           |                           |
+| 12  | 1100 |           |
+| 13  | 1101 | array     | item, item, ..., void     |
+| 14  | 1110 | object    | item, item, ..., void     |
+| 15  | 1111 |           |                           |
 
-| DEC | BIN  | type    | content length                |
-| --- | ---- | ------- | ----------------------------- |
-| 16  | 0000 | \*error | object                        |
-| 17  | 0001 | map     | [key, value, key, value, ...] |
-| 18  | 0010 | set     | array                         |
-| 19  | 0011 |         |                               |
-| 20  | 0100 |         |                               |
-| 21  | 0101 |         |                               |
-| 22  | 0110 |         |                               |
-| 23  | 0111 |         |                               |
-| 24  | 1000 |         |                               |
-| 25  | 1001 |         |                               |
-| 26  | 1010 |         |                               |
-| 27  | 1011 |         |                               |
-| 28  | 1100 |         |                               |
-| 29  | 1101 |         |                               |
-| 30  | 1110 |         |                               |
-| 31  | 1111 |         |                               |
+001_xxxx:
 
-0010_xxxx: (计划)
+| DEC | BIN  | type  | content length |
+| --- | ---- | ----- | -------------- |
+| 16  | 0000 |       |                |
+| 17  | 0001 |       |                |
+| 18  | 0010 |       |                |
+| 19  | 0011 | true  | 1              |
+| 20  | 0100 | false | 1              |
+| 21  | 0101 | f32   | 4              |
+| 23  | 0111 | f64   | 8              |
+| 24  | 1000 | i8    | 1              |
+| 25  | 1001 | i16   | 2              |
+| 26  | 1010 | i32   | 4              |
+| 27  | 1011 | i64   | 8              |
+| 28  | 1100 | u8    | 1              |
+| 29  | 1101 | u16   | 2              |
+| 30  | 1110 | u32   | 4              |
+| 31  | 1111 | u64   | 8              |
+
+010_xxxx:
+
+| DEC | BIN  | type       | content length                |
+| --- | ---- | ---------- | ----------------------------- |
+| 16  | 0000 | \*error    | object                        |
+| 17  | 0001 | \*map      | [key, value, key, value, ...] |
+| 18  | 0010 | \*set      | array                         |
+| 19  | 0011 | \*symbol   | array                         |
+| 20  | 0100 | \*function | string[]&string (未实现 )     |
+| 21  | 0101 | \*regExp   | string                        |
+| 22  | 0110 | undefined  | 0                             |
+| 23  | 0111 |            |                               |
+| 24  | 1000 |            |                               |
+| 25  | 1001 |            |                               |
+| 26  | 1010 |            |                               |
+| 27  | 1011 |            |                               |
+| 28  | 1100 |            |                               |
+| 29  | 1101 |            |                               |
+| 30  | 1110 |            |                               |
+| 31  | 1111 |            |                               |
+
+011_xxxx: (计划)
 
 | DEC | BIN  | type             | content length |
 | --- | ---- | ---------------- | -------------- |
@@ -88,20 +111,17 @@ console.log(JBOD.binaryify([2, "abcd", true])); //Uint8Array([5, 0, 0, 0, 2, 11,
 
 ```
 
-#### Dynamic Binary Number
+#### Dynamic Binary Number (Little Endian)
 
-| byte | max               | real    | content                          |
-| ---- | ----------------- | ------- | -------------------------------- |
-| 1    | 0x7f              | 7bit    | 0xxxxxxx                         |
-| 2    | 0x3fff            | 6bit 1B | 10xxxxxx xx                      |
-| 3    | 0x1fffff          | 5bit 2B | 110xxxxx xx xx                   |
-| 4    | 0xfffffff(255MB)  | 4bit 3B | 1110xxxx xx xx xx                |
-| 5    | 0x7_ffffffff      | 3bit 4B | 11110xxx xx xx xx xx             |
-| 6    | 0x3ff_ffffffff    | 2bit 5B | 111110xx xx xx xx xx xx          |
-| 7    | 0x1ffff_ffffffff  | 1bit 6B | 1111110x xx xx xx xx xx xx       |
-|      |                   |         |                                  |
-| 8    | 0xffffff_ffffffff | 7B      | 11111110 xx xx xx xx xx xx xx    |
-| 9    |                   | 8B      | 11111111 xx xx xx xx xx xx xx xx |
+| byte | max               | real  | content                             |
+| ---- | ----------------- | ----- | ----------------------------------- |
+| 1    | 0x7f              | 7bit  | 0xxxxxxx                            |
+| 2    | 0x3fff            | 14bi  | 1xxxxxxx 0xxxxxxx                   |
+| 3    | 0x1fffff          | 21bit | 1xxxxxxx 1xxxxxxx 0xxxxxxx          |
+| 4    | 0xfffffff(255MB)  | 28bit | 1xxxxxxx 1xxxxxxx 1xxxxxxx 0xxxxxxx |
+|      | ...               | ...   | ...                                 |
+| 8    | 0xffffff_ffffffff | 56bit | ...                                 |
+| 9    |                   | 63bit | ...                                 |
 
 number(47 bit): 0~512 TB - 1
 id(7 bytes): 0~65535 TB -1
