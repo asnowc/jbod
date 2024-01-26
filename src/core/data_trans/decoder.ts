@@ -10,7 +10,7 @@ function paseUint8Arr(buf: Uint8Array, offset: number): ParseResult<Uint8Array> 
   if (res.value <= 0) return { data: new Uint8Array(0), offset };
   return { data: buf.subarray(offset, offset + res.value), offset: offset + res.value };
 }
-export class JbodParser {
+export class JbodDecoder {
   paseItem(type: number, buf: Uint8Array, offset: number): ParseResult {
     switch (type) {
       case DataType.undefined:

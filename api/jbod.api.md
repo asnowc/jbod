@@ -78,6 +78,16 @@ const _default: {
     };
     parseAsync: <T_1 = unknown>(read: StreamReader, type?: DataType) => Promise<T_1>;
     scanAsync: (read: StreamReader, type?: IterableDataType) => AsyncGenerator<JbodAsyncIteratorItem, void, void>;
+    encodeInto: (value: {
+        byteLength: number;
+        pretreatment: any;
+        type: number;
+    }, buf: Uint8Array) => Uint8Array;
+    calcLen: (data: any) => {
+        byteLength: number;
+        pretreatment: any;
+        type: number;
+    };
     getType: (data: any) => number;
     binaryify: (data: any) => Uint8Array;
     binaryifyContent: (data: any) => Uint8Array;
@@ -109,7 +119,7 @@ export type JbodAsyncIteratorItem = JbodIteratorBasicItem | JbodAsyncIteratorArr
 //
 // @public (undocumented)
 export class JbodEncoder implements Encoder<any, CalcRes> {
-    constructor(config?: JbodSerializerConfig);
+    constructor(config?: JbodEncoderConfig);
     // (undocumented)
     calcLen(data: any): CalcRes<any>;
     // (undocumented)
@@ -119,15 +129,15 @@ export class JbodEncoder implements Encoder<any, CalcRes> {
 }
 
 // @public (undocumented)
-export class JbodError extends Error {
-}
-
-// @public (undocumented)
-export interface JbodSerializerConfig {
+export interface JbodEncoderConfig {
     // Warning: (ae-forgotten-export) The symbol "DefinedDataTypeMap" needs to be exported by the entry point mod.d.ts
     //
     // (undocumented)
     customObjet?: DefinedDataTypeMap;
+}
+
+// @public (undocumented)
+export class JbodError extends Error {
 }
 
 // @public (undocumented)
@@ -137,8 +147,8 @@ export class UnsupportedDataTypeError extends Error {
 
 // Warnings were encountered during analysis:
 //
-// src/core/data_trans/writer.ts:23:3 - (ae-forgotten-export) The symbol "Calculator" needs to be exported by the entry point mod.d.ts
-// src/core/data_trans/writer.ts:24:3 - (ae-forgotten-export) The symbol "EncodeFn" needs to be exported by the entry point mod.d.ts
+// src/core/data_trans/encoder.ts:23:3 - (ae-forgotten-export) The symbol "Calculator" needs to be exported by the entry point mod.d.ts
+// src/core/data_trans/encoder.ts:24:3 - (ae-forgotten-export) The symbol "EncodeFn" needs to be exported by the entry point mod.d.ts
 // src/core/jbod.ts:35:3 - (ae-forgotten-export) The symbol "StreamReader" needs to be exported by the entry point mod.d.ts
 
 // (No @packageDocumentation comment for this package)

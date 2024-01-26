@@ -10,7 +10,7 @@ import {
 } from "../../uint_array_util/mod.js";
 import { Encoder } from "../type.js";
 /** @public */
-export interface JbodSerializerConfig {
+export interface JbodEncoderConfig {
   customObjet?: DefinedDataTypeMap;
 }
 
@@ -67,7 +67,7 @@ function toTypeCode(this: { customClassType: ClassType[] }, data: any, safe?: bo
 export class JbodEncoder implements Encoder<any, CalcRes> {
   private encoderMap: EncoderMap;
   private calculatorMap: CalculatorMap;
-  constructor(config: JbodSerializerConfig = {}) {
+  constructor(config: JbodEncoderConfig = {}) {
     const customType: ClassType[] = [];
     this.toTypeCode = toTypeCode.bind({ customClassType: customType });
     const encoderMap: EncoderMap = {};

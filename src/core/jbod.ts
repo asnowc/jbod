@@ -1,17 +1,17 @@
 import { DataType, IterableDataType, UnsupportedDataTypeError } from "../const.js";
 import { JbodAsyncParser } from "./data_trans/async_parser.js";
-import { JbodParser } from "./data_trans/parser.js";
-import { JbodEncoder } from "./data_trans/writer.js";
+import { JbodDecoder } from "./data_trans/decoder.js";
+import { JbodEncoder } from "./data_trans/encoder.js";
 import type { JbodAsyncIteratorArrayItem, JbodAsyncIteratorItem, JbodAsyncIteratorValue } from "./type.js";
 
 type StreamReader = (size: number) => Promise<Uint8Array>;
 
-const syncParser = new JbodParser();
+const defaultDecoder = new JbodDecoder();
 const asyncParser = new JbodAsyncParser();
-export * from "./data_trans/writer.js";
+export * from "./data_trans/encoder.js";
 export { type JbodAsyncIteratorItem };
 
-const defaultSerializer = new JbodEncoder();
+const defaultEncoder = new JbodEncoder();
 export default {
   /**
    * @public
@@ -25,7 +25,7 @@ export default {
       type = buffer[0];
       offset = 1;
     }
-    return syncParser.paseItem(type, buffer, offset);
+    return defaultDecoder.paseItem(type, buffer, offset);
   },
   /**
    * @public
@@ -55,21 +55,24 @@ export default {
         throw new UnsupportedDataTypeError(DataType[type] ?? type);
     }
   },
+  encodeInto: defaultEncoder.encodeInto.bind(defaultEncoder),
+  calcLen: defaultEncoder.calcLen.bind(defaultEncoder),
+
   /**
    *
    * @public
    * @remarks 获取数据对应的类型 ID
    */
-  getType: defaultSerializer.toTypeCode,
+  getType: defaultEncoder.toTypeCode,
   /**
    * @public
    * @remarks 将数据转为带类型的的完整二进制数据
    */
   binaryify: function binaryifyJbod(data: any) {
-    const type = defaultSerializer.toTypeCode(data);
-    let res = defaultSerializer.calcLen(data);
+    const type = defaultEncoder.toTypeCode(data);
+    let res = defaultEncoder.calcLen(data);
     const buf = new Uint8Array(res.byteLength + 1);
-    defaultSerializer.encodeInto(res, buf.subarray(1));
+    defaultEncoder.encodeInto(res, buf.subarray(1));
     buf[0] = type;
     return buf;
   },
@@ -78,9 +81,9 @@ export default {
    * @remarks 将数据转为不带类型的二进制数据
    */
   binaryifyContent: function binaryifyJbodContent(data: any) {
-    let res = defaultSerializer.calcLen(data);
+    let res = defaultEncoder.calcLen(data);
     const buf = new Uint8Array(res.byteLength);
-    defaultSerializer.encodeInto(res, buf);
+    defaultEncoder.encodeInto(res, buf);
     return buf;
   },
 };
