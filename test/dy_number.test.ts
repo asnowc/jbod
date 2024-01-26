@@ -2,7 +2,7 @@ import * as dbn from "../src/core/dynamic_binary_number.js";
 import "./expects/expect.js";
 import { describe, expect, test } from "vitest";
 
-describe.only("DLD", function () {
+describe("DyNumber", function () {
   describe("encode", function () {
     const cases: [number | bigint, string][] = [
       [1, "1"],
