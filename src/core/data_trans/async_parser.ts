@@ -26,13 +26,13 @@ export class JbodAsyncParser {
         return true;
       case DataType.false:
         return false;
-      case DataType.int:
+      case DataType.i32:
         return readInt32BE(await read(4));
-      case DataType.bigint:
+      case DataType.u64:
         return readBigInt64BE(await read(8));
-      case DataType.double:
+      case DataType.f64:
         return readDoubleBE(await read(8));
-      case DataType.uInt8Arr:
+      case DataType.binary:
         return paseUint8Arr(read);
       default: {
         if (typeof this[type] !== "function") throw new UnsupportedDataTypeError(DataType[type] ?? type);
@@ -46,14 +46,14 @@ export class JbodAsyncParser {
     return decodeUtf8(buf);
   }
   async [DataType.symbol](read: StreamReader): Promise<Symbol> {
-    const data = await this[DataType.array](read);
+    const data = await this[DataType.dyArray](read);
     return Symbol(data[0] as any);
   }
   async [DataType.regExp](read: StreamReader) {
     const str = await this[DataType.string](read);
     return RegExp(str);
   }
-  async [DataType.array](read: StreamReader) {
+  async [DataType.dyArray](read: StreamReader) {
     let arrayList: unknown[] = [];
     while (true) {
       const type = (await read(1))[0];
@@ -63,7 +63,7 @@ export class JbodAsyncParser {
     }
     return arrayList;
   }
-  async [DataType.object](read: StreamReader) {
+  async [DataType.dyRecord](read: StreamReader) {
     const map: Record<string, unknown> = {};
     let key: string;
     while (true) {
@@ -77,17 +77,17 @@ export class JbodAsyncParser {
   }
 
   async [DataType.error](read: StreamReader) {
-    const { message, cause, ...attr } = await this[DataType.object](read);
+    const { message, cause, ...attr } = await this[DataType.dyRecord](read);
     const error = new JbodError(message, { cause });
     Object.assign(error, attr);
     return error;
   }
   async [DataType.set](read: StreamReader) {
-    const arr = await this[DataType.array](read);
+    const arr = await this[DataType.dyArray](read);
     return new Set(arr);
   }
   async [DataType.map](read: StreamReader) {
-    const arr = await this[DataType.array](read);
+    const arr = await this[DataType.dyArray](read);
     const map = new Map();
     for (let i = 0; i < arr.length; i += 2) {
       map.set(arr[i], arr[i + 1]);

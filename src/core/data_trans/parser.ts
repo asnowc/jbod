@@ -21,13 +21,13 @@ export class JbodParser {
         return { data: true, offset };
       case DataType.false:
         return { data: false, offset };
-      case DataType.int:
+      case DataType.i32:
         return { data: readInt32BE(buf, offset), offset: offset + 4 };
-      case DataType.bigint:
+      case DataType.u64:
         return { data: readBigInt64BE(buf, offset), offset: offset + 8 };
-      case DataType.double:
+      case DataType.f64:
         return { data: readDoubleBE(buf, offset), offset: offset + 8 };
-      case DataType.uInt8Arr:
+      case DataType.binary:
         return paseUint8Arr(buf, offset);
       default: {
         if (typeof this[type] !== "function") throw new UnsupportedDataTypeError(DataType[type] ?? type);
@@ -42,7 +42,7 @@ export class JbodParser {
     return res;
   }
   [DataType.symbol](buf: Uint8Array, offset: number): ParseResult<Symbol> {
-    const data = this[DataType.array](buf, offset) as ParseResult<any>;
+    const data = this[DataType.dyArray](buf, offset) as ParseResult<any>;
     data.data = Symbol(data.data[0]);
     return data;
   }
@@ -51,7 +51,7 @@ export class JbodParser {
     res.data = new RegExp(res.data);
     return res;
   }
-  [DataType.array](buf: Uint8Array, offset: number): ParseResult<any[]> {
+  [DataType.dyArray](buf: Uint8Array, offset: number): ParseResult<any[]> {
     let arrayList: unknown[] = [];
     let res: ParseResult;
     let type: number;
@@ -64,7 +64,7 @@ export class JbodParser {
     }
     return { data: arrayList, offset };
   }
-  [DataType.object](buf: Uint8Array, offset: number): ParseResult<Object> {
+  [DataType.dyRecord](buf: Uint8Array, offset: number): ParseResult<Object> {
     const map: Record<string, unknown> = {};
     let key: string;
     let res: ParseResult;
@@ -84,7 +84,7 @@ export class JbodParser {
   }
 
   [DataType.error](buf: Uint8Array, offset: number): ParseResult<Error> {
-    const res: ParseResult = this[DataType.object](buf, offset);
+    const res: ParseResult = this[DataType.dyRecord](buf, offset);
     const { message, cause, ...attr } = res.data;
     const error = new JbodError(message, { cause });
     Object.assign(error, attr);
@@ -92,12 +92,12 @@ export class JbodParser {
     return res;
   }
   [DataType.set](buf: Uint8Array, offset: number): ParseResult<Set<unknown>> {
-    const arr: ParseResult = this[DataType.array](buf, offset);
+    const arr: ParseResult = this[DataType.dyArray](buf, offset);
     arr.data = new Set(arr.data);
     return arr;
   }
   [DataType.map](buf: Uint8Array, offset: number): ParseResult<Map<unknown, unknown>> {
-    const res: ParseResult = this[DataType.array](buf, offset);
+    const res: ParseResult = this[DataType.dyArray](buf, offset);
     const object = res.data;
     const map = new Map();
     for (let i = 0; i < object.length; i += 2) {

@@ -4,52 +4,71 @@
 
 ```ts
 
+// Warning: (ae-forgotten-export) The symbol "u32" needs to be exported by the entry point mod.d.ts
+//
+// @public (undocumented)
+export function calcU32DByte(value: u32): number;
+
+// Warning: (ae-forgotten-export) The symbol "u64" needs to be exported by the entry point mod.d.ts
+//
+// @public (undocumented)
+export function calcU64DByte(value: u64): number;
+
 // @public (undocumented)
 export enum DataType {
     // (undocumented)
-    array = 13,
+    binary = 9,
     // (undocumented)
-    bigint = 6,
+    dyArray = 13,
     // (undocumented)
-    double = 7,
+    dyNum = 8,
     // (undocumented)
-    error = 16,
+    dyNumR = 7,
+    // (undocumented)
+    dyRecord = 14,
+    // (undocumented)
+    error = 32,
+    // (undocumented)
+    f64 = 6,
     // (undocumented)
     false = 4,
     // @internal
-    function = 12,
-    // @internal
-    id = 8,
+    function = 36,
     // (undocumented)
-    int = 5,
+    i32 = 20,
     // (undocumented)
-    map = 17,
+    map = 33,
     // (undocumented)
     null = 1,
     // (undocumented)
-    object = 14,
+    regExp = 35,
     // (undocumented)
-    regExp = 11,
-    // (undocumented)
-    set = 18,
+    set = 34,
     // (undocumented)
     string = 10,
     // (undocumented)
-    symbol = 15,
+    symbol = 37,
     // (undocumented)
     true = 3,
     // (undocumented)
-    uInt8Arr = 9,
+    u64 = 24,
     // (undocumented)
-    undefined = 2,
+    undefined = 38,
     // @internal
     void = 0
 }
 
-// Warning: (ae-forgotten-export) The symbol "DyBinNumber" needs to be exported by the entry point mod.d.ts
-//
 // @public (undocumented)
-export const DBN: DyBinNumber;
+export function decodeU32D(buf: Uint8Array): {
+    value: number;
+    byte: number;
+};
+
+// @public (undocumented)
+export function decodeU64D(buf: Uint8Array): {
+    value: bigint;
+    byte: number;
+};
 
 // @public (undocumented)
 const _default: {
@@ -57,8 +76,8 @@ const _default: {
         data: T;
         offset: number;
     };
-    parseAsync: <T_1 = unknown>(read: StreamReader_2, type?: DataType) => Promise<T_1>;
-    scanAsync: (read: StreamReader_2, type?: IterableDataType) => AsyncGenerator<JbodAsyncIteratorItem, void, void>;
+    parseAsync: <T_1 = unknown>(read: StreamReader, type?: DataType) => Promise<T_1>;
+    scanAsync: (read: StreamReader, type?: IterableDataType) => AsyncGenerator<JbodAsyncIteratorItem, void, void>;
     getType: (data: any) => number;
     binaryify: (data: any) => Uint8Array;
     binaryifyContent: (data: any) => Uint8Array;
@@ -66,7 +85,17 @@ const _default: {
 export default _default;
 
 // @public (undocumented)
-export type IterableDataType = DataType.array | DataType.object | DataType.set | DataType.map;
+export type DefinedDataType = {
+    calculator: Calculator;
+    encoder: EncodeFn;
+    class?: new (...args: any[]) => object;
+};
+
+// @public (undocumented)
+export function encodeDyNum(data: number | bigint, buf?: Uint8Array): Uint8Array;
+
+// @public (undocumented)
+export type IterableDataType = DataType.dyArray | DataType.dyRecord | DataType.set | DataType.map;
 
 // Warning: (ae-forgotten-export) The symbol "JbodIteratorBasicItem" needs to be exported by the entry point mod.d.ts
 // Warning: (ae-forgotten-export) The symbol "JbodAsyncIteratorArrayItem" needs to be exported by the entry point mod.d.ts
@@ -75,8 +104,30 @@ export type IterableDataType = DataType.array | DataType.object | DataType.set |
 // @public (undocumented)
 export type JbodAsyncIteratorItem = JbodIteratorBasicItem | JbodAsyncIteratorArrayItem | JbodAsyncIteratorValue;
 
+// Warning: (ae-forgotten-export) The symbol "Encoder" needs to be exported by the entry point mod.d.ts
+// Warning: (ae-forgotten-export) The symbol "CalcRes" needs to be exported by the entry point mod.d.ts
+//
+// @public (undocumented)
+export class JbodEncoder implements Encoder<any, CalcRes> {
+    constructor(config?: JbodSerializerConfig);
+    // (undocumented)
+    calcLen(data: any): CalcRes<any>;
+    // (undocumented)
+    encodeInto(value: CalcRes, buf: Uint8Array): Uint8Array;
+    // (undocumented)
+    toTypeCode: (data: any) => number;
+}
+
 // @public (undocumented)
 export class JbodError extends Error {
+}
+
+// @public (undocumented)
+export interface JbodSerializerConfig {
+    // Warning: (ae-forgotten-export) The symbol "DefinedDataTypeMap" needs to be exported by the entry point mod.d.ts
+    //
+    // (undocumented)
+    customObjet?: DefinedDataTypeMap;
 }
 
 // @public (undocumented)
@@ -86,7 +137,9 @@ export class UnsupportedDataTypeError extends Error {
 
 // Warnings were encountered during analysis:
 //
-// src/core/jbod.ts:35:3 - (ae-forgotten-export) The symbol "StreamReader_2" needs to be exported by the entry point mod.d.ts
+// src/core/data_trans/writer.ts:23:3 - (ae-forgotten-export) The symbol "Calculator" needs to be exported by the entry point mod.d.ts
+// src/core/data_trans/writer.ts:24:3 - (ae-forgotten-export) The symbol "EncodeFn" needs to be exported by the entry point mod.d.ts
+// src/core/jbod.ts:35:3 - (ae-forgotten-export) The symbol "StreamReader" needs to be exported by the entry point mod.d.ts
 
 // (No @packageDocumentation comment for this package)
 

@@ -5,33 +5,35 @@
 export enum DataType {
   /** @internal 内部类型*/
   void = 0,
+
   null = 1,
-  undefined = 2,
   true = 3,
   false = 4,
-  int = 5,
-  bigint = 6,
-  double = 7,
 
-  /** @internal 保留类型*/
-  id = 8,
+  f64 = 6,
 
-  uInt8Arr = 9,
+  dyNumR = 7,
+  dyNum = 8,
+
+  binary = 9,
   string = 10,
-  regExp = 11,
-  /** @internal 保留类型*/
-  function = 12,
-  array = 13,
-  object = 14,
-  symbol = 15,
+  dyArray = 13,
+  dyRecord = 14,
 
-  error = 16,
+  i32 = 0b1_0100,
+  u64 = 0b1_1000,
 
-  map = 17,
-  set = 18,
+  error = 0b10_0000,
+  map = 0b10_0001,
+  set = 0b10_0010,
+  regExp = 0b10_0011,
+  /** @internal js 保留类型*/
+  function = 0b10_0100,
+  symbol = 0b10_0101,
+  undefined = 0b10_0110,
 }
 /** @public */
-export type IterableDataType = DataType.array | DataType.object | DataType.set | DataType.map;
+export type IterableDataType = DataType.dyArray | DataType.dyRecord | DataType.set | DataType.map;
 /**
  * @public
  * @remarks 当读取到一个未知类型的错误

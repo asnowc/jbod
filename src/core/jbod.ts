@@ -1,15 +1,17 @@
 import { DataType, IterableDataType, UnsupportedDataTypeError } from "../const.js";
 import { JbodAsyncParser } from "./data_trans/async_parser.js";
 import { JbodParser } from "./data_trans/parser.js";
-import { defaultSerializer } from "./data_trans/writer.js";
+import { JbodEncoder } from "./data_trans/writer.js";
 import type { JbodAsyncIteratorArrayItem, JbodAsyncIteratorItem, JbodAsyncIteratorValue } from "./type.js";
 
 type StreamReader = (size: number) => Promise<Uint8Array>;
 
 const syncParser = new JbodParser();
 const asyncParser = new JbodAsyncParser();
-
+export * from "./data_trans/writer.js";
 export { type JbodAsyncIteratorItem };
+
+const defaultSerializer = new JbodEncoder();
 export default {
   /**
    * @public
@@ -41,11 +43,11 @@ export default {
     if (type === undefined) type = (await read(1))[0];
 
     switch (type) {
-      case DataType.array:
+      case DataType.dyArray:
         return yield* scanList(read);
       case DataType.set:
         return yield* scanList(read);
-      case DataType.object:
+      case DataType.dyRecord:
         return yield* scanObject(read);
       case DataType.map:
         return yield* scanMap(read);
@@ -67,7 +69,7 @@ export default {
     const type = defaultSerializer.toTypeCode(data);
     let res = defaultSerializer.calcLen(data);
     const buf = new Uint8Array(res.byteLength + 1);
-    defaultSerializer.binaryifyInto(res, buf.subarray(1));
+    defaultSerializer.encodeInto(res, buf.subarray(1));
     buf[0] = type;
     return buf;
   },
@@ -78,7 +80,7 @@ export default {
   binaryifyContent: function binaryifyJbodContent(data: any) {
     let res = defaultSerializer.calcLen(data);
     const buf = new Uint8Array(res.byteLength);
-    defaultSerializer.binaryifyInto(res, buf);
+    defaultSerializer.encodeInto(res, buf);
     return buf;
   },
 };
@@ -86,13 +88,13 @@ export default {
 async function genIteratorItem(read: StreamReader, type: DataType, key: any): Promise<JbodAsyncIteratorItem> {
   let value: any;
   switch (type) {
-    case DataType.array:
+    case DataType.dyArray:
       value = scanList(read);
       break;
     case DataType.set:
       value = scanList(read);
       break;
-    case DataType.object:
+    case DataType.dyRecord:
       value = scanObject(read);
       break;
     case DataType.map:

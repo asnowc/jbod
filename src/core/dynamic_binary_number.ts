@@ -1,4 +1,5 @@
 /**
+ * @public
  * @remarks 计算字无符号整型编码成DBN后的字节数
  */
 export function calcU64DByte(value: u64) {
@@ -27,15 +28,7 @@ export function encodeU64DInto(value: u64, buf: Uint8Array) {
   buf[i] = Number(value & 0b0111_1111n);
 }
 
-/**
- * @remarks 计算字节数数并编码，返回Uint8Array
- */
-export function encodeU64D(value: u64) {
-  const buf = new Uint8Array(calcU64DByte(value));
-  encodeU64DInto(value, buf);
-  return buf;
-}
-
+/** @public */
 export function calcU32DByte(value: u32) {
   let len = 1;
   while (value > 0b0111_1111) {
@@ -57,12 +50,8 @@ export function encodeU32DInto(value: u32, buf: Uint8Array) {
   }
   buf[i] = value & 0b0111_1111;
 }
-export function encodeU32D(value: u32) {
-  const buf = new Uint8Array(calcU32DByte(value));
-  encodeU32DInto(value, buf);
-  return buf;
-}
-
+/**
+ * @public */
 export function decodeU64D(buf: Uint8Array) {
   let value: bigint = 0n;
   let byte = 0;
@@ -75,6 +64,8 @@ export function decodeU64D(buf: Uint8Array) {
 
   return { value, byte };
 }
+/**
+ * @public */
 export function decodeU32D(buf: Uint8Array) {
   let value = 0;
   let byte = 0;
@@ -89,25 +80,23 @@ export function decodeU32D(buf: Uint8Array) {
 }
 
 /**
- * @param buf 如果存在，直接写入。这必须是计算好长度的Uint8Array
+ * @public
+ * @param buf - 如果存在，直接写入。这必须是计算好长度的Uint8Array
  */
 export function encodeDyNum(data: number | bigint, buf?: Uint8Array): Uint8Array {
   if (typeof data === "number") {
     if (data % 1 !== 0) throw new Error("The number must be an integer");
     //超过32位无法使用移位运算符
     if (data <= 0xffffffff) {
-      if (buf) {
-        encodeU32DInto(data, buf);
-        return buf;
-      }
-      return encodeU32D(data);
+      if (!buf) buf = new Uint8Array(calcU32DByte(data));
+      encodeU32DInto(data, buf);
+      return buf;
     } else data = BigInt(data);
   } else if (typeof data !== "bigint") throw new TypeError("Parameter type error");
-  if (buf) {
-    encodeU64DInto(data, buf);
-    return buf;
-  }
-  return encodeU64D(data);
+  if (!buf) buf = new Uint8Array(calcU64DByte(data));
+
+  encodeU64DInto(data, buf);
+  return buf;
 }
 
 async function asyncUpdateU64D(byte: bigint, value: bigint, read: StreamReader, safe?: boolean) {
@@ -122,9 +111,9 @@ async function asyncUpdateU64D(byte: bigint, value: bigint, read: StreamReader, 
   return value;
 }
 //todo
-export async function decodeDyNumAsync(read: StreamReader, safe?: false): Promise<number | bigint>;
-export async function decodeDyNumAsync(read: StreamReader, safe?: boolean): Promise<number | bigint | undefined>;
-export async function decodeDyNumAsync(read: StreamReader, safe?: boolean): Promise<number | bigint | undefined> {
+async function decodeDyNumAsync(read: StreamReader, safe?: false): Promise<number | bigint>;
+async function decodeDyNumAsync(read: StreamReader, safe?: boolean): Promise<number | bigint | undefined>;
+async function decodeDyNumAsync(read: StreamReader, safe?: boolean): Promise<number | bigint | undefined> {
   let value: number = 0;
   let byte = 0;
   const buf = new Uint8Array(1);
@@ -145,3 +134,8 @@ interface StreamReader {
 }
 type u32 = number;
 type u64 = bigint;
+
+interface StreamReader {
+  (len: number, safe?: false): Promise<Uint8Array>;
+  (len: Uint8Array, safe?: boolean): Promise<Uint8Array | null>;
+}

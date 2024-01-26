@@ -1,6 +1,8 @@
 ## JavaScript Binary Object Data
 
-JBOD 与 BSON 类似, 不过设计 JBOD 的主要用于传输 JavaScript 数据，当然也可以用于存储数据。 [查看 JBOD 数据帧格式](./docs/jbod.md)
+**目前尚不稳定，可能会有较大的破坏性变更**
+
+JBOD 借鉴了 BSON 和 ProtoBuf, 不过设计 JBOD 的主要用于传输 JavaScript 数据，当然也可以用于存储数据。 [查看 JBOD 数据帧格式](./docs/jbod.md)
 JBOD 比 JSON 支持更多的 JavaScript 数据类型
 
 #### 支持的数据类型

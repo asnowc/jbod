@@ -21,7 +21,7 @@ describe.only("DLD", function () {
     ];
     test.each(cases)("%s", function (input, output) {
       expect(formatBin(dbn.encodeDyNum(input)), "u32d:" + input.toString(16)).toBe(output);
-      expect(formatBin(dbn.encodeU64D(BigInt(input))), "u64d:" + input.toString(16)).toBe(output);
+      expect(formatBin(dbn.encodeDyNum(BigInt(input))), "u64d:" + input.toString(16)).toBe(output);
     });
     test("小数", () => expect(() => dbn.encodeDyNum(2.25)).toThrowError());
   });
@@ -42,7 +42,7 @@ describe.only("DLD", function () {
   describe("write/read:bigInt", function () {
     cases_bigint.forEach((value, i) => {
       test(value + "-" + value.toString(16), function () {
-        const dldBuf = dbn.encodeU64D(value);
+        const dldBuf = dbn.encodeDyNum(value);
         let res = dbn.decodeU64D(dldBuf);
         expect(res).toEqual({ value, byte: dldBuf.byteLength });
       });
@@ -51,7 +51,7 @@ describe.only("DLD", function () {
   describe("write/read:number", function () {
     cases_int.slice(0, -1).forEach((value, i) => {
       test(value + "-" + value.toString(16), function () {
-        const dldBuf = dbn.encodeU32D(value as number);
+        const dldBuf = dbn.encodeDyNum(value as number);
         let res = dbn.decodeU32D(dldBuf);
         expect(res).toEqual({ value: value, byte: dldBuf.byteLength });
       });

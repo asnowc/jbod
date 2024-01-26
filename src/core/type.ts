@@ -6,26 +6,26 @@ export interface JbodIteratorBasicItem<V = unknown, K = string | number> {
   isIterator: false;
 }
 export interface JbodAsyncIteratorArrayItem {
-  dataType: DataType.array | DataType.set;
+  dataType: DataType.dyArray | DataType.set;
   key: number;
   value: AsyncGenerator<JbodAsyncIteratorItem, void, void>;
   isIterator: true;
 }
 export interface JbodAsyncIteratorValue<K = string> {
-  dataType: DataType.object | DataType.map;
+  dataType: DataType.dyRecord | DataType.map;
   key: K;
   value: AsyncGenerator<JbodAsyncIteratorItem, void, void>;
   isIterator: true;
 }
 
 export interface JbodIteratorArrayItem {
-  dataType: DataType.array;
+  dataType: DataType.dyArray;
   key: number;
   value: Generator<JbodIteratorItem, void, void>;
   isIterator: true;
 }
 export interface JbodIteratorMapValue<K = string> {
-  dataType: DataType.object;
+  dataType: DataType.dyRecord;
   key: K;
   value: Generator<JbodIteratorItem, void, void>;
   isIterator: true;
@@ -34,7 +34,7 @@ export type JbodIteratorItem = JbodIteratorBasicItem | JbodIteratorArrayItem | J
 /** @public */
 export type JbodAsyncIteratorItem = JbodIteratorBasicItem | JbodAsyncIteratorArrayItem | JbodAsyncIteratorValue;
 
-export interface Serializer<Q = any, T extends { byteLength: number } = { byteLength: number }> {
+export interface Encoder<Q = any, T extends { byteLength: number } = { byteLength: number }> {
   calcLen(data: Q): T;
-  binaryifyInto(calcRes: T, buf: Uint8Array): Uint8Array;
+  encodeInto(calcRes: T, buf: Uint8Array): Uint8Array;
 }

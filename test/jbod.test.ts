@@ -8,19 +8,19 @@ describe("binaryify", function () {
     const data = { a: 1, b: 2, c: 3 };
     const buf = JBOD.binaryify(data);
 
-    const k1 = [DataType.int, 1, 97, 0, 0, 0, 1];
-    const k2 = [DataType.int, 1, 98, 0, 0, 0, 2];
-    const k3 = [DataType.int, 1, 99, 0, 0, 0, 3];
-    expect(Buffer.from(buf)).toEqual(Buffer.from([DataType.object, ...k1, ...k2, ...k3, DataType.void]));
+    const k1 = [DataType.i32, 1, 97, 0, 0, 0, 1];
+    const k2 = [DataType.i32, 1, 98, 0, 0, 0, 2];
+    const k3 = [DataType.i32, 1, 99, 0, 0, 0, 3];
+    expect(Buffer.from(buf)).toEqual(Buffer.from([DataType.dyRecord, ...k1, ...k2, ...k3, DataType.void]));
   });
   test("array", function () {
     const data = [1, "a", null];
     const buf = JBOD.binaryify(data);
 
-    const v1 = [DataType.int, 0, 0, 0, 1];
+    const v1 = [DataType.i32, 0, 0, 0, 1];
     const v2 = [DataType.string, 1, 97];
     const v3 = [DataType.null];
-    expect(Buffer.from(buf)).toEqual(Buffer.from([DataType.array, ...v1, ...v2, ...v3, DataType.void]));
+    expect(Buffer.from(buf)).toEqual(Buffer.from([DataType.dyArray, ...v1, ...v2, ...v3, DataType.void]));
   });
 });
 

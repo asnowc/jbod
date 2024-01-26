@@ -8,32 +8,23 @@ import {
   calcUtf8Length,
   encodeUtf8Into,
 } from "../../uint_array_util/mod.js";
-import { Serializer } from "../type.js";
+import { Encoder } from "../type.js";
+/** @public */
 export interface JbodSerializerConfig {
-  customObjet?: DefinedClassTypeMap;
+  customObjet?: DefinedDataTypeMap;
 }
 
 interface ClassType {
   code: number;
   class: new (...args: any[]) => object;
 }
-
-type DefinedBaseTypeMap = Record<
-  number,
-  {
-    calculator: Calculator;
-    encoder: Encoder;
-    class?: new (...args: any[]) => object;
-  }
->;
-type DefinedClassTypeMap = Record<
-  number,
-  {
-    calculator: Calculator;
-    encoder: Encoder;
-    class: new (...args: any[]) => object;
-  }
->;
+/** @public */
+export type DefinedDataType = {
+  calculator: Calculator;
+  encoder: EncodeFn;
+  class?: new (...args: any[]) => object;
+};
+type DefinedDataTypeMap = Record<number, DefinedDataType>;
 
 function toTypeCode(this: { customClassType: ClassType[] }, data: any, safe?: boolean): number {
   let type: number;
@@ -43,27 +34,27 @@ function toTypeCode(this: { customClassType: ClassType[] }, data: any, safe?: bo
     case "boolean":
       return data ? DataType.true : DataType.false;
     case "number":
-      if (data % 1 !== 0 || data < -2147483648 || data > 2147483647) type = DataType.double;
-      else type = DataType.int;
+      if (data % 1 !== 0 || data < -2147483648 || data > 2147483647) type = DataType.f64;
+      else type = DataType.i32;
       break;
     case "string":
       type = DataType.string;
       break;
     case "bigint":
-      type = DataType.bigint;
+      type = DataType.u64;
       break;
     case "symbol":
       type = DataType.symbol;
       break;
     case "object": {
       if (data === null) return DataType.null;
-      else if (data instanceof Array) return DataType.array;
+      else if (data instanceof Array) return DataType.dyArray;
       let item: (typeof this.customClassType)[0];
       for (let i = 0; i < this.customClassType.length; i++) {
         item = this.customClassType[i];
         if (data instanceof item.class) return item.code;
       }
-      return DataType.object;
+      return DataType.dyRecord;
     }
     default:
       if (safe) return DataType.undefined;
@@ -72,14 +63,15 @@ function toTypeCode(this: { customClassType: ClassType[] }, data: any, safe?: bo
   return type;
 }
 
-export class JbodSerializer implements Serializer<any, CalcRes> {
+/** @public */
+export class JbodEncoder implements Encoder<any, CalcRes> {
   private encoderMap: EncoderMap;
-  private calculatorMap: calculatorMap;
+  private calculatorMap: CalculatorMap;
   constructor(config: JbodSerializerConfig = {}) {
     const customType: ClassType[] = [];
     this.toTypeCode = toTypeCode.bind({ customClassType: customType });
     const encoderMap: EncoderMap = {};
-    const calculatorMap: calculatorMap = { toTypeCode: this.toTypeCode };
+    const calculatorMap: CalculatorMap = { toTypeCode: this.toTypeCode };
     this.calculatorMap = calculatorMap;
     this.encoderMap = encoderMap;
 
@@ -89,9 +81,9 @@ export class JbodSerializer implements Serializer<any, CalcRes> {
   }
   private merge(
     encoderMap: EncoderMap,
-    calculatorMap: calculatorMap,
+    calculatorMap: CalculatorMap,
     classType: ClassType[],
-    definedMap: DefinedBaseTypeMap
+    definedMap: DefinedDataTypeMap
   ) {
     for (const [codeStr, item] of Object.entries(definedMap)) {
       let code = parseInt(codeStr);
@@ -101,7 +93,7 @@ export class JbodSerializer implements Serializer<any, CalcRes> {
     }
   }
 
-  binaryifyInto(value: CalcRes, buf: Uint8Array) {
+  encodeInto(value: CalcRes, buf: Uint8Array) {
     return this.encoderMap[value.type](value.pretreatment, buf);
   }
   toTypeCode: (data: any) => number;
@@ -125,20 +117,17 @@ type MapPreData = { key: CalcRes<StrPreData>; value: CalcRes }[];
 type Uint8ArrPreData = { uInt8Arr: Uint8Array; dbnLen: number };
 type StrPreData = { str: string; dbnLen: number; contentLen: number };
 
-type Encoder = (this: EncoderMap, data: any, buf: Uint8Array) => Uint8Array;
-type Calculator = (this: calculatorMap, data: any) => CalcRes;
-export type EncoderMap = Record<number, Encoder>;
-export type calculatorMap = {
+type EncodeFn = (this: EncoderMap, data: any, buf: Uint8Array) => Uint8Array;
+type Calculator = (this: CalculatorMap, data: any) => CalcRes;
+type EncoderMap = Record<number, EncodeFn>;
+
+type CalculatorMap = {
   toTypeCode(data: any, safe?: boolean): number;
   [key: number]: Calculator;
 };
-const noContentTrans: Encoder = (data, buf) => buf;
+const noContentTrans: EncodeFn = (data, buf) => buf;
 
-const default_type: DefinedBaseTypeMap = {
-  [DataType.undefined]: {
-    encoder: noContentTrans,
-    calculator: () => ({ pretreatment: undefined, type: DataType.undefined, byteLength: 0 }),
-  },
+const default_type: DefinedDataTypeMap = {
   [DataType.true]: {
     encoder: noContentTrans,
     calculator: () => ({ pretreatment: undefined, type: DataType.true, byteLength: 0 }),
@@ -152,26 +141,26 @@ const default_type: DefinedBaseTypeMap = {
     calculator: () => ({ pretreatment: undefined, type: DataType.null, byteLength: 0 }),
   },
 
-  [DataType.int]: {
+  [DataType.i32]: {
     encoder(data: number, buf: Uint8Array) {
       writeInt32BE(buf, data);
       return buf.subarray(4);
     },
-    calculator: (data) => ({ pretreatment: data, byteLength: 4, type: DataType.int }),
+    calculator: (data) => ({ pretreatment: data, byteLength: 4, type: DataType.i32 }),
   },
-  [DataType.double]: {
+  [DataType.f64]: {
     encoder(data: number, buf: Uint8Array) {
       writeDoubleBE(buf, data);
       return buf.subarray(8);
     },
-    calculator: (data) => ({ pretreatment: data, byteLength: 8, type: DataType.double }),
+    calculator: (data) => ({ pretreatment: data, byteLength: 8, type: DataType.f64 }),
   },
-  [DataType.bigint]: {
+  [DataType.u64]: {
     encoder(data: bigint, buf: Uint8Array) {
       writeBigInt64BE(buf, data);
       return buf.subarray(8);
     },
-    calculator: (data) => ({ pretreatment: data, byteLength: 8, type: DataType.bigint }),
+    calculator: (data) => ({ pretreatment: data, byteLength: 8, type: DataType.u64 }),
   },
 
   [DataType.string]: {
@@ -191,15 +180,7 @@ const default_type: DefinedBaseTypeMap = {
     },
   },
 
-  [DataType.symbol]: {
-    calculator(data: symbol) {
-      return this[DataType.array]([data.description]);
-    },
-    encoder(data, buf) {
-      return this[DataType.array](data, buf);
-    },
-  },
-  [DataType.array]: {
+  [DataType.dyArray]: {
     class: Array,
     calculator(arr: any[]): CalcRes<ArrayPreData> {
       let item: any;
@@ -219,7 +200,7 @@ const default_type: DefinedBaseTypeMap = {
         preData.push(valueRes);
       }
 
-      return { pretreatment: preData, byteLength: totalLen, type: DataType.array };
+      return { pretreatment: preData, byteLength: totalLen, type: DataType.dyArray };
     },
     encoder(array: ArrayPreData, buf: Uint8Array) {
       for (let i = 0; i < array.length; i++) {
@@ -230,14 +211,14 @@ const default_type: DefinedBaseTypeMap = {
       return buf.subarray(1);
     },
   },
-  [DataType.uInt8Arr]: {
+  [DataType.binary]: {
     class: Uint8Array,
     calculator(data: Uint8Array): CalcRes<Uint8ArrPreData> {
       const dbnLen = calcU32DByte(data.byteLength);
       return {
         pretreatment: { uInt8Arr: data, dbnLen },
         byteLength: dbnLen + data.byteLength,
-        type: DataType.uInt8Arr,
+        type: DataType.binary,
       };
     },
     encoder(data: Uint8ArrPreData, buf: Uint8Array) {
@@ -246,7 +227,7 @@ const default_type: DefinedBaseTypeMap = {
       return buf.subarray(data.dbnLen + data.uInt8Arr.byteLength);
     },
   },
-  [DataType.object]: {
+  [DataType.dyRecord]: {
     calculator(data: Record<string, any>): CalcRes<MapPreData> {
       const map = Object.keys(data);
       let preData: MapPreData = [];
@@ -272,7 +253,7 @@ const default_type: DefinedBaseTypeMap = {
           value: valueRes,
         });
       }
-      return { pretreatment: preData, byteLength: totalLen, type: DataType.object };
+      return { pretreatment: preData, byteLength: totalLen, type: DataType.dyRecord };
     },
     encoder(map: MapPreData, buf: Uint8Array) {
       let item: MapPreData[0];
@@ -288,17 +269,34 @@ const default_type: DefinedBaseTypeMap = {
   },
 };
 
-const jsDefaultClassType: DefinedBaseTypeMap = {
+const jsDefaultClassType: DefinedDataTypeMap = {
+  [DataType.symbol]: {
+    calculator(data: symbol) {
+      return this[DataType.dyArray]([data.description]);
+    },
+    encoder(data, buf) {
+      return this[DataType.dyArray](data, buf);
+    },
+  },
+  [DataType.error]: {
+    class: Error,
+    encoder: default_type[DataType.dyRecord].encoder,
+    calculator(error: Error) {
+      const errorMap = { ...error, message: error.message, name: error.name };
+      if (error.cause) errorMap.cause = error.cause;
+      return this[DataType.dyRecord](errorMap);
+    },
+  },
   [DataType.set]: {
     class: Set,
-    encoder: default_type[DataType.array].encoder,
+    encoder: default_type[DataType.dyArray].encoder,
     calculator(data: Set<any>) {
-      return this[DataType.array](Array.from(data));
+      return this[DataType.dyArray](Array.from(data));
     },
   },
   [DataType.map]: {
     class: Map,
-    encoder: default_type[DataType.array].encoder,
+    encoder: default_type[DataType.dyArray].encoder,
     calculator(data: Map<any, any>) {
       const list: any[] = [];
       let i = 0;
@@ -307,18 +305,10 @@ const jsDefaultClassType: DefinedBaseTypeMap = {
         list[i + 1] = item[1];
         i += 2;
       }
-      return this[DataType.array](list);
+      return this[DataType.dyArray](list);
     },
   },
-  [DataType.error]: {
-    class: Error,
-    encoder: default_type[DataType.object].encoder,
-    calculator(error: Error) {
-      const errorMap = { ...error, message: error.message, name: error.name };
-      if (error.cause) errorMap.cause = error.cause;
-      return this[DataType.object](errorMap);
-    },
-  },
+
   [DataType.regExp]: {
     class: RegExp,
     encoder: default_type[DataType.string].encoder,
@@ -326,6 +316,8 @@ const jsDefaultClassType: DefinedBaseTypeMap = {
       return this[DataType.string](data.source);
     },
   },
+  [DataType.undefined]: {
+    encoder: noContentTrans,
+    calculator: () => ({ pretreatment: undefined, type: DataType.undefined, byteLength: 0 }),
+  },
 };
-
-export const defaultSerializer: JbodSerializer = new JbodSerializer();
