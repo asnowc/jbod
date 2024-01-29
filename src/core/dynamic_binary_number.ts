@@ -11,21 +11,20 @@ export function calcU64DByte(value: u64) {
   return len;
 }
 /**
- * @param buf 要写入的Uint8Array. 传入的 Uint8Array 必须是计算后的字节数的长度，否则会造成异常
- * @remarks 将无符号整型编码
+ * @public
+ * @returns 返回 Uint8Array 偏移量
  */
-export function encodeU64DInto(value: u64, buf: Uint8Array) {
+export function encodeU64DInto(value: u64, buf: Uint8Array, offset = 0) {
   if (value < 0b1000_0000) {
-    buf[0] = Number(value);
-    return;
+    buf[offset++] = Number(value);
+    return offset;
   }
-  let i = 0;
-  let max = buf.byteLength - 1;
-  while (i < max) {
-    buf[i++] = 0b1000_0000 + Number(value & 0b0111_1111n);
+  while (value > 0b01111111) {
+    buf[offset++] = 0b1000_0000 + Number(value & 0b0111_1111n);
     value >>= 7n;
   }
-  buf[i] = Number(value & 0b0111_1111n);
+  buf[offset++] = Number(value & 0b0111_1111n);
+  return offset;
 }
 
 /** @public */
@@ -37,18 +36,20 @@ export function calcU32DByte(value: u32) {
   }
   return len;
 }
-export function encodeU32DInto(value: u32, buf: Uint8Array) {
-  if (value < 0b1000_0000) {
-    buf[0] = value;
-    return;
+/**
+ * @public
+ * @returns 返回 Uint8Array 偏移量 */
+export function encodeU32DInto(value: u32, buf: Uint8Array, offset = 0) {
+  if (value < 0b10000000) {
+    buf[offset++] = value;
+    return offset;
   }
-  let i = 0;
-  let max = buf.byteLength - 1;
-  while (i < max) {
-    buf[i++] = 0b1000_0000 + (value & 0b0111_1111);
+  while (value > 0b01111111) {
+    buf[offset++] = 0b1000_0000 | (value & 0b0111_1111);
     value >>>= 7;
   }
-  buf[i] = value & 0b0111_1111;
+  buf[offset++] = value & 0b0111_1111;
+  return offset;
 }
 /**
  * @public */
@@ -77,26 +78,6 @@ export function decodeU32D(buf: Uint8Array) {
   } while (next > 0b0111_1111);
 
   return { value, byte };
-}
-
-/**
- * @public
- * @param buf - 如果存在，直接写入。这必须是计算好长度的Uint8Array
- */
-export function encodeDyNum(data: number | bigint, buf?: Uint8Array): Uint8Array {
-  if (typeof data === "number") {
-    if (data % 1 !== 0) throw new Error("The number must be an integer");
-    //超过32位无法使用移位运算符
-    if (data <= 0xffffffff) {
-      if (!buf) buf = new Uint8Array(calcU32DByte(data));
-      encodeU32DInto(data, buf);
-      return buf;
-    } else data = BigInt(data);
-  } else if (typeof data !== "bigint") throw new TypeError("Parameter type error");
-  if (!buf) buf = new Uint8Array(calcU64DByte(data));
-
-  encodeU64DInto(data, buf);
-  return buf;
 }
 
 async function asyncUpdateU64D(byte: bigint, value: bigint, read: StreamReader, safe?: boolean) {

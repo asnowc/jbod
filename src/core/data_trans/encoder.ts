@@ -114,8 +114,7 @@ type CalcRes<T = any> = {
 
 type ArrayPreData = CalcRes[];
 type MapPreData = { key: CalcRes<StrPreData>; value: CalcRes }[];
-type Uint8ArrPreData = { uInt8Arr: Uint8Array; dbnLen: number };
-type StrPreData = { str: string; dbnLen: number; contentLen: number };
+type StrPreData = { str: string; contentLen: number };
 
 type EncodeFn = (this: EncoderMap, data: any, buf: Uint8Array) => Uint8Array;
 type Calculator = (this: CalculatorMap, data: any) => CalcRes;
@@ -168,15 +167,15 @@ const default_type: DefinedDataTypeMap = {
       const len = calcUtf8Length(data);
       const dbnLen = calcU32DByte(len);
       return {
-        pretreatment: { str: data, dbnLen: dbnLen, contentLen: len },
+        pretreatment: { str: data, contentLen: len },
         byteLength: dbnLen + len,
         type: DataType.string,
       };
     },
     encoder(data: StrPreData, buf: Uint8Array) {
-      encodeU32DInto(data.contentLen, buf.subarray(0, data.dbnLen));
-      encodeUtf8Into(data.str, buf.subarray(data.dbnLen));
-      return buf.subarray(data.dbnLen + data.contentLen);
+      const offset = encodeU32DInto(data.contentLen, buf);
+      encodeUtf8Into(data.str, buf.subarray(offset));
+      return buf.subarray(offset + data.contentLen);
     },
   },
 
@@ -213,18 +212,18 @@ const default_type: DefinedDataTypeMap = {
   },
   [DataType.binary]: {
     class: Uint8Array,
-    calculator(data: Uint8Array): CalcRes<Uint8ArrPreData> {
+    calculator(data: Uint8Array): CalcRes<Uint8Array> {
       const dbnLen = calcU32DByte(data.byteLength);
       return {
-        pretreatment: { uInt8Arr: data, dbnLen },
+        pretreatment: data,
         byteLength: dbnLen + data.byteLength,
         type: DataType.binary,
       };
     },
-    encoder(data: Uint8ArrPreData, buf: Uint8Array) {
-      encodeU32DInto(data.uInt8Arr.byteLength, buf.subarray(0, data.dbnLen));
-      buf.set(data.uInt8Arr, data.dbnLen);
-      return buf.subarray(data.dbnLen + data.uInt8Arr.byteLength);
+    encoder(data: Uint8Array, buf: Uint8Array) {
+      const offset = encodeU32DInto(data.byteLength, buf);
+      buf.set(data, offset);
+      return buf.subarray(offset + data.byteLength);
     },
   },
   [DataType.dyRecord]: {

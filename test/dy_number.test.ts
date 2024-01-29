@@ -4,26 +4,34 @@ import { describe, expect, test } from "vitest";
 
 describe("DyNumber", function () {
   describe("encode", function () {
-    const cases: [number | bigint, string][] = [
+    const casesNumber: [number, string][] = [
       [1, "1"],
       [0xff, "11111111_00000001"],
       [0xffff, "11111111_11111111_00000011"],
       [0xffffff, "11111111_11111111_11111111_00000111"],
       [0xffffffff, "11111111_11111111_11111111_11111111_00001111"],
-      [0x1_00000000, "10000000_10000000_10000000_10000000_00010000"],
-      [0xff_ffffffff, "11111111_11111111_11111111_11111111_11111111_00011111"],
-      [0xffff_ffffffff, "11111111_11111111_11111111_11111111_11111111_11111111_00111111"],
+    ];
+    const casesBigint: [bigint, string][] = [
+      ...casesNumber.map(([val, bin]): [bigint, string] => [BigInt(val), bin]),
+      [0x1_00000000n, "10000000_10000000_10000000_10000000_00010000"],
+      [0xff_ffffffffn, "11111111_11111111_11111111_11111111_11111111_00011111"],
+      [0xffff_ffffffffn, "11111111_11111111_11111111_11111111_11111111_11111111_00111111"],
       [0xffffff_ffffffffn, "11111111_11111111_11111111_11111111_11111111_11111111_11111111_01111111"],
       [
         0xffffffff_ffffffffn,
         "11111111_11111111_11111111_11111111_11111111_11111111_11111111_11111111_11111111_00000001",
       ],
     ];
-    test.each(cases)("%s", function (input, output) {
-      expect(formatBin(dbn.encodeDyNum(input)), "u32d:" + input.toString(16)).toBe(output);
-      expect(formatBin(dbn.encodeDyNum(BigInt(input))), "u64d:" + input.toString(16)).toBe(output);
+    describe("number", function () {
+      test.each(casesNumber)("%s", function (input, output) {
+        expect(formatBin(encodeU32D(input)), "u32d:" + input.toString(16)).toBe(output);
+      });
     });
-    test("小数", () => expect(() => dbn.encodeDyNum(2.25)).toThrowError());
+    describe("bigint", function () {
+      test.each(casesBigint)("%s", function (input, output) {
+        expect(formatBin(encodeU64D(BigInt(input))), "u64d:" + input.toString(16)).toBe(output);
+      });
+    });
   });
 
   /** 极值 */
@@ -42,7 +50,7 @@ describe("DyNumber", function () {
   describe("write/read:bigInt", function () {
     cases_bigint.forEach((value, i) => {
       test(value + "-" + value.toString(16), function () {
-        const dldBuf = dbn.encodeDyNum(value);
+        const dldBuf = encodeU64D(value);
         let res = dbn.decodeU64D(dldBuf);
         expect(res).toEqual({ value, byte: dldBuf.byteLength });
       });
@@ -51,7 +59,7 @@ describe("DyNumber", function () {
   describe("write/read:number", function () {
     cases_int.slice(0, -1).forEach((value, i) => {
       test(value + "-" + value.toString(16), function () {
-        const dldBuf = dbn.encodeDyNum(value as number);
+        const dldBuf = encodeU32D(value as number);
         let res = dbn.decodeU32D(dldBuf);
         expect(res).toEqual({ value: value, byte: dldBuf.byteLength });
       });
@@ -79,4 +87,15 @@ function formatBin(num_buf: number | Uint8Array) {
     }
     return str;
   }
+}
+
+function encodeU64D(data: bigint) {
+  const buf = new Uint8Array(dbn.calcU64DByte(data));
+  dbn.encodeU64DInto(data, buf);
+  return buf;
+}
+function encodeU32D(data: number) {
+  const buf = new Uint8Array(dbn.calcU32DByte(data));
+  dbn.encodeU32DInto(data, buf);
+  return buf;
 }

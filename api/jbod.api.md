@@ -102,7 +102,10 @@ export type DefinedDataType = {
 };
 
 // @public (undocumented)
-export function encodeDyNum(data: number | bigint, buf?: Uint8Array): Uint8Array;
+export function encodeU32DInto(value: u32, buf: Uint8Array, offset?: number): number;
+
+// @public (undocumented)
+export function encodeU64DInto(value: u64, buf: Uint8Array, offset?: number): number;
 
 // @public (undocumented)
 export type IterableDataType = DataType.dyArray | DataType.dyRecord | DataType.set | DataType.map;
