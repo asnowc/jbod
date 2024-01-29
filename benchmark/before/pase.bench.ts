@@ -11,11 +11,12 @@ lineSuite(
   cases,
   function ({ size, value }) {
     const listData = JBOD.binaryify(createList(size, value));
+    const b_listData = B_JBOD.binaryify(createList(size, value));
     bench("Current", function () {
       JBOD.parse(listData);
     });
     bench("Before", function () {
-      B_JBOD.parse(listData);
+      B_JBOD.parse(b_listData);
     });
   },
   (item) => item.name

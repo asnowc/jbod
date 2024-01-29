@@ -1,5 +1,5 @@
 import path from "node:path";
-const version = "0.0.3";
+const version = "0.2.0";
 const resp = await fetch(`https://esm.sh/jbod@${version}/dist/mod.js?raw`);
 const jbodJs = await resp.text();
 const filename = "./benchmark/dist/before.js";
