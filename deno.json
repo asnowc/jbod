@@ -6,5 +6,9 @@
     "version_snapshots": "deno run -A scripts/version_snapshots.ts",
     "bench_ui": "deno run -A scripts/start_ui.ts"
   },
-  "importMap": "./scripts/bench_ui/import_map.json"
+  "imports": {
+    "@eavid/vitest-tool/bench": "npm:@eavid/vitest-tool@1.1.1/bench",
+    "protobufjs": "npm:protobufjs",
+    "jbod": "./dist/mod.js"
+  }
 }
