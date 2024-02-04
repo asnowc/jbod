@@ -93,8 +93,9 @@ export class JbodEncoder implements Encoder<any, CalcRes> {
     }
   }
 
-  encodeInto(value: CalcRes, buf: Uint8Array) {
-    return this.encoderMap[value.type](value.pretreatment, buf);
+  encodeInto(value: CalcRes, buf: Uint8Array, offset: number = 0) {
+    offset = this.encoderMap[value.type](value.pretreatment, buf, offset);
+    return buf.subarray(offset);
   }
   toTypeCode: (data: any) => number;
 
@@ -116,7 +117,7 @@ type ArrayPreData = CalcRes[];
 type MapPreData = { key: CalcRes<StrPreData>; value: CalcRes }[];
 type StrPreData = { str: string; contentLen: number };
 
-type EncodeFn = (this: EncoderMap, data: any, buf: Uint8Array) => Uint8Array;
+type EncodeFn = (this: EncoderMap, data: any, buf: Uint8Array, offset: number) => number;
 type Calculator = (this: CalculatorMap, data: any) => CalcRes;
 type EncoderMap = Record<number, EncodeFn>;
 
@@ -124,7 +125,7 @@ type CalculatorMap = {
   toTypeCode(data: any, safe?: boolean): number;
   [key: number]: Calculator;
 };
-const noContentTrans: EncodeFn = (data, buf) => buf;
+const noContentTrans: EncodeFn = (data, buf, offset) => offset;
 
 const default_type: DefinedDataTypeMap = {
   [DataType.true]: {
@@ -141,23 +142,23 @@ const default_type: DefinedDataTypeMap = {
   },
 
   [DataType.i32]: {
-    encoder(data: number, buf: Uint8Array) {
-      writeInt32BE(buf, data);
-      return buf.subarray(4);
+    encoder(data: number, buf: Uint8Array, offset) {
+      writeInt32BE(buf, data, offset);
+      return offset + 4;
     },
     calculator: (data) => ({ pretreatment: data, byteLength: 4, type: DataType.i32 }),
   },
   [DataType.f64]: {
-    encoder(data: number, buf: Uint8Array) {
-      writeDoubleBE(buf, data);
-      return buf.subarray(8);
+    encoder(data: number, buf: Uint8Array, offset) {
+      writeDoubleBE(buf, data, offset);
+      return offset + 8;
     },
     calculator: (data) => ({ pretreatment: data, byteLength: 8, type: DataType.f64 }),
   },
   [DataType.u64]: {
-    encoder(data: bigint, buf: Uint8Array) {
-      writeBigInt64BE(buf, data);
-      return buf.subarray(8);
+    encoder(data: bigint, buf: Uint8Array, offset) {
+      writeBigInt64BE(buf, data, offset);
+      return offset + 8;
     },
     calculator: (data) => ({ pretreatment: data, byteLength: 8, type: DataType.u64 }),
   },
@@ -172,10 +173,10 @@ const default_type: DefinedDataTypeMap = {
         type: DataType.string,
       };
     },
-    encoder(data: StrPreData, buf: Uint8Array) {
-      const offset = encodeU32DInto(data.contentLen, buf);
+    encoder(data: StrPreData, buf: Uint8Array, offset) {
+      offset = encodeU32DInto(data.contentLen, buf, offset);
       encodeUtf8Into(data.str, buf.subarray(offset));
-      return buf.subarray(offset + data.contentLen);
+      return offset + data.contentLen;
     },
   },
 
@@ -201,13 +202,13 @@ const default_type: DefinedDataTypeMap = {
 
       return { pretreatment: preData, byteLength: totalLen, type: DataType.dyArray };
     },
-    encoder(array: ArrayPreData, buf: Uint8Array) {
+    encoder(array: ArrayPreData, buf: Uint8Array, offset) {
       for (let i = 0; i < array.length; i++) {
-        buf[0] = array[i].type;
-        buf = this[array[i].type](array[i].pretreatment, buf.subarray(1));
+        buf[offset++] = array[i].type;
+        offset = this[array[i].type](array[i].pretreatment, buf, offset);
       }
-      buf[0] = DataType.void;
-      return buf.subarray(1);
+      buf[offset++] = DataType.void;
+      return offset;
     },
   },
   [DataType.binary]: {
@@ -220,10 +221,10 @@ const default_type: DefinedDataTypeMap = {
         type: DataType.binary,
       };
     },
-    encoder(data: Uint8Array, buf: Uint8Array) {
-      const offset = encodeU32DInto(data.byteLength, buf);
+    encoder(data: Uint8Array, buf: Uint8Array, offset) {
+      offset = encodeU32DInto(data.byteLength, buf, offset);
       buf.set(data, offset);
-      return buf.subarray(offset + data.byteLength);
+      return offset + data.byteLength;
     },
   },
   [DataType.dyRecord]: {
@@ -254,16 +255,16 @@ const default_type: DefinedDataTypeMap = {
       }
       return { pretreatment: preData, byteLength: totalLen, type: DataType.dyRecord };
     },
-    encoder(map: MapPreData, buf: Uint8Array) {
+    encoder(map: MapPreData, buf: Uint8Array, offset) {
       let item: MapPreData[0];
       for (let i = 0; i < map.length; i++) {
         item = map[i];
-        buf[0] = item.value.type;
-        buf = this[DataType.string](item.key.pretreatment, buf.subarray(1));
-        buf = this[item.value.type](item.value.pretreatment, buf);
+        buf[offset++] = item.value.type;
+        offset = this[DataType.string](item.key.pretreatment, buf, offset);
+        offset = this[item.value.type](item.value.pretreatment, buf, offset);
       }
-      buf[0] = DataType.void;
-      return buf.subarray(1);
+      buf[offset++] = DataType.void;
+      return offset;
     },
   },
 };
@@ -273,8 +274,8 @@ const jsDefaultClassType: DefinedDataTypeMap = {
     calculator(data: symbol) {
       return this[DataType.dyArray]([data.description]);
     },
-    encoder(data, buf) {
-      return this[DataType.dyArray](data, buf);
+    encoder(data, buf, offset) {
+      return this[DataType.dyArray](data, buf, offset);
     },
   },
   [DataType.error]: {

@@ -36,5 +36,5 @@ export type JbodAsyncIteratorItem = JbodIteratorBasicItem | JbodAsyncIteratorArr
 
 export interface Encoder<Q = any, T extends { byteLength: number } = { byteLength: number }> {
   calcLen(data: Q): T;
-  encodeInto(calcRes: T, buf: Uint8Array): Uint8Array;
+  encodeInto(calcRes: T, buf: Uint8Array, offset?: number): Uint8Array;
 }
