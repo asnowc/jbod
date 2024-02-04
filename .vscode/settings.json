@@ -1,7 +1,7 @@
 {
   "cSpell.words": ["binaryify", "jbod"],
-  "deno.enablePaths": ["./scripts", "./benchmark"],
-  "code-runner.executorMapByGlob": {
-    "**/*.bench.ts": "deno run -A"
-  }
+  "deno.enablePaths": [
+    "./scripts",
+    "./benchmark"
+  ]
 }

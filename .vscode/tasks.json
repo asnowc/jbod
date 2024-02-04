@@ -1,0 +1,27 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Benchmark",
+      "command": "deno bench -A ${file} --json > benchmark/dist/result.json",
+      "detail": "deno bench -A ${file} --json > benchmark/dist/result.json",
+      "type": "shell",
+      "args": [],
+      "presentation": {
+        "reveal": "always"
+      },
+      "group": "test"
+    },
+    {
+      "label": "Benchmark ui",
+      "command": "deno bench -A benchmark/utils/chart_ui.ts",
+      "detail": "deno bench -A benchmark/utils/chart_ui.ts",
+      "type": "shell",
+      "args": [],
+      "presentation": {
+        "reveal": "always"
+      },
+      "group": "test"
+    }
+  ]
+}

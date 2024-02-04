@@ -7,7 +7,7 @@
     "bench_ui": "deno run -A scripts/start_ui.ts"
   },
   "imports": {
-    "@eavid/vitest-tool/bench": "npm:@eavid/vitest-tool@1.1.1/bench",
+    "@eavid/vitest-tool/bench": "npm:@eavid/vitest-tool@1.2.3/bench",
     "protobufjs": "npm:protobufjs",
     "jbod": "./dist/mod.js"
   }

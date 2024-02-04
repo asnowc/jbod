@@ -4,7 +4,7 @@ import { LineSuite, benchSuiteRunner, bench, hrtimeNow } from "@eavid/vitest-too
 import JBOD from "jbod";
 import { cases, strMap } from "./__mocks__/compare.cases.ts";
 import * as JSON from "./json.ts";
-import { config } from "./config.ts";
+import { config } from "./utils/config.ts";
 
 function toStr(data: any) {
   return {
