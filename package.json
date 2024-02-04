@@ -4,7 +4,6 @@
   "description": "",
   "type": "module",
   "scripts": {
-    "benchmark": "vitest bench --watch false",
     "ci:test": "vitest run",
     "ci:build": "pnpm rollup -c",
     "test": "vitest",
@@ -39,7 +38,7 @@
   "keywords": [],
   "author": {
     "name": "Eavid",
-    "url": "https://github.com/ieavid"
+    "url": "https://github.com/eavidy"
   },
   "license": "MIT",
   "dependencies": {}
