@@ -1,6 +1,7 @@
 // @deno-types="npm:jbod@0.2.1"
 import JBOD from "jbod";
-import B_JBOD from "npm:jbod@0.2.1";
+// @deno-types="npm:jbod@0.2.1"
+import B_JBOD from "../dist/before.js";
 import { cases, createList } from "../__mocks__/compare.cases.ts";
 const benchFn = cases.map(({ name, size, value }) => {
   const listData = createList(size, value);

@@ -81,10 +81,6 @@ export const defined = Root.fromJSON({
   },
 });
 
-const buf = encodeArray([objData], defined.lookupType("object"));
-const data = decode(buf, defined.lookupType("object"));
-console.log(data);
-
 export function encodeArray(payload: any[], defined: Type) {
   const message = defined.create({ field: payload });
   return defined.encode(message).finish();
