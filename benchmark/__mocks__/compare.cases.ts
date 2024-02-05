@@ -8,9 +8,9 @@ export const objData = {
 };
 export const strMap = { data: createMap(1024 * 1024, "中文123abcde24", 1), size: 1024 * 100 };
 export const cases = [
-  { name: "number:8", size: 10000, value: 8, protobufGetter: "i32" },
-  { name: "number:-12345567", size: 10000, value: -12345567, protobufGetter: "i32" },
-  { name: "number_0x1fffff", size: 10000, value: 0x1fffff, protobufGetter: "i32" },
+  { name: "int32: 8", size: 10000, value: 8, protobufGetter: "i32" },
+  { name: "int32: -12345567", size: 10000, value: -12345567, protobufGetter: "i32" },
+  { name: `int32: ${0x1fffff}`, size: 10000, value: 0x1fffff, protobufGetter: "i32" },
   { name: "double", size: 10000, value: 4 / 7, protobufGetter: "f64" },
   { name: "boolean", size: 10000, value: true, protobufGetter: "bool" },
   { name: "string", size: 1000, value: "中文abc".repeat(10), protobufGetter: "string" },

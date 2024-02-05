@@ -13,7 +13,9 @@ await update();
 for await (const change of Deno.watchFs(resultFilename)) {
   if (change.kind === "modify") {
     console.log(new Date());
-    update();
+    update().catch((e) => {
+      console.log(e);
+    });
   }
 }
 async function update() {
@@ -23,6 +25,7 @@ async function update() {
   try {
     jsonStr = JSON.parse(text);
   } catch (error) {
+    server.updateBenchResult(textEncoder.encode("[]"))
     return;
   }
   const str = JSON.stringify(genChartPageData(jsonStr));
