@@ -94,10 +94,16 @@ export const decodeUtf8: (buf: Uint8Array) => string = (function () {
   }
 })();
 
-export const encodeUtf8Into: (str: string, buf: Uint8Array) => void = (function () {
+export const encodeUtf8Into: (str: string, buf: Uint8Array, offset: number) => number = (function () {
   const TextEncoder = (globalThis as any).TextEncoder;
   if (TextEncoder) {
     const textEncoder = new TextEncoder();
-    return (str: string, buf: Uint8Array) => textEncoder.encodeInto(str, buf);
+    return (str: string, buf: Uint8Array, offset) => {
+      if (str.length > 15) {
+        if (offset > 0) buf = buf.subarray(offset);
+        return textEncoder.encodeInto(str, buf).written + offset;
+      }
+      return writeByUtf8Into(str, buf, offset);
+    };
   } else return writeByUtf8Into;
 })();
