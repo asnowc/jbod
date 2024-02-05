@@ -5,7 +5,7 @@ type ParseResult<T = any> = { data: T; offset: number };
 type Parser = (buf: Uint8Array, offset: number) => ParseResult<any>;
 
 function paseUint8Arr(buf: Uint8Array, offset: number): ParseResult<Uint8Array> {
-  const res = decodeU32D(buf.subarray(offset));
+  const res = decodeU32D(buf, offset);
   offset += res.byte;
   if (res.value <= 0) return { data: new Uint8Array(0), offset };
   return { data: buf.subarray(offset, offset + res.value), offset: offset + res.value };

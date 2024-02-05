@@ -37,6 +37,8 @@ export enum DataType {
     // (undocumented)
     i32 = 20,
     // (undocumented)
+    i64 = 23,
+    // (undocumented)
     map = 33,
     // (undocumented)
     null = 1,
@@ -51,21 +53,19 @@ export enum DataType {
     // (undocumented)
     true = 3,
     // (undocumented)
-    u64 = 24,
-    // (undocumented)
     undefined = 38,
     // @internal
     void = 0
 }
 
 // @public (undocumented)
-export function decodeU32D(buf: Uint8Array): {
+export function decodeU32D(buf: Uint8Array, offset?: number): {
     value: number;
     byte: number;
 };
 
 // @public (undocumented)
-export function decodeU64D(buf: Uint8Array): {
+export function decodeU64D(buf: Uint8Array, offset?: number): {
     value: bigint;
     byte: number;
 };
@@ -82,7 +82,7 @@ const _default: {
         byteLength: number;
         pretreatment: any;
         type: number;
-    }, buf: Uint8Array) => Uint8Array;
+    }, buf: Uint8Array, offset?: number) => Uint8Array;
     calcLen: (data: any) => {
         byteLength: number;
         pretreatment: any;
@@ -126,7 +126,7 @@ export class JbodEncoder implements Encoder<any, CalcRes> {
     // (undocumented)
     calcLen(data: any): CalcRes<any>;
     // (undocumented)
-    encodeInto(value: CalcRes, buf: Uint8Array): Uint8Array;
+    encodeInto(value: CalcRes, buf: Uint8Array, offset?: number): Uint8Array;
     // (undocumented)
     toTypeCode: (data: any) => number;
 }

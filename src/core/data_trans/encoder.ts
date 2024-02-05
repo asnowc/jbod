@@ -105,7 +105,7 @@ export class JbodEncoder implements Encoder<any, CalcRes> {
   toTypeCode: (data: any) => number;
 
   calcLen(data: any) {
-    const type = this.toTypeCode(data);
+    const type = this.calculatorMap.toTypeCode(data);
     const res = this.calculatorMap[type](data);
     res.type = type;
     return res;
