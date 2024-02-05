@@ -34,14 +34,15 @@ function toTypeCode(this: CalculatorMap, data: any, safe?: boolean): number {
     case "boolean":
       return data ? DataType.true : DataType.false;
     case "number":
-      if (data % 1 !== 0 || data < -2147483648 || data > 2147483647) type = DataType.f64;
+      if (data % 1 !== 0) type = DataType.f64;
+      else if (data < -2147483648 || data > 2147483647) type = DataType.f64;
       else type = DataType.i32;
       break;
     case "string":
       type = DataType.string;
       break;
     case "bigint":
-      type = DataType.u64;
+      type = DataType.i64;
       break;
     case "symbol":
       type = DataType.symbol;
@@ -161,12 +162,12 @@ const default_type: DefinedDataTypeMap = {
     },
     calculator: (data) => ({ pretreatment: data, byteLength: 8, type: DataType.f64 }),
   },
-  [DataType.u64]: {
+  [DataType.i64]: {
     encoder(data: bigint, buf: Uint8Array, offset) {
       writeBigInt64BE(buf, data, offset);
       return offset + 8;
     },
-    calculator: (data) => ({ pretreatment: data, byteLength: 8, type: DataType.u64 }),
+    calculator: (data) => ({ pretreatment: data, byteLength: 8, type: DataType.i64 }),
   },
 
   [DataType.string]: {

@@ -28,7 +28,7 @@ export class JbodAsyncParser {
         return false;
       case DataType.i32:
         return readInt32BE(await read(4));
-      case DataType.u64:
+      case DataType.i64:
         return readBigInt64BE(await read(8));
       case DataType.f64:
         return readDoubleBE(await read(8));

@@ -23,7 +23,7 @@ export class JbodDecoder {
         return { data: false, offset };
       case DataType.i32:
         return { data: readInt32BE(buf, offset), offset: offset + 4 };
-      case DataType.u64:
+      case DataType.i64:
         return { data: readBigInt64BE(buf, offset), offset: offset + 8 };
       case DataType.f64:
         return { data: readDoubleBE(buf, offset), offset: offset + 8 };

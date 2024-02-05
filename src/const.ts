@@ -21,7 +21,7 @@ export enum DataType {
   dyRecord = 14,
 
   i32 = 0b1_0100,
-  u64 = 0b1_1000,
+  i64 = 0b1_0111,
 
   error = 0b10_0000,
   map = 0b10_0001,
