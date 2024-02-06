@@ -16,7 +16,7 @@ export default {
   decode: defaultDecoder.decode.bind(defaultDecoder),
 
   encodeInto: defaultEncoder.encodeInto.bind(defaultEncoder),
-  calcLen: defaultEncoder.calcLen.bind(defaultEncoder),
+  byteLength: defaultEncoder.byteLength.bind(defaultEncoder),
 
   /**
    *
@@ -29,7 +29,7 @@ export default {
    * @remarks 将数据转为带类型的的完整二进制数据
    */
   encode: function encodeJbod(data: any) {
-    let res = defaultEncoder.calcLen(data);
+    let res = defaultEncoder.byteLength(data);
     const buf = new Uint8Array(res.byteLength + 1);
     defaultEncoder.encodeInto(res, buf.subarray(1));
     buf[0] = defaultEncoder.toTypeCode(data);
@@ -40,7 +40,7 @@ export default {
    * @remarks 将数据转为不带类型的二进制数据
    */
   encodeContent: function binaryifyJbodContent(data: any) {
-    let res = defaultEncoder.calcLen(data);
+    let res = defaultEncoder.byteLength(data);
     const buf = new Uint8Array(res.byteLength);
     defaultEncoder.encodeInto(res, buf);
     return buf;

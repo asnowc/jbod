@@ -99,12 +99,11 @@ export class JbodEncoder implements Encoder<any, CalcRes> {
   }
 
   encodeInto(value: CalcRes, buf: Uint8Array, offset: number = 0) {
-    offset = this.encoderMap[value.type](value.pretreatment, buf, offset);
-    return buf.subarray(offset);
+    return this.encoderMap[value.type](value.pretreatment, buf, offset);
   }
   toTypeCode: (data: any) => number;
 
-  calcLen(data: any) {
+  byteLength(data: any) {
     const type = this.calculatorMap.toTypeCode(data);
     const res = this.calculatorMap[type](data);
     res.type = type;
