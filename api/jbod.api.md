@@ -93,8 +93,8 @@ const _default: {
         byteLength: number;
         pretreatment: any;
         type: number;
-    }, buf: Uint8Array, offset?: number) => Uint8Array;
-    calcLen: (data: any) => {
+    }, buf: Uint8Array, offset?: number) => number;
+    byteLength: (data: any) => {
         byteLength: number;
         pretreatment: any;
         type: number;
