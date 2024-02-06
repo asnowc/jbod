@@ -4,12 +4,6 @@ import { readInt32BE, readBigInt64BE, readDoubleBE, decodeUtf8 } from "../../uin
 type ParseResult<T = any> = { data: T; offset: number };
 type Parser = (buf: Uint8Array, offset: number) => ParseResult<any>;
 
-function paseUint8Arr(buf: Uint8Array, offset: number): ParseResult<Uint8Array> {
-  const res = decodeU32D(buf, offset);
-  offset += res.byte;
-  if (res.value <= 0) return { data: new Uint8Array(0), offset };
-  return { data: buf.subarray(offset, offset + res.value), offset: offset + res.value };
-}
 export class JbodDecoder {
   paseItem(type: number, buf: Uint8Array, offset: number): ParseResult {
     switch (type) {
@@ -27,19 +21,26 @@ export class JbodDecoder {
         return { data: readBigInt64BE(buf, offset), offset: offset + 8 };
       case DataType.f64:
         return { data: readDoubleBE(buf, offset), offset: offset + 8 };
-      case DataType.binary:
-        return paseUint8Arr(buf, offset);
       default: {
         if (typeof this[type] !== "function") throw new UnsupportedDataTypeError(DataType[type] ?? type);
         return this[type](buf, offset);
       }
     }
   }
-
+  [DataType.binary](buf: Uint8Array, offset: number): ParseResult<Uint8Array> {
+    const res = decodeU32D(buf, offset);
+    offset += res.byte;
+    if (res.value <= 0) return { data: new Uint8Array(0), offset };
+    return { data: buf.subarray(offset, offset + res.value), offset: offset + res.value };
+  }
   [DataType.string](buf: Uint8Array, offset: number): ParseResult<string> {
-    const res: ParseResult = paseUint8Arr(buf, offset);
-    res.data = decodeUtf8(res.data);
-    return res;
+    const res = decodeU32D(buf, offset);
+    offset += res.byte;
+    if (res.value <= 0) return { data: "", offset };
+    return {
+      data: decodeUtf8(buf.subarray(offset, offset + res.value)),
+      offset: offset + res.value,
+    };
   }
   [DataType.symbol](buf: Uint8Array, offset: number): ParseResult<Symbol> {
     const data = this[DataType.dyArray](buf, offset) as ParseResult<any>;
