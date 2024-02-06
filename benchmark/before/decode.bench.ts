@@ -1,6 +1,6 @@
-// @deno-types="npm:jbod@0.2.1"
+// @deno-types="npm:jbod@0.3"
 import JBOD from "jbod";
-// @deno-types="npm:jbod@0.2.1"
+// @deno-types="npm:jbod@0.3"
 import B_JBOD from "../dist/before.js";
 import { cases, createList } from "../__mocks__/compare.cases.ts";
 
