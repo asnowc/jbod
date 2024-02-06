@@ -3,10 +3,10 @@ import { baseDataTypes, unsupportedData } from "./__mocks__/data_type.cases.js";
 import "./expects/expect.js";
 import { describe, expect, test } from "vitest";
 
-describe("binaryify", function () {
+describe("encode", function () {
   test("map", function () {
     const data = { a: 1, b: 2, c: 3 };
-    const buf = JBOD.binaryify(data);
+    const buf = JBOD.encode(data);
 
     const k1 = [DataType.i32, 1, 97, 0, 0, 0, 1];
     const k2 = [DataType.i32, 1, 98, 0, 0, 0, 2];
@@ -15,7 +15,7 @@ describe("binaryify", function () {
   });
   test("array", function () {
     const data = [1, "a", null];
-    const buf = JBOD.binaryify(data);
+    const buf = JBOD.encode(data);
 
     const v1 = [DataType.i32, 0, 0, 0, 1];
     const v2 = [DataType.string, 1, 97];
@@ -24,11 +24,11 @@ describe("binaryify", function () {
   });
 });
 
-describe("binaryify-pase", function () {
+describe("encode-pase", function () {
   describe.each(Object.entries(baseDataTypes))("%s", function (type, cases) {
     test.each(cases as any[])("%s", function (data) {
-      const buf = JBOD.binaryify(data);
-      const { data: transData, offset } = JBOD.parse(buf);
+      const buf = JBOD.encode(data);
+      const { data: transData, offset } = JBOD.decode(buf);
       expect(transData).jbodEqual(data);
       expect(offset).toBe(buf.byteLength);
     });
@@ -36,18 +36,18 @@ describe("binaryify-pase", function () {
 });
 
 test("不支持的数据类型", function () {
-  expect(() => JBOD.binaryify(unsupportedData.function[0])).toThrowError(UnsupportedDataTypeError);
+  expect(() => JBOD.encode(unsupportedData.function[0])).toThrowError(UnsupportedDataTypeError);
 });
-describe("parseAsync", function () {
+describe.skip("parseAsync", function () {
   describe.each(Object.entries(baseDataTypes))("%s", function (type, cases) {
     test.each(cases as any[])("%s", async function (data) {
-      const reader = createFixedStreamReader(JBOD.binaryify(data));
+      const reader = createFixedStreamReader(JBOD.encode(data));
       const array = await JBOD.parseAsync(reader);
       expect(array).jbodEqual(data);
     });
   });
 });
-describe("scanAsync", function () {
+describe.skip("scanAsync", function () {
   const iterableDataType = [
     { data: baseDataTypes.array, type: "array" },
     { data: baseDataTypes.set, type: "set" },
@@ -57,7 +57,7 @@ describe("scanAsync", function () {
   describe.each(iterableDataType)("$type", async function ({ data: cases, type }) {
     cases.forEach((data) => {
       test(JSON.stringify(data), async function () {
-        const reader = createFixedStreamReader(JBOD.binaryify(data));
+        const reader = createFixedStreamReader(JBOD.encode(data));
         const expectItems = createIteratorPath(data).value as Map<any, TestItrItem>;
         const expectKeys = Array.from(expectItems.keys());
 

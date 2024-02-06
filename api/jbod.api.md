@@ -7,12 +7,12 @@
 // Warning: (ae-forgotten-export) The symbol "u32" needs to be exported by the entry point mod.d.ts
 //
 // @public (undocumented)
-export function calcU32DByte(value: u32): number;
+function calcU32DByte(value: u32): number;
 
 // Warning: (ae-forgotten-export) The symbol "u64" needs to be exported by the entry point mod.d.ts
 //
 // @public (undocumented)
-export function calcU64DByte(value: u64): number;
+function calcU64DByte(value: u64): number;
 
 // @public (undocumented)
 export enum DataType {
@@ -58,26 +58,37 @@ export enum DataType {
     void = 0
 }
 
+declare namespace DBN {
+    export {
+        calcU64DByte,
+        encodeU64DInto,
+        calcU32DByte,
+        encodeU32DInto,
+        decodeU64D,
+        decodeU32D,
+        U32DByteParser
+    }
+}
+export { DBN }
+
 // @public (undocumented)
-export function decodeU32D(buf: Uint8Array, offset?: number): {
+function decodeU32D(buf: Uint8Array, offset?: number): {
     value: number;
     byte: number;
 };
 
 // @public (undocumented)
-export function decodeU64D(buf: Uint8Array, offset?: number): {
+function decodeU64D(buf: Uint8Array, offset?: number): {
     value: bigint;
     byte: number;
 };
 
 // @public (undocumented)
 const _default: {
-    parse: <T = unknown>(buffer: Uint8Array, type?: DataType) => {
-        data: T;
+    decode: (buffer: Uint8Array, offset?: number, type?: number | undefined) => {
+        data: any;
         offset: number;
     };
-    parseAsync: <T_1 = unknown>(read: StreamReader, type?: DataType) => Promise<T_1>;
-    scanAsync: (read: StreamReader, type?: IterableDataType) => AsyncGenerator<JbodAsyncIteratorItem, void, void>;
     encodeInto: (value: {
         byteLength: number;
         pretreatment: any;
@@ -89,23 +100,16 @@ const _default: {
         type: number;
     };
     getType: (data: any) => number;
-    binaryify: (data: any) => Uint8Array;
-    binaryifyContent: (data: any) => Uint8Array;
+    encode: (data: any) => Uint8Array;
+    encodeContent: (data: any) => Uint8Array;
 };
 export default _default;
 
 // @public (undocumented)
-export type DefinedDataType = {
-    calculator: Calculator;
-    encoder: EncodeFn;
-    class?: new (...args: any[]) => object;
-};
+function encodeU32DInto(value: u32, buf: Uint8Array, offset?: number): number;
 
 // @public (undocumented)
-export function encodeU32DInto(value: u32, buf: Uint8Array, offset?: number): number;
-
-// @public (undocumented)
-export function encodeU64DInto(value: u64, buf: Uint8Array, offset?: number): number;
+function encodeU64DInto(value: u64, buf: Uint8Array, offset?: number): number;
 
 // @public (undocumented)
 export type IterableDataType = DataType.dyArray | DataType.dyRecord | DataType.set | DataType.map;
@@ -117,42 +121,24 @@ export type IterableDataType = DataType.dyArray | DataType.dyRecord | DataType.s
 // @public (undocumented)
 export type JbodAsyncIteratorItem = JbodIteratorBasicItem | JbodAsyncIteratorArrayItem | JbodAsyncIteratorValue;
 
-// Warning: (ae-forgotten-export) The symbol "Encoder" needs to be exported by the entry point mod.d.ts
-// Warning: (ae-forgotten-export) The symbol "CalcRes" needs to be exported by the entry point mod.d.ts
-//
-// @public (undocumented)
-export class JbodEncoder implements Encoder<any, CalcRes> {
-    constructor(config?: JbodEncoderConfig);
-    // (undocumented)
-    calcLen(data: any): CalcRes<any>;
-    // (undocumented)
-    encodeInto(value: CalcRes, buf: Uint8Array, offset?: number): Uint8Array;
-    // (undocumented)
-    toTypeCode: (data: any) => number;
-}
-
-// @public (undocumented)
-export interface JbodEncoderConfig {
-    // Warning: (ae-forgotten-export) The symbol "DefinedDataTypeMap" needs to be exported by the entry point mod.d.ts
-    //
-    // (undocumented)
-    customObjet?: DefinedDataTypeMap;
-}
-
 // @public (undocumented)
 export class JbodError extends Error {
+}
+
+// Warning: (ae-forgotten-export) The symbol "ByteParser" needs to be exported by the entry point mod.d.ts
+//
+// @public (undocumented)
+class U32DByteParser extends ByteParser<number> {
+    // (undocumented)
+    next(buf: Uint8Array): boolean;
+    // (undocumented)
+    value: number;
 }
 
 // @public (undocumented)
 export class UnsupportedDataTypeError extends Error {
     constructor(desc?: string | number);
 }
-
-// Warnings were encountered during analysis:
-//
-// src/core/data_trans/encoder.ts:23:3 - (ae-forgotten-export) The symbol "Calculator" needs to be exported by the entry point mod.d.ts
-// src/core/data_trans/encoder.ts:24:3 - (ae-forgotten-export) The symbol "EncodeFn" needs to be exported by the entry point mod.d.ts
-// src/core/jbod.ts:35:3 - (ae-forgotten-export) The symbol "StreamReader" needs to be exported by the entry point mod.d.ts
 
 // (No @packageDocumentation comment for this package)
 

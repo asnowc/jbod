@@ -6,16 +6,16 @@ import { cases, createList } from "../__mocks__/compare.cases.ts";
 
 cases
   .map(({ size, value, name }) => {
-    const listData = JBOD.binaryify(createList(size, value));
-    const b_listData = B_JBOD.binaryify(createList(size, value));
+    const listData = JBOD.encode(createList(size, value));
+    const b_listData = B_JBOD.encode(createList(size, value));
     return {
       size,
       name,
       Current: () => {
-        JBOD.parse(listData);
+        JBOD.decode(listData);
       },
       Before: () => {
-        B_JBOD.parse(b_listData);
+        B_JBOD.decode(b_listData);
       },
     };
   })

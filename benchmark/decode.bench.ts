@@ -8,14 +8,14 @@ import * as protobuf from "./protobuf.ts";
 cases
   .map(({ size, value, name, protobufGetter }) => {
     const data = createList(size, value);
-    const jbodU8Arr = JBOD.binaryify(data);
+    const jbodU8Arr = JBOD.encode(data);
     const jsonU8Arr = JSON.encode(data);
     const protobufType = protobuf.defined.lookupType(protobufGetter);
     const protobufU8Arr = protobuf.encodeArray(data, protobufType);
 
     return {
       JBOD() {
-        JBOD.parse(jbodU8Arr);
+        JBOD.decode(jbodU8Arr);
       },
       JSON() {
         JSON.decode(jsonU8Arr);

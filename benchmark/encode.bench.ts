@@ -13,7 +13,7 @@ cases
         JSON.encode(listData);
       },
       JBOD() {
-        JBOD.binaryify(listData);
+        JBOD.encode(listData);
       },
       ProtoBuf() {
         protobuf.encodeArray(listData, protoBufType);

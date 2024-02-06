@@ -5,22 +5,29 @@ type ParseResult<T = any> = { data: T; offset: number };
 type Parser = (buf: Uint8Array, offset: number) => ParseResult<any>;
 
 export class JbodDecoder {
-  paseItem(type: number, buf: Uint8Array, offset: number): ParseResult {
+  decode(buffer: Uint8Array, offset: number = 0, type?: number): ParseResult {
+    if (type === undefined) {
+      type = buffer[0];
+      offset = 1;
+    }
+    return this.decodeItem(buffer, offset, type);
+  }
+  protected decodeItem(buf: Uint8Array, offset: number, type: number): ParseResult {
     switch (type) {
-      case DataType.undefined:
-        return { data: undefined, offset };
-      case DataType.null:
-        return { data: null, offset };
-      case DataType.true:
-        return { data: true, offset };
-      case DataType.false:
-        return { data: false, offset };
       case DataType.i32:
         return { data: readInt32BE(buf, offset), offset: offset + 4 };
       case DataType.i64:
         return { data: readBigInt64BE(buf, offset), offset: offset + 8 };
       case DataType.f64:
         return { data: readDoubleBE(buf, offset), offset: offset + 8 };
+      case DataType.true:
+        return { data: true, offset };
+      case DataType.false:
+        return { data: false, offset };
+      case DataType.null:
+        return { data: null, offset };
+      case DataType.undefined:
+        return { data: undefined, offset };
       default: {
         if (typeof this[type] !== "function") throw new UnsupportedDataTypeError(DataType[type] ?? type);
         return this[type](buf, offset);
@@ -42,16 +49,7 @@ export class JbodDecoder {
       offset: offset + res.value,
     };
   }
-  [DataType.symbol](buf: Uint8Array, offset: number): ParseResult<Symbol> {
-    const data = this[DataType.dyArray](buf, offset) as ParseResult<any>;
-    data.data = Symbol(data.data[0]);
-    return data;
-  }
-  [DataType.regExp](buf: Uint8Array, offset: number): ParseResult<RegExp> {
-    const res: ParseResult = this[DataType.string](buf, offset);
-    res.data = new RegExp(res.data);
-    return res;
-  }
+
   [DataType.dyArray](buf: Uint8Array, offset: number): ParseResult<any[]> {
     let arrayList: unknown[] = [];
     let res: ParseResult;
@@ -59,7 +57,7 @@ export class JbodDecoder {
     while (offset < buf.byteLength) {
       type = buf[offset++];
       if (type === DataType.void) break;
-      res = this.paseItem(type, buf, offset);
+      res = this.decodeItem(buf, offset, type);
       offset = res.offset;
       arrayList.push(res.data);
     }
@@ -76,7 +74,7 @@ export class JbodDecoder {
       key = res.data;
       offset = res.offset;
 
-      res = this.paseItem(type, buf, offset);
+      res = this.decodeItem(buf, offset, type);
       map[key] = res.data;
       offset = res.offset;
     }
@@ -84,6 +82,16 @@ export class JbodDecoder {
     return { data: map, offset };
   }
 
+  [DataType.symbol](buf: Uint8Array, offset: number): ParseResult<Symbol> {
+    const data = this[DataType.dyArray](buf, offset) as ParseResult<any>;
+    data.data = Symbol(data.data[0]);
+    return data;
+  }
+  [DataType.regExp](buf: Uint8Array, offset: number): ParseResult<RegExp> {
+    const res: ParseResult = this[DataType.string](buf, offset);
+    res.data = new RegExp(res.data);
+    return res;
+  }
   [DataType.error](buf: Uint8Array, offset: number): ParseResult<Error> {
     const res: ParseResult = this[DataType.dyRecord](buf, offset);
     const { message, cause, ...attr } = res.data;

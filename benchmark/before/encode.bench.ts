@@ -8,10 +8,10 @@ const benchFn = cases.map(({ name, size, value }) => {
   return {
     name,
     JBOD: () => {
-      JBOD.binaryify(listData);
+      JBOD.encode(listData);
     },
     B_JBOD: () => {
-      B_JBOD.binaryify(listData);
+      B_JBOD.encode(listData);
     },
   };
 });
