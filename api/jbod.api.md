@@ -4,6 +4,8 @@
 
 ```ts
 
+import { Calc } from './data_trans/type.js';
+
 // Warning: (ae-forgotten-export) The symbol "u32" needs to be exported by the entry point mod.d.ts
 //
 // @public (undocumented)
@@ -17,6 +19,8 @@ function calcU64DByte(value: u64): number;
 // @public (undocumented)
 export enum DataType {
     // (undocumented)
+    array = 11,
+    // (undocumented)
     binary = 9,
     // (undocumented)
     dyArray = 13,
@@ -28,6 +32,8 @@ export enum DataType {
     dyRecord = 14,
     // (undocumented)
     error = 32,
+    // (undocumented)
+    f32 = 5,
     // (undocumented)
     f64 = 6,
     // (undocumented)
@@ -43,11 +49,15 @@ export enum DataType {
     // (undocumented)
     null = 1,
     // (undocumented)
+    record = 12,
+    // (undocumented)
     regExp = 35,
     // (undocumented)
     set = 34,
     // (undocumented)
     string = 10,
+    // (undocumented)
+    struct = 15,
     // (undocumented)
     symbol = 37,
     // (undocumented)
@@ -89,16 +99,8 @@ const _default: {
         data: any;
         offset: number;
     };
-    encodeInto: (value: {
-        byteLength: number;
-        pretreatment: any;
-        type: number;
-    }, buf: Uint8Array, offset?: number) => number;
-    byteLength: (data: any) => {
-        byteLength: number;
-        pretreatment: any;
-        type: number;
-    };
+    encodeInto: (value: Calc.Result<any>, buf: Uint8Array, offset?: number) => number;
+    byteLength: (data: any) => Calc.Result<any>;
     getType: (data: any) => number;
     encode: (data: any) => Uint8Array;
     encodeContent: (data: any) => Uint8Array;

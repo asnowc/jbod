@@ -31,7 +31,7 @@ export default {
   encode: function encodeJbod(data: any) {
     let res = defaultEncoder.byteLength(data);
     const buf = new Uint8Array(res.byteLength + 1);
-    defaultEncoder.encodeInto(res, buf.subarray(1));
+    defaultEncoder.encodeInto(res, buf, 1);
     buf[0] = defaultEncoder.toTypeCode(data);
     return buf;
   },

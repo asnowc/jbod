@@ -7,18 +7,20 @@ export enum DataType {
   void = 0,
 
   null = 1,
+
   true = 3,
   false = 4,
-
+  f32 = 5,
   f64 = 6,
-
   dyNumR = 7,
   dyNum = 8,
-
   binary = 9,
   string = 10,
+  array = 11,
+  record = 12,
   dyArray = 13,
   dyRecord = 14,
+  struct = 15,
 
   i32 = 0b1_0100,
   i64 = 0b1_0111,
