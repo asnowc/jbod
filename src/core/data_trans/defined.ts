@@ -28,7 +28,17 @@ const BASE_ENCODERS: Record<string, Enc.Fn> = {
   [DataType.i64]: writeBigInt64BE,
   [DataType.f64]: writeDoubleBE,
 };
-
+const FIXED_LEN_TYPE = new Set([
+  DataType.i32,
+  DataType.i64,
+  DataType.f32,
+  DataType.f64,
+  DataType,
+  DataType.true,
+  DataType.false,
+  DataType.undefined,
+  DataType.null,
+]);
 const DEFAULT_DEFINE_TYPE: DefinedDataTypeMap = {
   [DataType.string]: {
     calculator(data: string): Calc.Result<CalcPreData.String> {
@@ -110,6 +120,51 @@ const DEFAULT_DEFINE_TYPE: DefinedDataTypeMap = {
         offset = res.offset;
         arrayList.push(res.data);
       }
+      return { data: arrayList, offset };
+    },
+  },
+  [DataType.array]: {
+    calculator: function dyArrayCalculator(arr: any[]): Calc.Result<{ arr: any[]; type: number }> {
+      let totalLen = 1 + calcU32DByte(arr.length); //type + type*length
+      let valueRes: Calc.Result;
+      let type = toTypeCode(arr[0], this.customClassType);
+      if (arr.length && !FIXED_LEN_TYPE.has(type)) {
+        let preData: CalcPreData.Array = new Array(arr.length);
+        for (let i = 0; i < arr.length; i++) {
+          valueRes = this.byteLength(arr[i]);
+          totalLen += valueRes.byteLength;
+          preData[i] = valueRes.pretreatment;
+        }
+        return { pretreatment: { arr: preData, type }, byteLength: totalLen, type: DataType.array };
+      } else {
+        valueRes = this.byteLength(arr[0]);
+        totalLen += valueRes.byteLength * arr.length;
+        return { pretreatment: { arr, type }, byteLength: totalLen, type: DataType.array };
+      }
+    },
+    encoder: function dyArrayEncoder(data: { arr: any[]; type: number }, buf: Uint8Array, offset) {
+      const { arr: array, type } = data;
+      buf[offset++] = type;
+      offset = encodeU32DInto(array.length, buf, offset);
+      for (let i = 0; i < array.length; i++) {
+        offset = this[type](array[i], buf, offset);
+      }
+      return offset;
+    },
+    decoder: function dyArrayDecoder(this: Dec.Context, buf: Uint8Array, offset: number): DecodeResult<any[]> {
+      const type = buf[offset++];
+      let du32 = decodeU32D(buf, offset);
+      offset += du32.byte;
+      const length = du32.value;
+
+      let arrayList: unknown[] = [];
+      let res: DecodeResult;
+      for (let i = 0; i < length; i++) {
+        res = this.decodeItem(buf, offset, type);
+        offset = res.offset;
+        arrayList[i] = res.data;
+      }
+
       return { data: arrayList, offset };
     },
   },

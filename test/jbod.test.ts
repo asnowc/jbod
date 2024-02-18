@@ -50,6 +50,18 @@ describe("encode-pase", function () {
       expect(offset).toBe(buf.byteLength);
     });
   });
+  test("array-string", function () {
+    const data = ["ab", "cd", "ef", "gh"]; // 1+2+12
+    const buf = JBOD.encode(data);
+    const res = JBOD.decode(buf);
+    expect(res.data).toEqual(data);
+  });
+  test("array-int", function () {
+    const data = [1, 3, 4, 5, 6, 7];
+    const buf = JBOD.encode(data);
+    const res = JBOD.decode(buf);
+    expect(res.data).toEqual(data);
+  });
 });
 
 test("不支持的数据类型", function () {
