@@ -8,8 +8,8 @@ import { createCalcContext, createEncContext, toTypeCode } from "./base_trans.js
 export interface JbodTransConfig {
   customObjet?: DefinedDataTypeMap;
 }
-
-export class JbodTrans implements Encoder<any, Calc.Result<unknown>>, Decoder {
+type UserCalcResult = { byteLength: number; type: number; pretreatment: unknown };
+export class JbodTrans implements Encoder<any, UserCalcResult>, Decoder {
   private encodeContext: Enc.Context;
   private calcContext: Calc.Context;
   private decContext: Dec.Context;
@@ -21,19 +21,19 @@ export class JbodTrans implements Encoder<any, Calc.Result<unknown>>, Decoder {
   }
   /**
    * @remarks 从 Uint8Array 解析数据
-   * @param type - 指定解析的数据类型. 这会认为 buffer 的第一个字节是数据的值, 而不是数据类型
+   * @param type - 指定解析的数据类型. 如果不指定, 将从 buffer 的第一个字节读取, 否则认为buffer 不携带类型
    */
   decode(buffer: Uint8Array, offset: number = 0, type?: number): DecodeResult {
     if (type === undefined) type = buffer[offset++];
     return this.decContext.decodeItem(buffer, offset, type);
   }
-  /** 编码后携带带类型 */
-  encodeInto(value: Calc.Result<unknown>, buf: Uint8Array, offset: number = 0) {
+  /** @remarks 将数据编码为携带类型的 Uint8Array, 这会比 encodeContentInto 多一个字节 */
+  encodeInto(value: UserCalcResult, buf: Uint8Array, offset: number = 0) {
     buf[offset++] = value.type;
     return this.encodeContext[value.type](value.pretreatment, buf, offset);
   }
-  /** 编码后不携带带类型, 需要注意, 由 byteLength 计算而来的长度是包含类型的 */
-  encodeContentInto(value: Calc.Result<unknown>, buf: Uint8Array, offset: number = 0) {
+  /** @remarks 将数据编码为不携带类型的 Uint8Array, 这会比 encodeInto 少一个字节 */
+  encodeContentInto(value: UserCalcResult, buf: Uint8Array, offset: number = 0) {
     return this.encodeContext[value.type](value.pretreatment, buf, offset);
   }
   /**
@@ -46,7 +46,7 @@ export class JbodTrans implements Encoder<any, Calc.Result<unknown>>, Decoder {
   /**
    * @remarks 计算数据的字节长度, 并进行预处理. 不要修改结果对象, 否则可能会造成异常
    */
-  byteLength(data: any) {
+  byteLength(data: any): UserCalcResult {
     let res = this.calcContext.byteLength(data);
     res.byteLength++;
     return res;

@@ -5,7 +5,7 @@ export { type JbodTransConfig as JbodEncoderConfig };
 class UserJbodTrans extends JbodTrans {
   /**
    * @public
-   * @remarks 将数据转为带类型的的完整二进制数据
+   * @remarks 将数据编码为携带类型的 Uint8Array, 这会比 encodeContent 多一个字节
    */
   encode(data: any) {
     let res = this.byteLength(data);
@@ -15,7 +15,7 @@ class UserJbodTrans extends JbodTrans {
   }
   /**
    * @public
-   * @remarks 将数据转为不带类型的二进制数据
+   * @remarks 将数据编码为不携带类型的 Uint8Array, 这会比 encode 少一个字节
    */
   encodeContent(data: any) {
     let res = this.byteLength(data);
