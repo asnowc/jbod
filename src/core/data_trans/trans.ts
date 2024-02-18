@@ -26,7 +26,7 @@ export class JbodTrans implements Encoder<any, UserCalcResult>, Decoder {
    * @remarks 从 Uint8Array 解析数据
    * @param type - 指定解析的数据类型. 如果不指定, 将从 buffer 的第一个字节读取, 否则认为buffer 不携带类型
    */
-  decode(buffer: Uint8Array, offset: number = 0, type?: number): DecodeResult {
+  decode<T = any>(buffer: Uint8Array, offset: number = 0, type?: number): DecodeResult<T> {
     if (type === undefined) type = buffer[offset++];
     return this.decContext.decodeItem(buffer, offset, type);
   }
