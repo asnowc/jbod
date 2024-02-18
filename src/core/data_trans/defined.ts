@@ -10,7 +10,7 @@ import {
 } from "../../uint_array_util/mod.js";
 import { calcU32DByte, decodeU32D, encodeU32DInto } from "../dynamic_binary_number.js";
 import { DecodeResult } from "../type.js";
-import { defineStruct } from "./base_trans.js";
+import { defineStruct, toTypeCode } from "./base_trans.js";
 
 const JS_ClASS_STRUCT = {
   symbol: defineStruct({ description: 1 }),
@@ -171,7 +171,9 @@ const JS_CLASS_DEFINE_TYPE: DefinedDataTypeMap = {
     class: Set,
     encoder: DEFAULT_DEFINE_TYPE[DataType.dyArray].encoder,
     calculator(data: Set<any>) {
-      return this[DataType.dyArray](Array.from(data));
+      let res = this[DataType.dyArray](Array.from(data));
+      res.type = DataType.set;
+      return res;
     },
     decoder(this: Dec.Context, buf, offset) {
       const arr: DecodeResult = this[DataType.dyArray](buf, offset);
@@ -190,7 +192,9 @@ const JS_CLASS_DEFINE_TYPE: DefinedDataTypeMap = {
         list[i + 1] = item[1];
         i += 2;
       }
-      return this[DataType.dyArray](list);
+      let res = this[DataType.dyArray](list);
+      res.type = DataType.map;
+      return res;
     },
     decoder(this: Dec.Context, buf, offset) {
       const res: DecodeResult = this[DataType.dyArray](buf, offset);

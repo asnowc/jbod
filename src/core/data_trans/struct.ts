@@ -2,7 +2,6 @@ import { createEncMaps } from "./defined.js";
 import type { DecodeResult, Encoder, Decoder, Struct } from "../type.js";
 import { Calc, Dec, Enc, Struct as Stru } from "./type.js";
 import { createCalcContext, createDecContext, createEncContext, defineStruct } from "./base_trans.js";
-import { FieldType } from "../const.js";
 
 /** @public */
 export class StructEncoder<T extends object = any> implements Encoder, Decoder {

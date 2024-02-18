@@ -30,9 +30,7 @@ function calcLength(this: Calc.Context, data: any): Calc.Result {
     case "object": {
       if (data === null) return { type: DataType.null, byteLength: 0, pretreatment: null };
 
-      if (data instanceof Array) return this[DataType.dyArray](data);
-
-      let item: (typeof this.customClassType)[0];
+      let item: Calc.DefineClass;
       for (let i = 0; i < this.customClassType.length; i++) {
         item = this.customClassType[i];
         if (data instanceof item.class) return this[item.code](data);
@@ -111,6 +109,44 @@ function calcStruct(
     byteLength: len,
     pretreatment: preMap,
   };
+}
+export function toTypeCode(data: any, customClassType?: Calc.DefineClass[]): number {
+  let type: number;
+  switch (typeof data) {
+    case "number":
+      if (data % 1 !== 0 || data < -2147483648 || data > 2147483647) type = DataType.f64;
+      else type = DataType.i32;
+      break;
+    case "bigint":
+      type = DataType.i64;
+      break;
+    case "boolean":
+      return data ? DataType.true : DataType.false;
+    case "string":
+      type = DataType.string;
+      break;
+    case "undefined":
+      return DataType.undefined;
+    case "symbol":
+      type = DataType.symbol;
+      break;
+    case "object": {
+      if (data === null) return DataType.null;
+
+      if (data instanceof Array) return DataType.dyArray;
+      let item: Calc.DefineClass;
+      if (customClassType?.length) {
+        for (let i = 0; i < customClassType.length; i++) {
+          item = customClassType[i];
+          if (data instanceof item.class) return item.code;
+        }
+      }
+      return DataType.dyRecord;
+    }
+    default:
+      throw new UnsupportedDataTypeError(typeof data);
+  }
+  return type;
 }
 
 /* 编码 */
