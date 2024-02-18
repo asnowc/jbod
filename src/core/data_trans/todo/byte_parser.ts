@@ -1,7 +1,13 @@
-import { U32DByteParser } from "../dynamic_binary_number.js";
-import { DataType, JbodError, UnsupportedDataTypeError } from "../../const.js";
-import { decodeUtf8, readInt32BE, readBigInt64BE, readDoubleBE } from "../../uint_array_util/mod.js";
-import { ByteParser, ByteParserResult, LengthByteParser, StepsByteParser, TransformByteParser } from "../../lib/mod.js";
+import { U32DByteParser } from "../../dynamic_binary_number.js";
+import { DataType, JbodError, UnsupportedDataTypeError, VOID_ID } from "../../const.js";
+import { decodeUtf8, readInt32BE, readBigInt64BE, readDoubleBE } from "../../../uint_array_util/mod.js";
+import {
+  ByteParser,
+  ByteParserResult,
+  LengthByteParser,
+  StepsByteParser,
+  TransformByteParser,
+} from "../../../lib/mod.js";
 
 abstract class ItemsByteParser<T, Item = unknown> extends ByteParser<T> {
   constructor() {
@@ -41,7 +47,7 @@ class DyArrayByteParser<T> extends ItemsByteParser<T[]> {
     this.value.push(value);
   }
   protected nextItem(type: number): ByteParser<unknown> | undefined {
-    if (type === DataType.void) return undefined;
+    if (type === VOID_ID) return undefined;
     let noContent = isNoContent(type);
     if (noContent) {
       this.value.push(noContent.value);
@@ -62,7 +68,7 @@ class DyRecordByteParser<T> extends ItemsByteParser<Record<string, T>> {
     this.value[value[0]] = value[1];
   }
   protected nextItem(type: number): ByteParser<unknown> | undefined {
-    if (type === DataType.void) return undefined;
+    if (type === VOID_ID) return undefined;
     let noContent = isNoContent(type);
     if (noContent) {
       this.value;

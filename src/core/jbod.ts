@@ -1,10 +1,8 @@
 import { JbodDecoder } from "./data_trans/decoder.js";
-import { JbodEncoder } from "./data_trans/encoder.js";
-
-// export { JbodEncoder, type DefinedDataType, type JbodEncoderConfig } from "./data_trans/encoder.js";
-// export { JbodDecoder } from "./data_trans/decoder.js";
-export { type JbodAsyncIteratorItem } from "./type.js";
-
+import { JbodEncoder, JbodEncoderConfig } from "./data_trans/encoder.js";
+export { defineStruct } from "./data_trans/base_trans.js";
+export { StructEncoder } from "./data_trans/struct.js";
+export { type JbodEncoderConfig };
 const defaultDecoder = new JbodDecoder();
 const defaultEncoder = new JbodEncoder();
 export default {
@@ -17,13 +15,12 @@ export default {
 
   encodeInto: defaultEncoder.encodeInto.bind(defaultEncoder),
   byteLength: defaultEncoder.byteLength.bind(defaultEncoder),
-
   /**
    *
    * @public
    * @remarks 获取数据对应的类型 ID
    */
-  getType: defaultEncoder.toTypeCode,
+  toTypeCode: defaultEncoder.toTypeCode,
   /**
    * @public
    * @remarks 将数据转为带类型的的完整二进制数据

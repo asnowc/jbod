@@ -1,4 +1,4 @@
-import JBOD, { DataType, JbodAsyncIteratorItem, UnsupportedDataTypeError } from "jbod";
+import JBOD, { DataType, UnsupportedDataTypeError } from "jbod";
 import { baseDataTypes, unsupportedData } from "./__mocks__/data_type.cases.js";
 import "./expects/expect.js";
 import { describe, expect, test } from "vitest";
@@ -11,7 +11,7 @@ describe("encode", function () {
     const k1 = [DataType.i32, 1, 97, 0, 0, 0, 1];
     const k2 = [DataType.i32, 1, 98, 0, 0, 0, 2];
     const k3 = [DataType.i32, 1, 99, 0, 0, 0, 3];
-    expect(Buffer.from(buf)).toEqual(Buffer.from([DataType.dyRecord, ...k1, ...k2, ...k3, DataType.void]));
+    expect(Buffer.from(buf)).toEqual(Buffer.from([DataType.dyRecord, ...k1, ...k2, ...k3, 0]));
   });
   test("array", function () {
     const data = [1, "a", null];
@@ -20,7 +20,7 @@ describe("encode", function () {
     const v1 = [DataType.i32, 0, 0, 0, 1];
     const v2 = [DataType.string, 1, 97];
     const v3 = [DataType.null];
-    expect(Buffer.from(buf)).toEqual(Buffer.from([DataType.dyArray, ...v1, ...v2, ...v3, DataType.void]));
+    expect(Buffer.from(buf)).toEqual(Buffer.from([DataType.dyArray, ...v1, ...v2, ...v3, 0]));
   });
 });
 
@@ -90,7 +90,7 @@ type TestItrItem = {
 /** 生成迭代器路径数据 */
 function createIteratorPath(data: any): TestItrItem {
   if (typeof data !== "object" || data === null) {
-    return { dataType: JBOD.getType(data), isItr: false, value: data };
+    return { dataType: JBODtoTypeCode(data), isItr: false, value: data };
   }
   const map = new Map<any, TestItrItem>();
   if (data instanceof Array || data instanceof Set) {
@@ -106,7 +106,7 @@ function createIteratorPath(data: any): TestItrItem {
   }
 
   return {
-    dataType: JBOD.getType(data),
+    dataType: JBODtoTypeCode(data),
     isItr: true,
     value: map,
   };

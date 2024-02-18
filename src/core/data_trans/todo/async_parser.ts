@@ -1,6 +1,6 @@
-import { decodeU32D } from "../dynamic_binary_number.js";
-import { DataType, JbodError, UnsupportedDataTypeError } from "../../const.js";
-import { decodeUtf8, readInt32BE, readBigInt64BE, readDoubleBE } from "../../uint_array_util/mod.js";
+import { decodeU32D } from "../../dynamic_binary_number.js";
+import { DataType, JbodError, UnsupportedDataTypeError, VOID_ID } from "../../const.js";
+import { decodeUtf8, readInt32BE, readBigInt64BE, readDoubleBE } from "../../../uint_array_util/mod.js";
 type StreamReader = (size: number) => Promise<Uint8Array>;
 type AsyncParser = (read: StreamReader) => Promise<unknown>;
 async function paseUint8Arr(read: StreamReader) {
@@ -57,7 +57,7 @@ export class JbodAsyncParser {
     let arrayList: unknown[] = [];
     while (true) {
       const type = (await read(1))[0];
-      if (type === DataType.void) break;
+      if (type === VOID_ID) break;
       let value = await this.paseItem(type, read);
       arrayList.push(value);
     }
@@ -67,8 +67,8 @@ export class JbodAsyncParser {
     const map: Record<string, unknown> = {};
     let key: string;
     while (true) {
-      const type = (await read(1))[0] as DataType;
-      if (type === DataType.void) break;
+      const type = (await read(1))[0];
+      if (type === VOID_ID) break;
       key = (await this[DataType.string](read)) as string;
       map[key] = await this.paseItem(type, read);
     }

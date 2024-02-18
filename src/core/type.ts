@@ -1,4 +1,4 @@
-import { DataType } from "../const.js";
+import { DataType } from "./const.js";
 export interface JbodIteratorBasicItem<V = unknown, K = string | number> {
   dataType: number;
   key?: K;
@@ -38,3 +38,28 @@ export interface Encoder<Q = any, T extends { byteLength: number } = { byteLengt
   byteLength(data: Q): T;
   encodeInto(calcRes: T, buf: Uint8Array, offset?: number): number;
 }
+export type Decoder<T = any> = { decode(buf: Uint8Array, offset: number): DecodeResult<T> };
+export type DecodeResult<T = any> = { data: T; offset: number };
+/**
+ * @example
+ * ```js
+ *  const struct={
+ *    abc:1,  //仅指定id, 则为动态类型
+ *    def:{
+ *      type:"number",
+ *      id:2
+ *    }
+ *  }
+ * ```
+ *
+ * @public
+ */
+export type Struct = {
+  [key: string]:
+    | {
+        type?: DataType | (Encoder & Decoder);
+        id: number;
+        optional?: boolean;
+      }
+    | number;
+};

@@ -5,6 +5,7 @@
 ```ts
 
 import { Calc } from './data_trans/type.js';
+import { DecodeResult } from './type.js';
 
 // Warning: (ae-forgotten-export) The symbol "u32" needs to be exported by the entry point mod.d.ts
 //
@@ -63,9 +64,7 @@ export enum DataType {
     // (undocumented)
     true = 3,
     // (undocumented)
-    undefined = 38,
-    // @internal
-    void = 0
+    undefined = 38
 }
 
 declare namespace DBN {
@@ -95,17 +94,24 @@ function decodeU64D(buf: Uint8Array, offset?: number): {
 
 // @public (undocumented)
 const _default: {
-    decode: (buffer: Uint8Array, offset?: number, type?: number | undefined) => {
-        data: any;
-        offset: number;
-    };
+    decode: (buffer: Uint8Array, offset?: number, type?: number | undefined) => DecodeResult;
     encodeInto: (value: Calc.Result<any>, buf: Uint8Array, offset?: number) => number;
     byteLength: (data: any) => Calc.Result<any>;
-    getType: (data: any) => number;
+    toTypeCode: (data: any) => number;
     encode: (data: any) => Uint8Array;
     encodeContent: (data: any) => Uint8Array;
 };
 export default _default;
+
+// Warning: (ae-forgotten-export) The symbol "Struct" needs to be exported by the entry point mod.d.ts
+//
+// @public
+export function defineStruct(definedMap: Struct, opts?: {
+    required?: boolean;
+}): {
+    encodeDefined: Struct_2.EncodeDefine;
+    decodeDefined: Struct_2.DecodeDefine;
+};
 
 // @public (undocumented)
 function encodeU32DInto(value: u32, buf: Uint8Array, offset?: number): number;
@@ -114,17 +120,42 @@ function encodeU32DInto(value: u32, buf: Uint8Array, offset?: number): number;
 function encodeU64DInto(value: u64, buf: Uint8Array, offset?: number): number;
 
 // @public (undocumented)
-export type IterableDataType = DataType.dyArray | DataType.dyRecord | DataType.set | DataType.map;
-
-// Warning: (ae-forgotten-export) The symbol "JbodIteratorBasicItem" needs to be exported by the entry point mod.d.ts
-// Warning: (ae-forgotten-export) The symbol "JbodAsyncIteratorArrayItem" needs to be exported by the entry point mod.d.ts
-// Warning: (ae-forgotten-export) The symbol "JbodAsyncIteratorValue" needs to be exported by the entry point mod.d.ts
-//
-// @public (undocumented)
-export type JbodAsyncIteratorItem = JbodIteratorBasicItem | JbodAsyncIteratorArrayItem | JbodAsyncIteratorValue;
+export interface JbodEncoderConfig {
+    // Warning: (ae-forgotten-export) The symbol "DefinedDataTypeMap" needs to be exported by the entry point mod.d.ts
+    //
+    // (undocumented)
+    customObjet?: DefinedDataTypeMap;
+}
 
 // @public (undocumented)
 export class JbodError extends Error {
+}
+
+// Warning: (ae-forgotten-export) The symbol "Encoder" needs to be exported by the entry point mod.d.ts
+// Warning: (ae-forgotten-export) The symbol "Decoder" needs to be exported by the entry point mod.d.ts
+//
+// @public (undocumented)
+export class StructEncoder<T extends object = any> implements Encoder, Decoder {
+    // (undocumented)
+    byteLength(data: T): {
+        byteLength: number;
+        pretreatment: unknown;
+    };
+    // Warning: (ae-forgotten-export) The symbol "DecodeResult_2" needs to be exported by the entry point mod.d.ts
+    //
+    // (undocumented)
+    decode(buf: Uint8Array, offset?: number): DecodeResult_2<T>;
+    // (undocumented)
+    static define<T extends object>(definedMap: Struct, opts?: {
+        required?: boolean;
+    }): StructEncoder<T>;
+    // (undocumented)
+    encode(data: T): Uint8Array;
+    // (undocumented)
+    encodeInto(calcRes: {
+        byteLength: number;
+        pretreatment: unknown;
+    }, buf: Uint8Array, offset?: number): number;
 }
 
 // Warning: (ae-forgotten-export) The symbol "ByteParser" needs to be exported by the entry point mod.d.ts
@@ -141,6 +172,10 @@ class U32DByteParser extends ByteParser<number> {
 export class UnsupportedDataTypeError extends Error {
     constructor(desc?: string | number);
 }
+
+// Warnings were encountered during analysis:
+//
+// src/core/data_trans/base_trans.ts:211:83 - (ae-forgotten-export) The symbol "Struct_2" needs to be exported by the entry point mod.d.ts
 
 // (No @packageDocumentation comment for this package)
 

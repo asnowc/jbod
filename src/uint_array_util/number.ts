@@ -7,7 +7,7 @@ export function readBigInt64BE(buf: Uint8Array, offset = 0) {
   const val = (first << 24) + (buf[++offset] << 16) + (buf[++offset] << 8) + buf[++offset];
   return (BigInt(val) << 32n) + BigInt(buf[++offset] * 2 ** 24 + (buf[++offset] << 16) + (buf[++offset] << 8) + last);
 }
-export function writeBigInt64BE(buf: Uint8Array, value: bigint, offset = 0) {
+export function writeBigInt64BE(value: bigint, buf: Uint8Array, offset = 0) {
   let lo = Number(value & 0xffffffffn);
   buf[offset + 7] = lo;
   lo = lo >> 8;
@@ -35,7 +35,7 @@ export function readInt32BE(buf: Uint8Array, offset = 0) {
   //first << 24 可能溢出
   return (first << 24) + buf[++offset] * 2 ** 16 + buf[++offset] * 2 ** 8 + last;
 }
-export function writeInt32BE(buf: Uint8Array, value: number, offset = 0) {
+export function writeInt32BE(value: number, buf: Uint8Array, offset = 0) {
   buf[offset + 3] = value;
   value = value >>> 8;
   buf[offset + 2] = value;
@@ -101,7 +101,7 @@ function readDoubleForwards(buf: Uint8Array, offset = 0) {
   return float64Array[0];
 }
 
-function writeDoubleBackwards(buf: Uint8Array, val: number, offset = 0) {
+function writeDoubleBackwards(val: number, buf: Uint8Array, offset = 0) {
   float64Array[0] = val;
   buf[offset++] = uInt8Float64Array[7];
   buf[offset++] = uInt8Float64Array[6];
@@ -113,7 +113,7 @@ function writeDoubleBackwards(buf: Uint8Array, val: number, offset = 0) {
   buf[offset++] = uInt8Float64Array[0];
   return offset;
 }
-function writeDoubleForwards(buf: Uint8Array, val: number, offset = 0) {
+function writeDoubleForwards(val: number, buf: Uint8Array, offset = 0) {
   float64Array[0] = val;
   buf[offset++] = uInt8Float64Array[0];
   buf[offset++] = uInt8Float64Array[1];
@@ -127,11 +127,11 @@ function writeDoubleForwards(buf: Uint8Array, val: number, offset = 0) {
 }
 // const readFloatLE = bigEndian ? readFloatBackwards : readFloatForwards;
 // const readFloatBE = bigEndian ? readFloatForwards : readFloatBackwards;
-export const readDoubleLE = bigEndian ? readDoubleBackwards : readDoubleForwards;
+const readDoubleLE = bigEndian ? readDoubleBackwards : readDoubleForwards;
 export const readDoubleBE = bigEndian ? readDoubleForwards : readDoubleBackwards;
 // const writeFloatLE = bigEndian ? writeFloatBackwards : writeFloatForwards;
 // const writeFloatBE = bigEndian ? writeFloatForwards : writeFloatBackwards;
-export const writeDoubleLE = bigEndian ? writeDoubleBackwards : writeDoubleForwards;
+const writeDoubleLE = bigEndian ? writeDoubleBackwards : writeDoubleForwards;
 export const writeDoubleBE = bigEndian ? writeDoubleForwards : writeDoubleBackwards;
 
 type int = number;

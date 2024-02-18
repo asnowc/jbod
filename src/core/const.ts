@@ -3,9 +3,6 @@
  * @remarks JBOD 数据类型
  */
 export enum DataType {
-  /** @internal 内部类型*/
-  void = 0,
-
   null = 1,
 
   true = 3,
@@ -34,7 +31,12 @@ export enum DataType {
   symbol = 0b10_0101,
   undefined = 0b10_0110,
 }
-/** @public */
+export const VOID_ID = 0;
+export enum FieldType {
+  bool = DataType.true,
+  any = VOID_ID,
+}
+
 export type IterableDataType = DataType.dyArray | DataType.dyRecord | DataType.set | DataType.map;
 /**
  * @public
