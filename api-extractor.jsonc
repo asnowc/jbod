@@ -47,6 +47,10 @@
     // "tsdocMetadataFilePath": "<projectFolder>/dist/tsdoc-metadata.json"
   },
   "messages": {
-    "tsdocMessageReporting": {}
+    "tsdocMessageReporting": {
+      "tsdoc-malformed-tag-name": {
+        "logLevel": "none"
+      }
+    }
   }
 }

@@ -1,6 +1,6 @@
 {
   "name": "jbod",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "",
   "type": "module",
   "scripts": {
@@ -35,7 +35,12 @@
     "access": "public",
     "registry": "https://registry.npmjs.org"
   },
-  "keywords": [],
+  "keywords": [
+    "json",
+    "serialize",
+    "protobuf",
+    "bson"
+  ],
   "author": {
     "name": "Eavid",
     "url": "https://github.com/eavidy"

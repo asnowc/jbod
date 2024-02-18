@@ -124,10 +124,10 @@ export class JbodError extends Error {
 }
 
 // Warning: (ae-forgotten-export) The symbol "Encoder" needs to be exported by the entry point mod.d.ts
-// Warning: (ae-forgotten-export) The symbol "Decoder_2" needs to be exported by the entry point mod.d.ts
+// Warning: (ae-forgotten-export) The symbol "Decoder" needs to be exported by the entry point mod.d.ts
 //
 // @public (undocumented)
-export class StructTrans<T extends object = any> implements Encoder, Decoder_2 {
+export class StructTrans<T extends object = any> implements Encoder, Decoder {
     // (undocumented)
     byteLength(data: T): {
         byteLength: number;
