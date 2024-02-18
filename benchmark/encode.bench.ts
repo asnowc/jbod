@@ -1,5 +1,5 @@
 import { createList } from "./__mocks__/compare.cases.ts";
-// @deno-types="npm:jbod@0.3"
+// @deno-types="https://esm.sh/jbod@0.4"
 import JBOD from "jbod";
 import * as JSON from "./json.ts";
 import { cases } from "./__mocks__/compare.cases.ts";
