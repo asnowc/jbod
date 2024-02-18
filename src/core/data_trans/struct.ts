@@ -4,8 +4,8 @@ import { Calc, Dec, Enc, Struct as Stru } from "./type.js";
 import { createCalcContext, createDecContext, createEncContext, defineStruct } from "./base_trans.js";
 
 /** @public */
-export class StructEncoder<T extends object = any> implements Encoder, Decoder {
-  static define<T extends object>(definedMap: Struct, opts: { required?: boolean } = {}): StructEncoder<T> {
+export class StructTrans<T extends object = any> implements Encoder, Decoder {
+  static define<T extends object>(definedMap: Struct, opts: { required?: boolean } = {}): StructTrans<T> {
     const { decodeDefined, encodeDefined } = defineStruct(definedMap, opts);
     return new this(encodeDefined, decodeDefined);
   }

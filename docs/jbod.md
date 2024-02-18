@@ -49,10 +49,10 @@ type: 0000_0000 ~ 0111_111
 
 | DEC | BIN  | type       | content length                |
 | --- | ---- | ---------- | ----------------------------- |
-| 16  | 0000 | \*error    | object                        |
+| 16  | 0000 | \*error    | struct                        |
 | 17  | 0001 | \*map      | [key, value, key, value, ...] |
 | 18  | 0010 | \*set      | array                         |
-| 19  | 0011 | \*regExp   | string                        |
+| 19  | 0011 | \*regExp   | struct                        |
 | 20  | 0100 | \*function | string[]&string (未实现 )     |
 | 21  | 0101 |            |                               |
 | 22  | 0110 | undefined  | 0                             |

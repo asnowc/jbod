@@ -1,8 +1,8 @@
-import { DataType, StructEncoder } from "jbod";
+import { DataType, StructTrans } from "jbod";
 import { describe, expect, test } from "vitest";
 import { formatBin } from "./utils/mod.js";
 describe("encode", function () {
-  const s1 = StructEncoder.define<{ f1: boolean; f2: number; f3: any }>(
+  const s1 = StructTrans.define<{ f1: boolean; f2: number; f3: any }>(
     {
       f1: { id: 1, type: DataType.true },
       f2: { id: 2, type: DataType.i32 },
@@ -18,7 +18,7 @@ describe("encode", function () {
     expect(() => s1.encode({ f1: true, f2: 9n } as any)).toThrowError();
   });
   test("可选类型", function () {
-    const s1 = StructEncoder.define<Partial<{ f1: boolean; f2: number; f3: any }>>({
+    const s1 = StructTrans.define<Partial<{ f1: boolean; f2: number; f3: any }>>({
       f1: { id: 1, type: DataType.true },
       f2: { id: 2, type: DataType.i32 },
       f3: 3,

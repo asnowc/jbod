@@ -4,9 +4,6 @@
 
 ```ts
 
-import { Calc } from './data_trans/type.js';
-import { DecodeResult } from './type.js';
-
 // Warning: (ae-forgotten-export) The symbol "u32" needs to be exported by the entry point mod.d.ts
 //
 // @public (undocumented)
@@ -92,25 +89,20 @@ function decodeU64D(buf: Uint8Array, offset?: number): {
     byte: number;
 };
 
+// Warning: (ae-forgotten-export) The symbol "UserJbodTrans" needs to be exported by the entry point mod.d.ts
+//
 // @public (undocumented)
-const _default: {
-    decode: (buffer: Uint8Array, offset?: number, type?: number | undefined) => DecodeResult;
-    encodeInto: (value: Calc.Result<any>, buf: Uint8Array, offset?: number) => number;
-    byteLength: (data: any) => Calc.Result<any>;
-    toTypeCode: (data: any) => number;
-    encode: (data: any) => Uint8Array;
-    encodeContent: (data: any) => Uint8Array;
-};
+const _default: UserJbodTrans;
 export default _default;
 
-// Warning: (ae-forgotten-export) The symbol "Struct" needs to be exported by the entry point mod.d.ts
+// Warning: (ae-forgotten-export) The symbol "Struct_2" needs to be exported by the entry point mod.d.ts
 //
 // @public
-export function defineStruct(definedMap: Struct, opts?: {
+export function defineStruct(definedMap: Struct_2, opts?: {
     required?: boolean;
 }): {
-    encodeDefined: Struct_2.EncodeDefine;
-    decodeDefined: Struct_2.DecodeDefine;
+    encodeDefined: Struct.EncodeDefine;
+    decodeDefined: Struct.DecodeDefine;
 };
 
 // @public (undocumented)
@@ -132,23 +124,23 @@ export class JbodError extends Error {
 }
 
 // Warning: (ae-forgotten-export) The symbol "Encoder" needs to be exported by the entry point mod.d.ts
-// Warning: (ae-forgotten-export) The symbol "Decoder" needs to be exported by the entry point mod.d.ts
+// Warning: (ae-forgotten-export) The symbol "Decoder_2" needs to be exported by the entry point mod.d.ts
 //
 // @public (undocumented)
-export class StructEncoder<T extends object = any> implements Encoder, Decoder {
+export class StructTrans<T extends object = any> implements Encoder, Decoder_2 {
     // (undocumented)
     byteLength(data: T): {
         byteLength: number;
         pretreatment: unknown;
     };
-    // Warning: (ae-forgotten-export) The symbol "DecodeResult_2" needs to be exported by the entry point mod.d.ts
+    // Warning: (ae-forgotten-export) The symbol "DecodeResult" needs to be exported by the entry point mod.d.ts
     //
     // (undocumented)
-    decode(buf: Uint8Array, offset?: number): DecodeResult_2<T>;
+    decode(buf: Uint8Array, offset?: number): DecodeResult<T>;
     // (undocumented)
-    static define<T extends object>(definedMap: Struct, opts?: {
+    static define<T extends object>(definedMap: Struct_2, opts?: {
         required?: boolean;
-    }): StructEncoder<T>;
+    }): StructTrans<T>;
     // (undocumented)
     encode(data: T): Uint8Array;
     // (undocumented)
@@ -175,7 +167,7 @@ export class UnsupportedDataTypeError extends Error {
 
 // Warnings were encountered during analysis:
 //
-// src/core/data_trans/base_trans.ts:211:83 - (ae-forgotten-export) The symbol "Struct_2" needs to be exported by the entry point mod.d.ts
+// src/core/data_trans/base_trans.ts:247:83 - (ae-forgotten-export) The symbol "Struct" needs to be exported by the entry point mod.d.ts
 
 // (No @packageDocumentation comment for this package)
 
