@@ -1,6 +1,6 @@
 import type { DecodeResult, Encoder } from "../type.js";
 
-/** @public */
+/** @internal */
 export type DefinedDataType = {
   calculator: Calc.Fn;
   encoder: Enc.Fn;
@@ -29,8 +29,6 @@ export namespace Struct {
     type: Encoder | number;
   };
 }
-
-export type DefinedDataTypeMap = Record<number, DefinedDataType>;
 
 export namespace Calc {
   export interface DefineClass {

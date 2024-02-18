@@ -31,7 +31,6 @@ export interface JbodIteratorMapValue<K = string> {
   isIterator: true;
 }
 export type JbodIteratorItem = JbodIteratorBasicItem | JbodIteratorArrayItem | JbodIteratorMapValue;
-/** @public */
 export type JbodAsyncIteratorItem = JbodIteratorBasicItem | JbodAsyncIteratorArrayItem | JbodAsyncIteratorValue;
 
 export interface Encoder<Q = any, T extends { byteLength: number } = { byteLength: number }> {

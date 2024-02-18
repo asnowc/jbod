@@ -95,16 +95,6 @@ function decodeU64D(buf: Uint8Array, offset?: number): {
 const _default: UserJbodTrans;
 export default _default;
 
-// Warning: (ae-forgotten-export) The symbol "Struct_2" needs to be exported by the entry point mod.d.ts
-//
-// @public
-export function defineStruct(definedMap: Struct_2, opts?: {
-    required?: boolean;
-}): {
-    encodeDefined: Struct.EncodeDefine;
-    decodeDefined: Struct.DecodeDefine;
-};
-
 // @public (undocumented)
 function encodeU32DInto(value: u32, buf: Uint8Array, offset?: number): number;
 
@@ -112,20 +102,50 @@ function encodeU32DInto(value: u32, buf: Uint8Array, offset?: number): number;
 function encodeU64DInto(value: u64, buf: Uint8Array, offset?: number): number;
 
 // @public (undocumented)
-export interface JbodEncoderConfig {
-    // Warning: (ae-forgotten-export) The symbol "DefinedDataTypeMap" needs to be exported by the entry point mod.d.ts
-    //
-    // (undocumented)
-    customObjet?: DefinedDataTypeMap;
-}
-
-// @public (undocumented)
 export class JbodError extends Error {
 }
 
 // Warning: (ae-forgotten-export) The symbol "Encoder" needs to be exported by the entry point mod.d.ts
+// Warning: (ae-forgotten-export) The symbol "UserCalcResult" needs to be exported by the entry point mod.d.ts
 // Warning: (ae-forgotten-export) The symbol "Decoder" needs to be exported by the entry point mod.d.ts
+// Warning: (ae-internal-missing-underscore) The name "JbodTrans" should be prefixed with an underscore because the declaration is marked as @internal
 //
+// @internal (undocumented)
+export class JbodTrans implements Encoder<any, UserCalcResult>, Decoder {
+    constructor(config?: JbodTransConfig);
+    // (undocumented)
+    byteLength(data: any): UserCalcResult;
+    // Warning: (ae-forgotten-export) The symbol "DecodeResult" needs to be exported by the entry point mod.d.ts
+    //
+    // @public (undocumented)
+    decode(buffer: Uint8Array, offset?: number, type?: number): DecodeResult;
+    // (undocumented)
+    encodeContentInto(value: UserCalcResult, buf: Uint8Array, offset?: number): number;
+    // (undocumented)
+    encodeInto(value: UserCalcResult, buf: Uint8Array, offset?: number): number;
+    // @public (undocumented)
+    toTypeCode(data: any): number;
+}
+
+// Warning: (ae-internal-missing-underscore) The name "JbodTransConfig" should be prefixed with an underscore because the declaration is marked as @internal
+//
+// @internal (undocumented)
+export interface JbodTransConfig {
+    // Warning: (ae-forgotten-export) The symbol "DefinedDataType" needs to be exported by the entry point mod.d.ts
+    //
+    // (undocumented)
+    customObjet?: Record<number, DefinedDataType>;
+}
+
+// @public (undocumented)
+export type Struct = {
+    [key: string]: {
+        type?: DataType | (Encoder & Decoder);
+        id: number;
+        optional?: boolean;
+    } | number;
+};
+
 // @public (undocumented)
 export class StructTrans<T extends object = any> implements Encoder, Decoder {
     // (undocumented)
@@ -133,12 +153,10 @@ export class StructTrans<T extends object = any> implements Encoder, Decoder {
         byteLength: number;
         pretreatment: unknown;
     };
-    // Warning: (ae-forgotten-export) The symbol "DecodeResult" needs to be exported by the entry point mod.d.ts
-    //
     // (undocumented)
     decode(buf: Uint8Array, offset?: number): DecodeResult<T>;
     // (undocumented)
-    static define<T extends object>(definedMap: Struct_2, opts?: {
+    static define<T extends object>(definedMap: Struct, opts?: {
         required?: boolean;
     }): StructTrans<T>;
     // (undocumented)
@@ -164,10 +182,6 @@ class U32DByteParser extends ByteParser<number> {
 export class UnsupportedDataTypeError extends Error {
     constructor(desc?: string | number);
 }
-
-// Warnings were encountered during analysis:
-//
-// src/core/data_trans/base_trans.ts:247:83 - (ae-forgotten-export) The symbol "Struct" needs to be exported by the entry point mod.d.ts
 
 // (No @packageDocumentation comment for this package)
 

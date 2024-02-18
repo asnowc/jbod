@@ -1,5 +1,5 @@
 import { DataType, JbodError, VOID_ID } from "../const.js";
-import { Calc, Dec, DefinedDataTypeMap, Enc, EncodeFn } from "./type.js";
+import { Calc, Dec, DefinedDataType, Enc, EncodeFn } from "./type.js";
 import {
   writeInt32BE,
   writeBigInt64BE,
@@ -12,6 +12,7 @@ import { calcU32DByte, decodeU32D, encodeU32DInto } from "../dynamic_binary_numb
 import { DecodeResult } from "../type.js";
 import { defineStruct, toTypeCode } from "./base_trans.js";
 
+type DefinedDataTypeMap = Record<number, DefinedDataType>;
 const JS_ClASS_STRUCT = {
   symbol: defineStruct({ description: 1 }),
   error: defineStruct({ message: 1, name: 2, cause: 3, code: 4 }),
@@ -27,6 +28,7 @@ const BASE_ENCODERS: Record<string, Enc.Fn> = {
   [DataType.i64]: writeBigInt64BE,
   [DataType.f64]: writeDoubleBE,
 };
+
 const DEFAULT_DEFINE_TYPE: DefinedDataTypeMap = {
   [DataType.string]: {
     calculator(data: string): Calc.Result<CalcPreData.String> {

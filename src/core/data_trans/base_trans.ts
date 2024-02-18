@@ -242,7 +242,6 @@ export function createDecContext(decMap: Record<number, Dec.Fn>): Dec.Context {
 
 /**
  * @__NO_SIDE_EFFECTS__
- * @public
  */
 export function defineStruct(definedMap: Struct, opts: { required?: boolean } = {}) {
   const optional = !opts.required;

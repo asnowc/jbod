@@ -1,14 +1,16 @@
 import type { DecodeResult, Decoder, Encoder } from "../type.js";
-import type { Calc, DefinedDataTypeMap, Enc, Dec } from "./type.js";
+import type { Calc, Enc, Dec, DefinedDataType } from "./type.js";
 import { createEncMaps } from "./defined.js";
 import { createDecContext } from "./base_trans.js";
 import { createCalcContext, createEncContext, toTypeCode } from "./base_trans.js";
 
-/** @public */
+/** @internal */
 export interface JbodTransConfig {
-  customObjet?: DefinedDataTypeMap;
+  customObjet?: Record<number, DefinedDataType>;
 }
 type UserCalcResult = { byteLength: number; type: number; pretreatment: unknown };
+
+/** @internal */
 export class JbodTrans implements Encoder<any, UserCalcResult>, Decoder {
   private encodeContext: Enc.Context;
   private calcContext: Calc.Context;
@@ -20,6 +22,7 @@ export class JbodTrans implements Encoder<any, UserCalcResult>, Decoder {
     this.decContext = createDecContext(createEncMaps().decMap);
   }
   /**
+   * @public
    * @remarks 从 Uint8Array 解析数据
    * @param type - 指定解析的数据类型. 如果不指定, 将从 buffer 的第一个字节读取, 否则认为buffer 不携带类型
    */
@@ -52,3 +55,5 @@ export class JbodTrans implements Encoder<any, UserCalcResult>, Decoder {
     return res;
   }
 }
+
+export { type DefinedDataType };

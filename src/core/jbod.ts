@@ -1,7 +1,6 @@
-import { JbodTrans, JbodTransConfig } from "./data_trans/trans.js";
-export { defineStruct } from "./data_trans/base_trans.js";
+import { JbodTrans } from "./data_trans/trans.js";
 export { StructTrans } from "./data_trans/struct.js";
-export { type JbodTransConfig as JbodEncoderConfig };
+export { JbodTrans, type JbodTransConfig } from "./data_trans/trans.js";
 class UserJbodTrans extends JbodTrans {
   /**
    * @public
