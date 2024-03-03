@@ -1,25 +1,20 @@
 import type { DecodeResult, Decoder, Encoder } from "../type.js";
-import type { Calc, Enc, Dec, DefinedDataType } from "./type.js";
-import { createEncMaps } from "./defined.js";
-import { createDecContext } from "./base_trans.js";
-import { createCalcContext, createEncContext, toTypeCode } from "./base_trans.js";
-
+import { createContext, EncodeContext, DecodeContext } from "./ctx.js";
+import { DataWriter, Defined } from "./defined/type.js";
 /** @internal */
 export interface JbodTransConfig {
-  customObjet?: Record<number, DefinedDataType>;
+  customObjet?: Record<number, Defined>;
 }
 type UserCalcResult = { byteLength: number; type: number; pretreatment: unknown };
 
 /** @internal */
 export class JbodTrans implements Encoder<any, UserCalcResult>, Decoder {
-  private encodeContext: Enc.Context;
-  private calcContext: Calc.Context;
-  private decContext: Dec.Context;
+  protected encContext: EncodeContext;
+  protected decContext: DecodeContext;
   constructor(config: JbodTransConfig = {}) {
-    const { encMap, calcMap } = createEncMaps(config.customObjet);
-    this.calcContext = createCalcContext(calcMap);
-    this.encodeContext = createEncContext(encMap);
-    this.decContext = createDecContext(createEncMaps().decMap);
+    const { dec, enc } = createContext();
+    this.encContext = enc;
+    this.decContext = dec;
   }
   /**
    * @public
@@ -28,32 +23,46 @@ export class JbodTrans implements Encoder<any, UserCalcResult>, Decoder {
    */
   decode<T = any>(buffer: Uint8Array, offset: number = 0, type?: number): DecodeResult<T> {
     if (type === undefined) type = buffer[offset++];
-    return this.decContext.decodeItem(buffer, offset, type);
+    return this.decContext[type](buffer, offset);
   }
-  /** @remarks 将数据编码为携带类型的 Uint8Array, 这会比 encodeContentInto 多一个字节 */
-  encodeInto(value: UserCalcResult, buf: Uint8Array, offset: number = 0) {
-    buf[offset++] = value.type;
-    return this.encodeContext[value.type](value.pretreatment, buf, offset);
-  }
-  /** @remarks 将数据编码为不携带类型的 Uint8Array, 这会比 encodeInto 少一个字节 */
-  encodeContentInto(value: UserCalcResult, buf: Uint8Array, offset: number = 0) {
-    return this.encodeContext[value.type](value.pretreatment, buf, offset);
-  }
+
   /**
    * @public
    * @remarks 获取数据对应的类型 ID
    */
   toTypeCode(data: any) {
-    return toTypeCode(data, this.calcContext.customClassType);
+    return this.encContext.toTypeCode(data);
   }
+
+  createWriter(data: any) {
+    return new this.encContext.JbodWriter(data, this.encContext);
+  }
+  createContentWriter(data: any) {
+    const type = this.encContext.toTypeCode(data);
+    return new this.encContext[type](data, this.encContext);
+  }
+
   /**
    * @remarks 计算数据的字节长度, 并进行预处理. 不要修改结果对象, 否则可能会造成异常
    */
   byteLength(data: any): UserCalcResult {
-    let res = this.calcContext.byteLength(data);
-    res.byteLength++;
-    return res;
+    const type = this.encContext.toTypeCode(data);
+    const writer = new this.encContext[type](data, this.encContext);
+    return { byteLength: writer.byteLength + 1, type, pretreatment: writer };
+  }
+  /**
+   * @remarks 将数据编码为携带类型的 Uint8Array, 这会比 encodeContentInto 多一个字节 */
+  encodeInto(value: UserCalcResult, buf: Uint8Array, offset: number = 0) {
+    buf[offset++] = value.type;
+    return (value.pretreatment as DataWriter).encodeTo(buf, offset);
+  }
+  /**
+   * @deprecated 改用 createContentWriter
+   * @remarks 将数据编码为不携带类型的 Uint8Array, 这会比 encodeInto 少一个字节
+   */
+  encodeContentInto(value: UserCalcResult, buf: Uint8Array, offset: number = 0) {
+    return (value.pretreatment as DataWriter).encodeTo(buf, offset);
   }
 }
 
-export { type DefinedDataType };
+export { type Defined };

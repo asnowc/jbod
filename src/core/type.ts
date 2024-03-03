@@ -1,4 +1,4 @@
-import { DataType } from "./const.js";
+import type { DataType } from "./data_trans/mod.js";
 export interface JbodIteratorBasicItem<V = unknown, K = string | number> {
   dataType: number;
   key?: K;
@@ -33,32 +33,18 @@ export interface JbodIteratorMapValue<K = string> {
 export type JbodIteratorItem = JbodIteratorBasicItem | JbodIteratorArrayItem | JbodIteratorMapValue;
 export type JbodAsyncIteratorItem = JbodIteratorBasicItem | JbodAsyncIteratorArrayItem | JbodAsyncIteratorValue;
 
-export interface Encoder<Q = any, T extends { byteLength: number } = { byteLength: number }> {
-  byteLength(data: Q): T;
-  encodeInto(calcRes: T, buf: Uint8Array, offset?: number): number;
+export interface Encoder<T = any, Q extends { byteLength: number } = { byteLength: number }> {
+  /** @deprecated 改用 createWriter */
+  byteLength(data: T): Q;
+  /** @deprecated 改用 createWriter */
+  encodeInto(calcRes: Q, buf: Uint8Array, offset?: number): number;
+  createWriter(data: T): DataWriter;
 }
 export type Decoder<T = any> = { decode(buf: Uint8Array, offset: number): DecodeResult<T> };
 export type DecodeResult<T = any> = { data: T; offset: number };
-/**
- * @example
- * ```js
- *  const struct={
- *    abc:1,  //仅指定id, 则为动态类型
- *    def:{
- *      type:"number",
- *      id:2
- *    }
- *  }
- * ```
- *
- * @public
- */
-export type Struct = {
-  [key: string]:
-    | {
-        type?: DataType | (Encoder & Decoder);
-        id: number;
-        optional?: boolean;
-      }
-    | number;
-};
+
+export type EncodeFn<T = any> = (data: T, buf: Uint8Array, offset: number) => number;
+export interface DataWriter {
+  encodeTo(buf: Uint8Array, offset: number): number;
+  readonly byteLength: number;
+}

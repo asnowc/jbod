@@ -17,7 +17,6 @@ export enum DataType {
   record = 12,
   dyArray = 13,
   dyRecord = 14,
-  struct = 15,
 
   i32 = 0b1_0100,
   i64 = 0b1_0111,
@@ -32,9 +31,35 @@ export enum DataType {
   undefined = 0b10_0110,
 }
 export const VOID_ID = 0;
+/**
+ * @public
+ * @remarks Struct 数据类型
+ */
 export enum FieldType {
-  bool = DataType.true,
   any = VOID_ID,
+  null = 1,
+
+  bool = DataType.true,
+  f32 = 5,
+  f64 = 6,
+  dyNumR = 7,
+  dyNum = 8,
+  binary = 9,
+  string = 10,
+  array = 11,
+  record = 12,
+  dyArray = 13,
+  dyRecord = 14,
+
+  i32 = 0b1_0100,
+  i64 = 0b1_0111,
+
+  error = 0b10_0000,
+  map = 0b10_0001,
+  set = 0b10_0010,
+  regExp = 0b10_0011,
+
+  symbol = 0b10_0101,
 }
 
 export type IterableDataType = DataType.dyArray | DataType.dyRecord | DataType.set | DataType.map;

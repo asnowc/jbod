@@ -1,4 +1,4 @@
-import { DataType, IterableDataType, UnsupportedDataTypeError, VOID_ID } from "../../const.js";
+import { DataType, IterableDataType, UnsupportedDataTypeError, VOID_ID } from "../defined/const.js";
 import { JbodAsyncParser } from "./async_parser.js";
 import type { JbodAsyncIteratorArrayItem, JbodAsyncIteratorItem, JbodAsyncIteratorValue } from "../../type.js";
 

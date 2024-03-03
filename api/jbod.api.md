@@ -4,6 +4,8 @@
 
 ```ts
 
+import { TypeDataWriter as TypeDataWriter_2 } from './defined/type.js';
+
 // Warning: (ae-forgotten-export) The symbol "u32" needs to be exported by the entry point mod.d.ts
 //
 // @public (undocumented)
@@ -55,8 +57,6 @@ export enum DataType {
     // (undocumented)
     string = 10,
     // (undocumented)
-    struct = 15,
-    // (undocumented)
     symbol = 37,
     // (undocumented)
     true = 3,
@@ -95,11 +95,64 @@ function decodeU64D(buf: Uint8Array, offset?: number): {
 const _default: UserJbodTrans;
 export default _default;
 
+// Warning: (ae-internal-missing-underscore) The name "Defined" should be prefixed with an underscore because the declaration is marked as @internal
+//
+// @internal (undocumented)
+export type Defined<T = any> = {
+    encoder: DataWriterCreator<T>;
+    decoder: DecodeFn<T>;
+    class?: ClassType;
+};
+
 // @public (undocumented)
 function encodeU32DInto(value: u32, buf: Uint8Array, offset?: number): number;
 
 // @public (undocumented)
 function encodeU64DInto(value: u64, buf: Uint8Array, offset?: number): number;
+
+// @public (undocumented)
+export enum FieldType {
+    // (undocumented)
+    any = 0,
+    // (undocumented)
+    array = 11,
+    // (undocumented)
+    binary = 9,
+    // (undocumented)
+    bool = 3,
+    // (undocumented)
+    dyArray = 13,
+    // (undocumented)
+    dyNum = 8,
+    // (undocumented)
+    dyNumR = 7,
+    // (undocumented)
+    dyRecord = 14,
+    // (undocumented)
+    error = 32,
+    // (undocumented)
+    f32 = 5,
+    // (undocumented)
+    f64 = 6,
+    // (undocumented)
+    i32 = 20,
+    // (undocumented)
+    i64 = 23,
+    // (undocumented)
+    map = 33,
+    // (undocumented)
+    null = 1,
+    // (undocumented)
+    record = 12,
+    // (undocumented)
+    regExp = 35,
+    // (undocumented)
+    set = 34,
+    // (undocumented)
+    string = 10,
+    // (undocumented)
+    symbol = 37
+}
 
 // @public (undocumented)
 export class JbodError extends Error {
@@ -115,11 +168,25 @@ export class JbodTrans implements Encoder<any, UserCalcResult>, Decoder {
     constructor(config?: JbodTransConfig);
     // (undocumented)
     byteLength(data: any): UserCalcResult;
+    // Warning: (ae-forgotten-export) The symbol "DataWriter" needs to be exported by the entry point mod.d.ts
+    //
+    // (undocumented)
+    createContentWriter(data: any): DataWriter;
+    // (undocumented)
+    createWriter(data: any): TypeDataWriter_2;
+    // Warning: (ae-forgotten-export) The symbol "DecodeContext" needs to be exported by the entry point mod.d.ts
+    //
+    // (undocumented)
+    protected decContext: DecodeContext;
     // Warning: (ae-forgotten-export) The symbol "DecodeResult" needs to be exported by the entry point mod.d.ts
     //
     // @public (undocumented)
-    decode(buffer: Uint8Array, offset?: number, type?: number): DecodeResult;
+    decode<T = any>(buffer: Uint8Array, offset?: number, type?: number): DecodeResult<T>;
+    // Warning: (ae-forgotten-export) The symbol "EncodeContext" needs to be exported by the entry point mod.d.ts
+    //
     // (undocumented)
+    protected encContext: EncodeContext;
+    // @deprecated (undocumented)
     encodeContentInto(value: UserCalcResult, buf: Uint8Array, offset?: number): number;
     // (undocumented)
     encodeInto(value: UserCalcResult, buf: Uint8Array, offset?: number): number;
@@ -131,16 +198,14 @@ export class JbodTrans implements Encoder<any, UserCalcResult>, Decoder {
 //
 // @internal (undocumented)
 export interface JbodTransConfig {
-    // Warning: (ae-forgotten-export) The symbol "DefinedDataType" needs to be exported by the entry point mod.d.ts
-    //
     // (undocumented)
-    customObjet?: Record<number, DefinedDataType>;
+    customObjet?: Record<number, Defined>;
 }
 
 // @public (undocumented)
 export type Struct = {
     [key: string]: {
-        type?: DataType | (Encoder & Decoder);
+        type?: FieldType | (Encoder & Decoder);
         id: number;
         optional?: boolean;
     } | number;
@@ -153,6 +218,8 @@ export class StructTrans<T extends object = any> implements Encoder, Decoder {
         byteLength: number;
         pretreatment: unknown;
     };
+    // (undocumented)
+    createWriter(data: any): DataWriter;
     // (undocumented)
     decode(buf: Uint8Array, offset?: number): DecodeResult<T>;
     // (undocumented)
@@ -182,6 +249,12 @@ class U32DByteParser extends ByteParser<number> {
 export class UnsupportedDataTypeError extends Error {
     constructor(desc?: string | number);
 }
+
+// Warnings were encountered during analysis:
+//
+// src/core/data_trans/defined/type.ts:21:3 - (ae-forgotten-export) The symbol "DataWriterCreator" needs to be exported by the entry point mod.d.ts
+// src/core/data_trans/defined/type.ts:22:3 - (ae-forgotten-export) The symbol "DecodeFn" needs to be exported by the entry point mod.d.ts
+// src/core/data_trans/defined/type.ts:23:3 - (ae-forgotten-export) The symbol "ClassType" needs to be exported by the entry point mod.d.ts
 
 // (No @packageDocumentation comment for this package)
 

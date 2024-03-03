@@ -1,5 +1,5 @@
 import { decodeU32D } from "../../dynamic_binary_number.js";
-import { DataType, JbodError, UnsupportedDataTypeError, VOID_ID } from "../../const.js";
+import { DataType, JbodError, UnsupportedDataTypeError, VOID_ID } from "../defined/const.js";
 import { decodeUtf8, readInt32BE, readBigInt64BE, readDoubleBE } from "../../../uint_array_util/mod.js";
 type StreamReader = (size: number) => Promise<Uint8Array>;
 type AsyncParser = (read: StreamReader) => Promise<unknown>;
