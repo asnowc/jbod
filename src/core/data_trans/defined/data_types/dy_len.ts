@@ -15,13 +15,17 @@ export const string: Defined<string> = {
       return encodeUtf8Into(this.data, buf, offset);
     }
   },
-  decoder: function stringDecode(buf: Uint8Array, offset: number) {
-    const res = decodeU32D(buf, offset);
-    offset += res.byte;
-    const str = decodeUtf8(buf, offset, offset + res.value);
-    return { data: str, offset: offset + res.value };
-  },
+  decoder: stringDecode,
 };
+export function stringDecode(buf: Uint8Array, offset: number) {
+  const res = decodeU32D(buf, offset);
+  offset += res.byte;
+  if (res.value <= 0) return { data: "", offset };
+  return {
+    data: decodeUtf8(buf.subarray(offset, offset + res.value)), // 这里用 subarray 比传入 start end 要快，没搞清楚为什么
+    offset: offset + res.value,
+  };
+}
 export const binary: Defined<Uint8Array> = {
   encoder: class BinaryWriter implements DataWriter {
     constructor(data: Uint8Array, ctx: EncodeContext) {

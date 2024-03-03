@@ -61,10 +61,10 @@ export class StructWriter implements DataWriter {
   }
 }
 export function decodeStruct<T = any>(
-  this: DecodeContext,
   buf: Uint8Array,
   offset: number,
-  struct: Record<number, StructDecodeInfo>
+  struct: Record<number, StructDecodeInfo>,
+  ctx: DecodeContext
 ): DecodeResult<T> {
   let obj: Record<Key, any> = {};
   let res = decodeU32D(buf, offset);
@@ -75,14 +75,14 @@ export function decodeStruct<T = any>(
     info = struct[res.value];
     if (!info) throw new Error("Undefined field ID: " + res.value);
 
-    if (typeof info.decode === "object") value = info.decode.decode.call(this, buf, offset);
+    if (typeof info.decode === "object") value = info.decode.decode.call(ctx, buf, offset);
     else if (info.decode === FieldType.bool) {
       value = { data: buf[offset++] === DataType.true ? true : false, offset };
     } else if (info.decode) {
-      value = this[info.decode](buf, offset);
+      value = ctx[info.decode](buf, offset);
     } else {
       let type = buf[offset++];
-      value = this[type](buf, offset);
+      value = ctx[type](buf, offset);
     }
 
     obj[info.key] = value.data;

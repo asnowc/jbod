@@ -22,6 +22,12 @@ describe("encode", function () {
     const v3 = [DataType.null];
     expect(Buffer.from(buf)).toEqual(Buffer.from([DataType.dyArray, ...v1, ...v2, ...v3, 0]));
   });
+  test("doubleArray", function () {
+    const data: number[] = [1 / 3, 1 / 3, 1 / 3];
+    const buf = JBOD.encode(data);
+    expect(buf.byteLength).toBe(1 + 9 * data.length + 1);
+    expect(JBOD.decode(buf).data).toEqual(data);
+  });
 });
 
 describe("jbod fn", function () {

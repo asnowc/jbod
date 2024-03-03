@@ -41,7 +41,7 @@ export class StructTrans<T extends object = any> implements Encoder, Decoder {
     return u8Arr;
   }
   decode(buf: Uint8Array, offset: number = 0): DecodeResult<T> {
-    return decodeStruct.call(this.decContext, buf, offset, this.decodeDefine) as DecodeResult;
+    return decodeStruct(buf, offset, this.decodeDefine, this.decContext) as DecodeResult;
   }
   createWriter(data: any): DataWriter {
     return new StructWriter(this.encodeDefine, data, this.encContext);

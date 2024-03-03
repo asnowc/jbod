@@ -2,6 +2,8 @@ import { calcU32DByte, decodeU32D, encodeU32DInto } from "../../../dynamic_binar
 import type { EncodeContext, DataWriter, TypeDataWriter, Defined } from "../type.js";
 import { DecodeResult } from "../../../type.js";
 import { VOID_ID, DataType } from "../const.js";
+import { fastDecodeJbod, fastJbodWriter } from "../util/mod.js";
+import { stringDecode } from "./dy_len.js";
 
 class ArrayWriter implements DataWriter {
   constructor(arr: any[], ctx: EncodeContext, fixed?: boolean) {
@@ -50,9 +52,11 @@ class DyArrayWriter implements DataWriter {
     let writer: TypeDataWriter;
     let type: number;
     for (let i = 0; i < arr.length; i++) {
-      type = ctx.toTypeCode(arr[i]);
-      writer = new ctx[type](arr[i], ctx) as TypeDataWriter;
-      writer.type = type;
+      // type = ctx.toTypeCode(arr[i]);
+      // writer = new ctx[type](arr[i], ctx) as TypeDataWriter;
+      // writer.type = type;
+
+      writer = fastJbodWriter(arr[i], ctx);
       totalLen += writer.byteLength;
       writers[i] = writer;
     }
@@ -71,7 +75,6 @@ class DyArrayWriter implements DataWriter {
     return offset;
   }
 }
-
 class DyRecordWriter implements DataWriter {
   constructor(data: object, ctx: EncodeContext);
   constructor(data: Record<string, any>, ctx: EncodeContext) {
@@ -162,14 +165,17 @@ export const dyRecord: Defined<object> = {
     const map: Record<string, unknown> = {};
     let key: string;
     let res: DecodeResult;
+    let type: number;
     while (offset < buf.byteLength) {
-      const type = buf[offset++];
+      type = buf[offset++];
       if (type === VOID_ID) break;
-      res = this[DataType.string](buf, offset);
-      key = res.data;
-      offset = res.offset;
 
-      res = this[type](buf, offset);
+      res = stringDecode(buf, offset);
+      offset = res.offset;
+      key = res.data;
+      res = fastDecodeJbod(this, buf, res.offset, type);
+      // res = this[type](buf, offset);
+
       map[key] = res.data;
       offset = res.offset;
     }

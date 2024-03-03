@@ -39,7 +39,7 @@ export const f64: Defined<number> = {
   encoder: function F64Writer(data: number, ctx: EncodeContext): DataWriter {
     return new FixedLenDataWriter(data, writeDoubleBE, 8);
   } as any,
-  decoder: function I32Decoder(buf, offset) {
+  decoder: function F64Decoder(buf, offset) {
     return {
       data: readDoubleBE(buf, offset),
       offset: offset + 8,
