@@ -62,33 +62,28 @@ type UserCalcResult = { byteLength: number; type: number; pretreatment: unknown 
 declare const JBOD: {
   /**
    * @remarks 从 Uint8Array 解析数据
-   * @param type - 指定解析的数据类型. 如果不指定, 将从 buffer 的第一个字节读取, 否则认为buffer 不携带类型
+   * @param type - 指定解析的数据类型. 对于 createWriter() 编码的数据，不应指定。 对于 encodeContentWriter() 编码的数据，需要指定才能正确解析。
    */
   decode(buffer: Uint8Array, offset?: number, type?: number): DecodeResult;
-  /** 将数据编码为携带类型的 Uint8Array, 这会比 encodeContentInto 多一个字节 */
-  encodeInto(value: UserCalcResult, buf: Uint8Array, offset?: number): number;
-  /** 将数据编码为不携带类型的 Uint8Array, 这会比 encodeInto 少一个字节 */
-  encodeContentInto(value: UserCalcResult, buf: Uint8Array, offset?: number): number;
+  /** 创建 DataWriter 用于编码, 这个方法创建的 DataWriter 会比 encodeContentWriter 多一个字节 */
+  createWriter(data: any): DataWriter;
+  /** 创建 DataWriter 用于编码 将数据编码为不携带类型的 Uint8Array, 这会比 encodeInto 少一个字节  */
+  encodeContentWriter(data: any): DataWriter;
   /**
    * @public
    * @remarks 获取数据对应的类型 ID
    */
   toTypeCode(data: any): number;
   /**
-   * @remarks 计算数据的字节长度, 并进行预处理. 不要修改结果对象, 否则可能会造成异常
-   */
-  byteLength(data: any): UserCalcResult;
-
-  /**
    * @public
-   * @remarks 将数据编码为携带类型的 Uint8Array, 这会比 encodeContent 多一个字节
+   * @remarks 将数据直接编码为二进制数据
    */
   encode(data: any): Uint8Array;
-  /**
-   * @public
-   * @remarks 将数据编码为不携带类型的 Uint8Array, 这会比 encode 少一个字节
-   */
-  encodeContent(data: any): Uint8Array;
 };
 export type { JBOD as default };
+
+export interface DataWriter {
+  encodeTo(buf: Uint8Array, offset: number): number;
+  readonly byteLength: number;
+}
 ```

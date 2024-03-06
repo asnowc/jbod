@@ -1,3 +1,10 @@
+### 0.4.3
+
+### Feature
+
+- 废弃 byteLength() encodeInto() encodeContent() 方法
+- 新增 createWriter() createContentWriter() 方法
+
 ### 0.4.0
 
 #### Feature

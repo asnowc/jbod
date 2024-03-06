@@ -33,17 +33,17 @@ export interface JbodIteratorMapValue<K = string> {
 export type JbodIteratorItem = JbodIteratorBasicItem | JbodIteratorArrayItem | JbodIteratorMapValue;
 export type JbodAsyncIteratorItem = JbodIteratorBasicItem | JbodAsyncIteratorArrayItem | JbodAsyncIteratorValue;
 
-export interface Encoder<T = any, Q extends { byteLength: number } = { byteLength: number }> {
-  /** @deprecated 改用 createWriter */
-  byteLength(data: T): Q;
-  /** @deprecated 改用 createWriter */
-  encodeInto(calcRes: Q, buf: Uint8Array, offset?: number): number;
+/** @public */
+export interface Encoder<T = any> {
   createWriter(data: T): DataWriter;
 }
+/** @public */
 export type Decoder<T = any> = { decode(buf: Uint8Array, offset: number): DecodeResult<T> };
+/** @public */
 export type DecodeResult<T = any> = { data: T; offset: number };
 
 export type EncodeFn<T = any> = (data: T, buf: Uint8Array, offset: number) => number;
+/** @public */
 export interface DataWriter {
   encodeTo(buf: Uint8Array, offset: number): number;
   readonly byteLength: number;

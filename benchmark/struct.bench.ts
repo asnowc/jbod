@@ -9,16 +9,16 @@ const protoBufType = protobuf.defined.lookupType("object");
 const jbodStruct = StructTrans.define({ disabled: 1, count: 2, name: 3, dataStamp: 4, id: 5 });
 function jbodEncode(struct: StructTrans, data: any[]) {
   let len = 0;
-  let pre: any[] = [];
+  let pre: ReturnType<StructTrans["createWriter"]>[] = [];
   for (let i = 0; i < data.length; i++) {
-    let res = struct.byteLength(data[i]);
+    let res = struct.createWriter(data[i]);
     len += res.byteLength;
     pre[i] = res;
   }
   const buf = new Uint8Array(len);
   let offset = 0;
   for (let i = 0; i < data.length; i++) {
-    offset = struct.encodeInto(pre[i], buf, offset);
+    offset = pre[i].encodeTo(buf, offset);
   }
   return buf;
 }

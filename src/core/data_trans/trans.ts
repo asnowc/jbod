@@ -9,7 +9,7 @@ export interface JbodTransConfig {
 type UserCalcResult = { byteLength: number; type: number; pretreatment: unknown };
 
 /** @internal */
-export class JbodTrans implements Encoder<any, UserCalcResult>, Decoder {
+export class JbodTrans implements Encoder<any>, Decoder {
   protected encContext: EncodeContext;
   protected decContext: DecodeContext;
   constructor(config: JbodTransConfig = {}) {
@@ -34,16 +34,34 @@ export class JbodTrans implements Encoder<any, UserCalcResult>, Decoder {
   toTypeCode(data: any) {
     return this.encContext.toTypeCode(data);
   }
-
-  createWriter(data: any) {
+  /**
+   * @remarks 创建 DataWriter 用于编码, 这个方法创建的 DataWriter 会比 encodeContentWriter 多一个字节
+   * @param data - 需要编码的数据
+   * @example
+   *
+   * ```ts
+   *    const data=[1,2,3];
+   *    const writer=JBOD.createWriter(data);
+   *    const buf=new Uint8Array(writer.byteLength)
+   *    writer.encodeTo(buf);
+   *
+   *    JBOD.decode(buf)
+   * ```
+   */
+  createWriter(data: any): DataWriter {
     return new JbodWriter(data, this.encContext);
   }
-  createContentWriter(data: any) {
+  /**
+   * @remarks 创建 DataWriter 用于编码 将数据编码为不携带类型的 Uint8Array, 这会比 encodeInto 少一个字节
+   * @param data - 需要编码的数据
+   */
+  createContentWriter(data: any): DataWriter {
     const type = this.encContext.toTypeCode(data);
     return new this.encContext[type](data, this.encContext);
   }
 
   /**
+   * @deprecated 改用 createWriter()
    * @remarks 计算数据的字节长度, 并进行预处理. 不要修改结果对象, 否则可能会造成异常
    */
   byteLength(data: any): UserCalcResult {
@@ -52,13 +70,14 @@ export class JbodTrans implements Encoder<any, UserCalcResult>, Decoder {
     return { byteLength: writer.byteLength + 1, type, pretreatment: writer };
   }
   /**
+   * @deprecated 改用 createContentWriter()
    * @remarks 将数据编码为携带类型的 Uint8Array, 这会比 encodeContentInto 多一个字节 */
   encodeInto(value: UserCalcResult, buf: Uint8Array, offset: number = 0) {
     buf[offset++] = value.type;
     return (value.pretreatment as DataWriter).encodeTo(buf, offset);
   }
   /**
-   * @deprecated 改用 createContentWriter
+   * @deprecated 改用 createContentWriter()
    * @remarks 将数据编码为不携带类型的 Uint8Array, 这会比 encodeInto 少一个字节
    */
   encodeContentInto(value: UserCalcResult, buf: Uint8Array, offset: number = 0) {

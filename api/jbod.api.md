@@ -62,6 +62,14 @@ export enum DataType {
     undefined = 38
 }
 
+// @public (undocumented)
+export interface DataWriter {
+    // (undocumented)
+    readonly byteLength: number;
+    // (undocumented)
+    encodeTo(buf: Uint8Array, offset: number): number;
+}
+
 declare namespace DBN {
     export {
         calcU64DByte,
@@ -74,6 +82,17 @@ declare namespace DBN {
     }
 }
 export { DBN }
+
+// @public (undocumented)
+export type Decoder<T = any> = {
+    decode(buf: Uint8Array, offset: number): DecodeResult<T>;
+};
+
+// @public (undocumented)
+export type DecodeResult<T = any> = {
+    data: T;
+    offset: number;
+};
 
 // @public (undocumented)
 function decodeU32D(buf: Uint8Array, offset?: number): {
@@ -106,6 +125,12 @@ export type Defined<T = any> = {
     decoder: DecodeFn<T>;
     class?: ClassType;
 };
+
+// @public (undocumented)
+export interface Encoder<T = any> {
+    // (undocumented)
+    createWriter(data: T): DataWriter;
+}
 
 // @public (undocumented)
 function encodeU32DInto(value: u32, buf: Uint8Array, offset?: number): number;
@@ -161,30 +186,23 @@ export enum FieldType {
 export class JbodError extends Error {
 }
 
-// Warning: (ae-forgotten-export) The symbol "Encoder" needs to be exported by the entry point mod.d.ts
-// Warning: (ae-forgotten-export) The symbol "UserCalcResult" needs to be exported by the entry point mod.d.ts
-// Warning: (ae-forgotten-export) The symbol "Decoder" needs to be exported by the entry point mod.d.ts
 // Warning: (ae-internal-missing-underscore) The name "JbodTrans" should be prefixed with an underscore because the declaration is marked as @internal
 //
 // @internal (undocumented)
-export class JbodTrans implements Encoder<any, UserCalcResult>, Decoder {
+export class JbodTrans implements Encoder<any>, Decoder {
     constructor(config?: JbodTransConfig);
-    // (undocumented)
-    byteLength(data: any): UserCalcResult;
-    // Warning: (ae-forgotten-export) The symbol "DataWriter" needs to be exported by the entry point mod.d.ts
+    // Warning: (ae-forgotten-export) The symbol "UserCalcResult" needs to be exported by the entry point mod.d.ts
     //
+    // @deprecated (undocumented)
+    byteLength(data: any): UserCalcResult;
     // (undocumented)
     createContentWriter(data: any): DataWriter;
-    // Warning: (ae-forgotten-export) The symbol "JbodWriter" needs to be exported by the entry point mod.d.ts
-    //
     // (undocumented)
-    createWriter(data: any): JbodWriter;
+    createWriter(data: any): DataWriter;
     // Warning: (ae-forgotten-export) The symbol "DecodeContext" needs to be exported by the entry point mod.d.ts
     //
     // (undocumented)
     protected decContext: DecodeContext;
-    // Warning: (ae-forgotten-export) The symbol "DecodeResult" needs to be exported by the entry point mod.d.ts
-    //
     // @public (undocumented)
     decode<T = any>(buffer: Uint8Array, offset?: number, type?: number): DecodeResult<T>;
     // Warning: (ae-forgotten-export) The symbol "EncodeContext" needs to be exported by the entry point mod.d.ts
@@ -193,7 +211,7 @@ export class JbodTrans implements Encoder<any, UserCalcResult>, Decoder {
     protected encContext: EncodeContext;
     // @deprecated (undocumented)
     encodeContentInto(value: UserCalcResult, buf: Uint8Array, offset?: number): number;
-    // (undocumented)
+    // @deprecated (undocumented)
     encodeInto(value: UserCalcResult, buf: Uint8Array, offset?: number): number;
     // @public (undocumented)
     toTypeCode(data: any): number;
