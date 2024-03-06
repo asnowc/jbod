@@ -4,8 +4,6 @@
 
 ```ts
 
-import { TypeDataWriter as TypeDataWriter_2 } from './defined/type.js';
-
 // Warning: (ae-forgotten-export) The symbol "u32" needs to be exported by the entry point mod.d.ts
 //
 // @public (undocumented)
@@ -95,6 +93,11 @@ function decodeU64D(buf: Uint8Array, offset?: number): {
 const _default: UserJbodTrans;
 export default _default;
 
+// Warning: (ae-internal-missing-underscore) The name "DEFAULT_TYPE" should be prefixed with an underscore because the declaration is marked as @internal
+//
+// @internal (undocumented)
+export const DEFAULT_TYPE: Record<number, Defined>;
+
 // Warning: (ae-internal-missing-underscore) The name "Defined" should be prefixed with an underscore because the declaration is marked as @internal
 //
 // @internal (undocumented)
@@ -172,8 +175,10 @@ export class JbodTrans implements Encoder<any, UserCalcResult>, Decoder {
     //
     // (undocumented)
     createContentWriter(data: any): DataWriter;
+    // Warning: (ae-forgotten-export) The symbol "JbodWriter" needs to be exported by the entry point mod.d.ts
+    //
     // (undocumented)
-    createWriter(data: any): TypeDataWriter_2;
+    createWriter(data: any): JbodWriter;
     // Warning: (ae-forgotten-export) The symbol "DecodeContext" needs to be exported by the entry point mod.d.ts
     //
     // (undocumented)
@@ -202,10 +207,15 @@ export interface JbodTransConfig {
     customObjet?: Record<number, Defined>;
 }
 
+// Warning: (ae-internal-missing-underscore) The name "JS_OBJECT_EXTRA_TYPE" should be prefixed with an underscore because the declaration is marked as @internal
+//
+// @internal (undocumented)
+export const JS_OBJECT_EXTRA_TYPE: Record<number, Defined>;
+
 // @public (undocumented)
 export type Struct = {
     [key: string]: {
-        type?: FieldType | (Encoder & Decoder);
+        type?: FieldType | StructType;
         id: number;
         optional?: boolean;
     } | number;
@@ -235,6 +245,12 @@ export class StructTrans<T extends object = any> implements Encoder, Decoder {
     }, buf: Uint8Array, offset?: number): number;
 }
 
+// @public (undocumented)
+export type StructType<T = any> = {
+    encoder: DataWriterCreator<T>;
+    decoder: DecodeFn<T>;
+};
+
 // Warning: (ae-forgotten-export) The symbol "ByteParser" needs to be exported by the entry point mod.d.ts
 //
 // @public (undocumented)
@@ -252,9 +268,9 @@ export class UnsupportedDataTypeError extends Error {
 
 // Warnings were encountered during analysis:
 //
-// src/core/data_trans/defined/type.ts:21:3 - (ae-forgotten-export) The symbol "DataWriterCreator" needs to be exported by the entry point mod.d.ts
-// src/core/data_trans/defined/type.ts:22:3 - (ae-forgotten-export) The symbol "DecodeFn" needs to be exported by the entry point mod.d.ts
-// src/core/data_trans/defined/type.ts:23:3 - (ae-forgotten-export) The symbol "ClassType" needs to be exported by the entry point mod.d.ts
+// src/core/data_trans/defined/type.ts:19:3 - (ae-forgotten-export) The symbol "DataWriterCreator" needs to be exported by the entry point mod.d.ts
+// src/core/data_trans/defined/type.ts:20:3 - (ae-forgotten-export) The symbol "DecodeFn" needs to be exported by the entry point mod.d.ts
+// src/core/data_trans/defined/type.ts:21:3 - (ae-forgotten-export) The symbol "ClassType" needs to be exported by the entry point mod.d.ts
 
 // (No @packageDocumentation comment for this package)
 
