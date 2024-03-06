@@ -13,7 +13,7 @@ export class JbodTrans implements Encoder<any, UserCalcResult>, Decoder {
   protected encContext: EncodeContext;
   protected decContext: DecodeContext;
   constructor(config: JbodTransConfig = {}) {
-    const { dec, enc } = createContext();
+    const { dec, enc } = createContext(config.customObjet);
     this.encContext = enc;
     this.decContext = dec;
   }

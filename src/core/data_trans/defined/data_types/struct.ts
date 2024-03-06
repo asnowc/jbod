@@ -1,11 +1,11 @@
 import { calcU32DByte, decodeU32D, encodeU32DInto } from "../../../dynamic_binary_number.js";
 import { DataType, FieldType, VOID_ID } from "../const.js";
-import { DecodeResult, Decoder, Encoder } from "../../../type.js";
+import { DecodeResult } from "../../../type.js";
 import { JbodWriter } from "./jbod.js";
-import { EncodeContext, DecodeContext, DataWriter } from "../type.js";
+import { EncodeContext, DecodeContext, DataWriter, DataWriterCreator, DecodeFn } from "../type.js";
 type Key = string | number | symbol;
-export type StructDecodeInfo = { decode?: number | Decoder; key: Key };
-export type StructEncodeInfo = { encode: number | Encoder; id: number; optional?: boolean };
+export type StructDecodeInfo = { decode: number | DecodeFn; key: Key };
+export type StructEncodeInfo = { encode: number | DataWriterCreator; id: number; optional?: boolean };
 export type StructEncodeDefine = Map<Key, StructEncodeInfo>;
 
 export class StructWriter implements DataWriter {
@@ -39,7 +39,7 @@ export class StructWriter implements DataWriter {
             break;
         }
       } else {
-        res = define.encode.createWriter(value);
+        res = new define.encode(value, ctx);
       }
       len += res.byteLength;
       preMap.set(define.id, res);
@@ -75,15 +75,13 @@ export function decodeStruct<T = any>(
     info = struct[res.value];
     if (!info) throw new Error("Undefined field ID: " + res.value);
 
-    if (typeof info.decode === "object") value = info.decode.decode.call(ctx, buf, offset);
+    if (typeof info.decode === "function") value = info.decode(buf, offset, ctx);
     else if (info.decode === FieldType.bool) {
       value = { data: buf[offset++] === DataType.true ? true : false, offset };
-    } else if (info.decode) {
-      value = ctx[info.decode](buf, offset, ctx);
-    } else {
+    } else if (info.decode === FieldType.any) {
       let type = buf[offset++];
       value = ctx[type](buf, offset, ctx);
-    }
+    } else value = ctx[info.decode](buf, offset, ctx);
 
     obj[info.key] = value.data;
     offset = value.offset;
@@ -118,14 +116,14 @@ export function defineStruct(definedMap: Struct, opts: { required?: boolean } = 
     key = keys[i];
     value = definedMap[key];
     if (typeof value === "number") {
+      // 仅定义ID
       encodeItem = { encode: FieldType.any, id: value, optional };
-      decodeItem = { key };
+      decodeItem = { decode: FieldType.any, key };
     } else if (typeof value === "object") {
-      let type: number | Encoder | undefined = value.type;
-      if (typeof type === "number") decodeItem = { decode: type, key };
-      else decodeItem = { decode: value.type, key };
+      let type: number | StructType = value.type ?? FieldType.any;
+      decodeItem = { decode: typeof type === "object" ? type.decoder : type, key };
       encodeItem = {
-        encode: type ?? FieldType.any,
+        encode: typeof type === "object" ? type.encoder : type,
         id: value.id,
         optional: value.optional === undefined ? optional : Boolean(value.optional),
       };
@@ -156,9 +154,14 @@ export function defineStruct(definedMap: Struct, opts: { required?: boolean } = 
 export type Struct = {
   [key: string]:
     | {
-        type?: FieldType | (Encoder & Decoder);
+        type?: FieldType | StructType;
         id: number;
         optional?: boolean;
       }
     | number;
+};
+/** @public */
+export type StructType<T = any> = {
+  encoder: DataWriterCreator<T>;
+  decoder: DecodeFn<T>;
 };
