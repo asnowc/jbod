@@ -1,6 +1,7 @@
 import type { DecodeResult, Decoder, Encoder } from "../type.js";
 import { createContext, EncodeContext, DecodeContext } from "./ctx.js";
 import { DataWriter, Defined } from "./defined/type.js";
+import { JbodWriter } from "./defined/mod.js";
 /** @internal */
 export interface JbodTransConfig {
   customObjet?: Record<number, Defined>;
@@ -23,7 +24,7 @@ export class JbodTrans implements Encoder<any, UserCalcResult>, Decoder {
    */
   decode<T = any>(buffer: Uint8Array, offset: number = 0, type?: number): DecodeResult<T> {
     if (type === undefined) type = buffer[offset++];
-    return this.decContext[type](buffer, offset);
+    return this.decContext[type](buffer, offset, this.decContext);
   }
 
   /**
@@ -35,7 +36,7 @@ export class JbodTrans implements Encoder<any, UserCalcResult>, Decoder {
   }
 
   createWriter(data: any) {
-    return new this.encContext.JbodWriter(data, this.encContext);
+    return new JbodWriter(data, this.encContext);
   }
   createContentWriter(data: any) {
     const type = this.encContext.toTypeCode(data);

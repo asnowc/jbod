@@ -79,10 +79,10 @@ export function decodeStruct<T = any>(
     else if (info.decode === FieldType.bool) {
       value = { data: buf[offset++] === DataType.true ? true : false, offset };
     } else if (info.decode) {
-      value = ctx[info.decode](buf, offset);
+      value = ctx[info.decode](buf, offset, ctx);
     } else {
       let type = buf[offset++];
-      value = ctx[type](buf, offset);
+      value = ctx[type](buf, offset, ctx);
     }
 
     obj[info.key] = value.data;

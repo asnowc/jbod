@@ -1,4 +1,4 @@
-import type { TypeDataWriter, DataWriter, EncodeContext, DecodeContext } from "../type.js";
+import type { TypeDataWriter, DataWriter, EncodeContext } from "../type.js";
 
 export class JbodWriter implements TypeDataWriter {
   constructor(data: any, ctx: EncodeContext) {
@@ -13,8 +13,4 @@ export class JbodWriter implements TypeDataWriter {
     buf[offset] = this.type;
     return this.writer.encodeTo(buf, offset + 1);
   }
-}
-export function decodeJbod(this: DecodeContext, buf: Uint8Array, offset: number) {
-  const type = buf[offset++];
-  return this[type](buf, offset);
 }

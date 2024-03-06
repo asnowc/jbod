@@ -2,7 +2,7 @@ import { calcU32DByte, decodeU32D, encodeU32DInto } from "../../../dynamic_binar
 import type { EncodeContext, DataWriter, TypeDataWriter, Defined } from "../type.js";
 import { DecodeResult } from "../../../type.js";
 import { VOID_ID } from "../const.js";
-import { fastDecodeJbod, fastJbodWriter } from "../util/mod.js";
+import { fastDecodeJbod, fastJbodWriter } from "../item/mod.js";
 import { stringDecode } from "./dy_len.js";
 import { calcUtf8Length, encodeUtf8Into } from "../../../../uint_array_util/mod.js";
 
@@ -118,7 +118,7 @@ class DyRecordWriter implements DataWriter {
 
 export const array: Defined<any[]> = {
   encoder: ArrayWriter,
-  decoder: function arrayDecoder(buf: Uint8Array, offset: number): DecodeResult<any[]> {
+  decoder: function arrayDecoder(buf: Uint8Array, offset: number, ctx): DecodeResult<any[]> {
     const type = buf[offset++];
     let du32 = decodeU32D(buf, offset);
     offset += du32.byte;
@@ -127,7 +127,7 @@ export const array: Defined<any[]> = {
     let arrayList: unknown[] = [];
     let res: DecodeResult;
     for (let i = 0; i < length; i++) {
-      res = fastDecodeJbod(this, buf, offset, type);
+      res = fastDecodeJbod(ctx, buf, offset, type);
       offset = res.offset;
       arrayList[i] = res.data;
     }
@@ -138,7 +138,7 @@ export const array: Defined<any[]> = {
 
 export const dyArray: Defined<any[]> = {
   encoder: DyArrayWriter,
-  decoder: function dyArrayDecoder(buf: Uint8Array, offset: number): DecodeResult<any[]> {
+  decoder: function dyArrayDecoder(buf: Uint8Array, offset: number, ctx): DecodeResult<any[]> {
     let arrayList: unknown[] = [];
     let res: DecodeResult;
     let type: number;
@@ -146,7 +146,7 @@ export const dyArray: Defined<any[]> = {
     while (offset < buf.byteLength) {
       type = buf[offset++];
       if (type === VOID_ID) break;
-      res = fastDecodeJbod(this, buf, offset, type);
+      res = fastDecodeJbod(ctx, buf, offset, type);
       offset = res.offset;
       arrayList[i++] = res.data;
     }
@@ -157,7 +157,7 @@ export const dyArray: Defined<any[]> = {
 
 export const dyRecord: Defined<object> = {
   encoder: DyRecordWriter,
-  decoder: function DyRecordDecoder(buf, offset) {
+  decoder: function DyRecordDecoder(buf, offset, ctx) {
     const map: Record<string, unknown> = {};
     let key: string;
     let res: DecodeResult;
@@ -169,7 +169,7 @@ export const dyRecord: Defined<object> = {
       res = stringDecode(buf, offset);
       offset = res.offset;
       key = res.data;
-      res = fastDecodeJbod(this, buf, res.offset, type);
+      res = fastDecodeJbod(ctx, buf, res.offset, type);
 
       map[key] = res.data;
       offset = res.offset;
@@ -182,8 +182,8 @@ export const jsSet: Defined<Set<any>> = {
   encoder: function JsSetWriter(data: Set<any>, ctx: EncodeContext) {
     return new DyArrayWriter(Array.from(data), ctx);
   } as any,
-  decoder: function (buf, offset) {
-    const res: DecodeResult = dyArray.decoder.call(this, buf, offset);
+  decoder: function (buf, offset, ctx) {
+    const res: DecodeResult = dyArray.decoder(buf, offset, ctx);
     res.data = new Set(res.data);
     return res;
   },
@@ -200,8 +200,8 @@ export const jsMap: Defined<Set<any>> = {
     }
     return new DyArrayWriter(list, ctx);
   } as any,
-  decoder: function (buf, offset) {
-    const res: DecodeResult = dyArray.decoder.call(this, buf, offset);
+  decoder: function (buf, offset, ctx) {
+    const res: DecodeResult = dyArray.decoder(buf, offset, ctx);
     const object = res.data;
     const map = new Map();
     for (let i = 0; i < object.length; i += 2) {

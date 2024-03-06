@@ -111,7 +111,7 @@ export function fastDecodeJbod(ctx: DecodeContext, buf: Uint8Array, offset: numb
       return { data: undefined, offset };
     default: {
       if (typeof ctx[type] !== "function") throw new UnsupportedDataTypeError(DataType[type] ?? type);
-      return ctx[type](buf, offset);
+      return ctx[type](buf, offset, ctx);
     }
   }
 }

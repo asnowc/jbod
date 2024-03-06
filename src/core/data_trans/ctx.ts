@@ -1,13 +1,12 @@
-import { EncodeContext, DecodeContext, Defined, JbodWriter, decodeJbod } from "./defined/mod.js";
+import { EncodeContext, DecodeContext, Defined, JbodWriter } from "./defined/mod.js";
 import { DEFAULT_TYPE, JS_OBJECT_EXTRA_TYPE } from "./defined/mod.js";
-import { toTypeCode } from "./defined/util/mod.js";
+import { toTypeCode } from "./defined/item/mod.js";
 
 const ENCODE_CONTEXT: EncodeContext = {
-  JbodWriter,
   classTypes: new Map(),
   toTypeCode,
 };
-const DECODE_CONTEXT: DecodeContext = { decodeJbod };
+const DECODE_CONTEXT: DecodeContext = {};
 export function createContext(customType?: Record<number, Defined>) {
   let enc: EncodeContext = { ...ENCODE_CONTEXT };
   let dec: DecodeContext = { ...DECODE_CONTEXT };

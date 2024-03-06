@@ -4,17 +4,15 @@ export interface TypeDataWriter extends DataWriter {
   type: number;
 }
 export type { EncodeFn, DataWriter };
-export type DecodeFn<T = any> = (this: DecodeContext, buf: Uint8Array, offset: number) => DecodeResult<T>;
+export type DecodeFn<T = any> = (buf: Uint8Array, offset: number, ctx: DecodeContext) => DecodeResult<T>;
 
 export interface EncodeContext {
   [key: number]: DataWriterCreator;
   toTypeCode(data: any): number;
-  JbodWriter: new (data: any, ctx: EncodeContext) => TypeDataWriter;
   classTypes: Map<ClassType, number>;
 }
 export interface DecodeContext {
   [key: number]: DecodeFn;
-  decodeJbod: DecodeFn;
 }
 /** @internal */
 export type Defined<T = any> = {
