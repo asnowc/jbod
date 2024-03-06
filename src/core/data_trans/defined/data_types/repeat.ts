@@ -1,9 +1,10 @@
 import { calcU32DByte, decodeU32D, encodeU32DInto } from "../../../dynamic_binary_number.js";
 import type { EncodeContext, DataWriter, TypeDataWriter, Defined } from "../type.js";
 import { DecodeResult } from "../../../type.js";
-import { VOID_ID, DataType } from "../const.js";
+import { VOID_ID } from "../const.js";
 import { fastDecodeJbod, fastJbodWriter } from "../util/mod.js";
 import { stringDecode } from "./dy_len.js";
+import { calcUtf8Length, encodeUtf8Into } from "../../../../uint_array_util/mod.js";
 
 class ArrayWriter implements DataWriter {
   constructor(arr: any[], ctx: EncodeContext, fixed?: boolean) {
@@ -11,13 +12,13 @@ class ArrayWriter implements DataWriter {
     this.type = type;
     let byteLength = 1 + calcU32DByte(arr.length);
     if (fixed) {
-      this.writer = new ctx[type](arr, ctx);
-      this.length = arr.length;
+      this.writer = fastJbodWriter(arr, ctx);
+      this.length = this.writer.byteLength * arr.length;
     } else {
       let writers: DataWriter[] = new Array(arr.length);
       let writer: DataWriter;
       for (let i = 0; i < arr.length; i++) {
-        writer = new ctx[type](arr[i], ctx);
+        writer = fastJbodWriter(arr[i], ctx);
         writers[i] = writer;
         byteLength += writer.byteLength;
       }
@@ -50,12 +51,7 @@ class DyArrayWriter implements DataWriter {
     let writers: TypeDataWriter[] = new Array(arr.length);
     let totalLen = arr.length + 1; //type*length+ void
     let writer: TypeDataWriter;
-    let type: number;
     for (let i = 0; i < arr.length; i++) {
-      // type = ctx.toTypeCode(arr[i]);
-      // writer = new ctx[type](arr[i], ctx) as TypeDataWriter;
-      // writer.type = type;
-
       writer = fastJbodWriter(arr[i], ctx);
       totalLen += writer.byteLength;
       writers[i] = writer;
@@ -78,42 +74,41 @@ class DyArrayWriter implements DataWriter {
 class DyRecordWriter implements DataWriter {
   constructor(data: object, ctx: EncodeContext);
   constructor(data: Record<string, any>, ctx: EncodeContext) {
-    const map = Object.keys(data);
-    let totalLen = map.length + 1; //type*length + void
-    let valWriters: TypeDataWriter[] = new Array(map.length);
-    let keyWriters: DataWriter[] = new Array(map.length);
+    const keys = Object.keys(data);
+    let totalLen = keys.length + 1; //type*length + void
+    let valWriters: TypeDataWriter[] = new Array(keys.length);
+    let keysLen: number[] = new Array(keys.length);
 
-    let item: any;
-    let keyRes: DataWriter;
     let valueRes: TypeDataWriter;
-    let type: number;
+    let keyUtf8Len: number;
 
-    for (let i = 0; i < map.length; i++) {
-      item = data[map[i]];
-      keyRes = new ctx[DataType.string](map[i], ctx);
-      type = ctx.toTypeCode(item);
-      valueRes = new ctx[type](item, ctx) as TypeDataWriter;
-      valueRes.type = type;
-      totalLen += keyRes.byteLength + valueRes.byteLength;
+    for (let i = 0; i < keys.length; i++) {
+      keyUtf8Len = calcUtf8Length(keys[i]);
+      valueRes = fastJbodWriter(data[keys[i]], ctx);
 
-      keyWriters[i] = keyRes;
+      totalLen += calcU32DByte(keyUtf8Len) + keyUtf8Len + valueRes.byteLength;
+      keysLen[i] = keyUtf8Len;
       valWriters[i] = valueRes;
     }
     this.valueWriters = valWriters;
-    this.keyWriters = keyWriters;
+    this.keysLen = keysLen;
+    this.keys = keys;
     this.byteLength = totalLen;
   }
-  private readonly keyWriters: DataWriter[];
+  private readonly keys: string[];
+  private readonly keysLen: number[];
   private readonly valueWriters: TypeDataWriter[];
   readonly byteLength: number;
   encodeTo(buf: Uint8Array, offset: number): number {
-    const { keyWriters, valueWriters } = this;
+    const { keysLen, valueWriters, keys } = this;
     let item: TypeDataWriter;
     for (let i = 0; i < valueWriters.length; i++) {
       item = valueWriters[i];
       buf[offset++] = item.type;
 
-      offset = keyWriters[i].encodeTo(buf, offset);
+      offset = encodeU32DInto(keysLen[i], buf, offset);
+      offset = encodeUtf8Into(keys[i], buf, offset);
+
       offset = item.encodeTo(buf, offset);
     }
     buf[offset++] = VOID_ID;
@@ -132,7 +127,7 @@ export const array: Defined<any[]> = {
     let arrayList: unknown[] = [];
     let res: DecodeResult;
     for (let i = 0; i < length; i++) {
-      res = this[type](buf, offset);
+      res = fastDecodeJbod(this, buf, offset, type);
       offset = res.offset;
       arrayList[i] = res.data;
     }
@@ -147,12 +142,13 @@ export const dyArray: Defined<any[]> = {
     let arrayList: unknown[] = [];
     let res: DecodeResult;
     let type: number;
+    let i = 0;
     while (offset < buf.byteLength) {
       type = buf[offset++];
       if (type === VOID_ID) break;
-      res = this[type](buf, offset);
+      res = fastDecodeJbod(this, buf, offset, type);
       offset = res.offset;
-      arrayList.push(res.data);
+      arrayList[i++] = res.data;
     }
     return { data: arrayList, offset };
   },
@@ -174,7 +170,6 @@ export const dyRecord: Defined<object> = {
       offset = res.offset;
       key = res.data;
       res = fastDecodeJbod(this, buf, res.offset, type);
-      // res = this[type](buf, offset);
 
       map[key] = res.data;
       offset = res.offset;

@@ -4,7 +4,7 @@ import { calcUtf8Length, decodeUtf8, encodeUtf8Into } from "../../../../uint_arr
 
 export const string: Defined<string> = {
   encoder: class StringWriter implements DataWriter {
-    constructor(private data: string, ctx: EncodeContext) {
+    constructor(private data: string) {
       this.strByteLen = calcUtf8Length(data);
       this.byteLength = calcU32DByte(this.strByteLen) + this.strByteLen;
     }
