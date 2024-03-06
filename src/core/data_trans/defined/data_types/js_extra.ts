@@ -2,7 +2,7 @@ import { DecodeResult } from "../../../type.js";
 import { defineStruct, StructWriter, decodeStruct } from "./struct.js";
 import { EncodeContext, Defined } from "../type.js";
 import { JbodError } from "../const.js";
-
+import { dyArray } from "./repeat.js";
 const symbolStruct = defineStruct({ description: 1 });
 
 export const symbol: Defined<symbol> = {
@@ -43,4 +43,40 @@ export const regExp: Defined<RegExp> = {
     return info;
   },
   class: RegExp,
+};
+
+const { decoder: dyArrayDecoder, encoder: DyArrayWriter } = dyArray;
+export const jsSet: Defined<Set<any>> = {
+  encoder: function JsSetWriter(data: Set<any>, ctx: EncodeContext) {
+    return new DyArrayWriter(Array.from(data), ctx);
+  } as any,
+  decoder: function (buf, offset, ctx) {
+    const res: DecodeResult = dyArray.decoder(buf, offset, ctx);
+    res.data = new Set(res.data);
+    return res;
+  },
+  class: Set,
+};
+export const jsMap: Defined<Set<any>> = {
+  encoder: function JsMapWriter(data: Set<any>, ctx: EncodeContext) {
+    const list: any[] = [];
+    let i = 0;
+    for (const item of data) {
+      list[i] = item[0];
+      list[i + 1] = item[1];
+      i += 2;
+    }
+    return new DyArrayWriter(list, ctx);
+  } as any,
+  decoder: function (buf, offset, ctx) {
+    const res: DecodeResult = dyArrayDecoder(buf, offset, ctx);
+    const object = res.data;
+    const map = new Map();
+    for (let i = 0; i < object.length; i += 2) {
+      map.set(object[i], object[i + 1]);
+    }
+    res.data = map;
+    return res;
+  },
+  class: Map,
 };
