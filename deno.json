@@ -2,7 +2,8 @@
   "nodeModulesDir": false,
   "lock": false,
   "tasks": {
-    "version_snapshots": "deno run -A scripts/version_snapshots.ts"
+    "version_snapshots": "deno run -A scripts/version_snapshots.ts",
+    "benchmark": "deno bench -A --json > benchmark/dist/result.json"
   },
   "imports": {
     "@eavid/vitest-tool/bench": "npm:@eavid/vitest-tool@1.2.3/bench",

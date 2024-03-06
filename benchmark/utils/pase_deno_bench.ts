@@ -50,12 +50,17 @@ function genChartData(title: string, fileResult: Map<string, Bench[]>) {
     };
     for (const bench of group) {
       dimensions.add(bench.name);
-      item[bench.name] = bench.results[0].ok.avg/1000000;
+      item[bench.name] = bench.results[0].ok.avg / 1000000;
     }
     chartData.source.push(item);
   }
   chartData.dimensions.push(...dimensions);
   return chartData;
+}
+function parseFilename(name: string, base?: string) {
+  if (base && name.startsWith(base)) name = name.slice(base.length + 1);
+  else name = name.slice(name.lastIndexOf("/") + 1);
+  return name.replace(/(.bench)?\..+$/, "");
 }
 function group(list: Bench[]) {
   const fileMap: Map<string, Map<string, Bench[]>> = new Map();
@@ -76,8 +81,9 @@ function group(list: Bench[]) {
 }
 export function genChartPageData(data: any): ReportJSON {
   const chartDataList: ReportJSON = [];
-  for (const [name, file] of group(data.benches)) {
-    chartDataList.push({ file: name, suiteData: [genChartData(name, file)] });
+  for (const [filename, file] of group(data.benches)) {
+    const title = parseFilename(filename);
+    chartDataList.push({ file: filename, suiteData: [genChartData(title, file)] });
   }
   return chartDataList;
 }

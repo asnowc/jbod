@@ -1,28 +1,45 @@
-// @deno-types="https://esm.sh/jbod@0.4"
-import JBOD from "jbod";
-// @deno-types="https://esm.sh/jbod@0.4"
-import B_JBOD from "../dist/before.js";
+// @deno-types="https://esm.sh/jbod@0.4.x"
+import { JbodTrans } from "jbod";
+// @deno-types="https://esm.sh/jbod@0.4.x"
+import { JbodTrans as BJbodTrans } from "../dist/before.js";
 import { cases, createList } from "../__mocks__/compare.cases.ts";
-const benchFn = cases.map(({ name, size, value }) => {
-  const listData = createList(size, value);
+const JBOD = new JbodTrans();
+const B_JBOD = new BJbodTrans();
+const map = new Map(
+  Object.entries({
+    disabled: false,
+    count: 100837,
+    name: "Documentation",
+    dataStamp: 4 / 7,
+    id: 876,
+  })
+);
 
-  let buf = new Uint8Array(B_JBOD.byteLength(listData).byteLength * 2);
+const casesList: { size: number; value: any; name: string }[] = cases.slice(1);
+casesList.push({ name: "map", value: map, size: 1000 });
+
+const benchFn = casesList.map(({ name, size, value }) => {
+  const listData = createList(size, value);
+  // @ts-ignore xx
+  const res1 = JBOD.createContentWriter(listData);
+  // @ts-ignore xx
+  // const res2 = B_JBOD.createContentEncoder(listData);
+  const res2 = B_JBOD.byteLength(listData);
+
+  let buf = new Uint8Array(res1.byteLength);
   return {
     name,
     JBOD: () => {
       // @ts-ignore xx
-      const enco = JBOD.createEncoder(listData);
-      enco.encodeTo(buf, 0);
+      const res1 = JBOD.createContentWriter(listData);
+      res1.encodeTo(buf, 0);
     },
     B_JBOD: () => {
       // @ts-ignore xx
-      // const enco = B_JBOD.createEncoder(listData);
-      // let buf = new Uint8Array(enco.byteLength + 1);
-      // enco.encodeTo(buf, 1);
-      // buf[0] = enco.type;
-      const pre = B_JBOD.byteLength(listData);
-      B_JBOD.encodeContentInto(pre, buf, 0);
-      // B_JBOD.encode(listData);
+      // const res2 = B_JBOD.createContentEncoder(listData);
+      //res1.encodeTo(buf, 0);
+      const res2 = B_JBOD.byteLength(listData);
+      B_JBOD.encodeContentInto(res2, buf, 0);
     },
   };
 });

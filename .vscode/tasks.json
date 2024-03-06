@@ -14,8 +14,8 @@
     },
     {
       "label": "Benchmark ui",
-      "command": "deno bench -A benchmark/utils/chart_ui.ts",
-      "detail": "deno bench -A benchmark/utils/chart_ui.ts",
+      "command": "deno run -A benchmark/utils/chart_ui.ts",
+      "detail": "deno run -A benchmark/utils/chart_ui.ts",
       "type": "shell",
       "args": [],
       "presentation": {

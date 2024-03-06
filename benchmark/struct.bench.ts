@@ -35,11 +35,11 @@ function jbodDecode(struct: StructTrans, buf: Uint8Array, offset = 0) {
 }
 
 function benchEncode() {
-  Deno.bench("JSON", { group: "Encode" }, () => {
-    JSON.encode(listData);
-  });
   Deno.bench("JBOD", { group: "Encode" }, () => {
     jbodEncode(jbodStruct, listData);
+  });
+  Deno.bench("JSON", { group: "Encode" }, () => {
+    JSON.encode(listData);
   });
   Deno.bench("ProtoBuf", { group: "Encode" }, () => {
     protobuf.encodeArray(listData, protoBufType);
@@ -50,11 +50,11 @@ function benchDecode() {
   let d1 = JSON.encode(listData);
   let d2 = jbodEncode(jbodStruct, listData);
   let d3 = protobuf.encodeArray(listData, protoBufType);
-  Deno.bench("JSON", { group: "Decode" }, () => {
-    JSON.decode(d1);
-  });
   Deno.bench("JBOD", { group: "Decode" }, () => {
     jbodDecode(jbodStruct, d2);
+  });
+  Deno.bench("JSON", { group: "Decode" }, () => {
+    JSON.decode(d1);
   });
   Deno.bench("ProtoBuf", { group: "Decode" }, () => {
     protobuf.decode(d3, protoBufType);

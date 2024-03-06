@@ -3,11 +3,24 @@ import JBOD from "jbod";
 // @deno-types="https://esm.sh/jbod@0.4"
 import B_JBOD from "../dist/before.js";
 import { cases, createList } from "../__mocks__/compare.cases.ts";
+const map = new Map(
+  Object.entries({
+    disabled: false,
+    count: 100837,
+    name: "Documentation",
+    dataStamp: 4 / 7,
+    id: 876,
+  })
+);
 
-cases
+const casesList: { size: number; value: any; name: string }[] = cases.slice(1);
+casesList.push({ name: "map", value: map, size: 1000 });
+
+casesList
   .map(({ size, value, name }) => {
     const listData = JBOD.encode(createList(size, value));
     const b_listData = B_JBOD.encode(createList(size, value));
+
     return {
       size,
       name,
