@@ -25,11 +25,13 @@ export class StructTrans<T extends object = any> implements Encoder, Decoder {
     this.encContext = enc;
     this.decContext = dec;
   }
+  /** @deprecated 改用 createWriter()*/
   byteLength(data: T): { byteLength: number; pretreatment: unknown };
   byteLength(data: Record<string | number | symbol, any>) {
     const writer = new StructWriter(this.encodeDefine, data, this.encContext);
     return { byteLength: writer.byteLength, pretreatment: writer };
   }
+  /** @deprecated 改用 createWriter()*/
   encodeInto(calcRes: { byteLength: number; pretreatment: unknown }, buf: Uint8Array, offset?: number): number;
   encodeInto(calcRes: { byteLength: number; pretreatment: StructWriter }, buf: Uint8Array, offset = 0): number {
     return calcRes.pretreatment.encodeTo(buf, offset);

@@ -1,4 +1,4 @@
-import { DataType, StructTrans, FieldType } from "jbod";
+import { StructTrans, FieldType } from "jbod";
 import { describe, expect, test } from "vitest";
 import { formatBin } from "./utils/mod.js";
 const s1 = StructTrans.define<{ f1: boolean; f2: number; f3: any }>(
@@ -48,5 +48,15 @@ describe("decode", function () {
     const data = { f1: false, f2: 9, f3: "ab" };
     const u8Arr = optionalStruct.encode(data);
     expect(optionalStruct.decode(u8Arr).data).toEqual(data);
+  });
+  test("嵌套", function () {
+    const optionalStruct = StructTrans.define<Partial<{ f1: number; f2: { c1: number; c2: number } }>>({
+      f1: 1,
+      f2: { id: 2, type: { c1: 1, c2: 2 } },
+    });
+    const raw = { f1: 8, f2: { c1: 9, c2: -1 } };
+    const buf = optionalStruct.encode(raw);
+    const res = optionalStruct.decode(buf);
+    expect(res.data).toEqual(raw);
   });
 });
