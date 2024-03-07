@@ -232,16 +232,20 @@ export const JS_OBJECT_EXTRA_TYPE: Record<number, Defined>;
 
 // @public (undocumented)
 export type Struct = {
-    [key: string]: {
-        type?: FieldType | StructType;
-        id: number;
-        optional?: boolean;
-    } | number;
+    [key: string]: StructDefined | number;
+};
+
+// @public (undocumented)
+export type StructDefined = {
+    type?: FieldType | StructType | Struct;
+    id: number;
+    optional?: boolean;
+    repeat?: boolean;
 };
 
 // @public (undocumented)
 export class StructTrans<T extends object = any> implements Encoder, Decoder {
-    // (undocumented)
+    // @deprecated (undocumented)
     byteLength(data: T): {
         byteLength: number;
         pretreatment: unknown;
@@ -256,7 +260,7 @@ export class StructTrans<T extends object = any> implements Encoder, Decoder {
     }): StructTrans<T>;
     // (undocumented)
     encode(data: T): Uint8Array;
-    // (undocumented)
+    // @deprecated (undocumented)
     encodeInto(calcRes: {
         byteLength: number;
         pretreatment: unknown;
@@ -264,10 +268,14 @@ export class StructTrans<T extends object = any> implements Encoder, Decoder {
 }
 
 // @public (undocumented)
-export type StructType<T = any> = {
-    encoder: DataWriterCreator<T>;
+export class StructType<T = any> {
+    // Warning: (ae-incompatible-release-tags) The symbol "__constructor" is marked as @public, but its signature references "Defined" which is marked as @internal
+    constructor(defined: Defined);
+    // (undocumented)
     decoder: DecodeFn<T>;
-};
+    // (undocumented)
+    encoder: DataWriterCreator<T>;
+}
 
 // Warning: (ae-forgotten-export) The symbol "ByteParser" needs to be exported by the entry point mod.d.ts
 //

@@ -2,7 +2,7 @@ import { calcU32DByte, decodeU32D, encodeU32DInto } from "../../../dynamic_binar
 import type { EncodeContext, DataWriter, TypeDataWriter, Defined } from "../type.js";
 import { DecodeResult } from "../../../type.js";
 import { VOID_ID } from "../const.js";
-import { fastDecodeJbod, fastJbodWriter } from "../item/mod.js";
+import { fastDecodeJbod, fastJbodWriter } from "./jbod.js";
 import { stringDecode } from "./dy_len.js";
 import { calcUtf8Length, encodeUtf8Into } from "../../../../uint_array_util/mod.js";
 

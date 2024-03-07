@@ -1,15 +1,17 @@
 import { calcU32DByte, decodeU32D, encodeU32DInto } from "../../../dynamic_binary_number.js";
 import { DataType, FieldType, VOID_ID } from "../const.js";
 import type { DecodeResult } from "../../../type.js";
-import { fastDecodeJbod } from "../item/mod.js";
 import type { EncodeContext, DecodeContext, DataWriter, DataWriterCreator, DecodeFn, Defined } from "../type.js";
-import { JbodWriter } from "./jbod.js";
+import { JbodWriter, fastDecodeJbod, fastJbodWriter } from "./jbod.js";
 type Key = string | number | symbol;
-export type StructDecodeInfo = { decode: number | DecodeFn | Record<number, StructDecodeInfo>; key: Key };
+export type StructDecodeInfo = {
+  decode: number | DecodeFn | Record<number, StructDecodeInfo>;
+  key: Key;
+};
 export type StructEncodeInfo = {
   encode: number | DataWriterCreator | StructEncodeDefine;
   id: number;
-  optional?: boolean;
+  optional: boolean;
 };
 export type StructEncodeDefine = Map<Key, StructEncodeInfo>;
 
@@ -152,7 +154,7 @@ export function defineStruct(definedMap: Struct, opts: { required?: boolean } = 
     value = definedMap[key];
     if (typeof value === "number") {
       // 仅定义ID： any 类型
-      encodeItem = { encode: FieldType.any, id: value, optional };
+      encodeItem = { encode: JbodWriter, id: value, optional };
       decodeItem = { decode: FieldType.any, key };
     } else if (typeof value === "object") {
       let type: number | StructType | Struct = value.type ?? FieldType.any;
@@ -175,6 +177,7 @@ export function defineStruct(definedMap: Struct, opts: { required?: boolean } = 
       decodeItem = { decode: decoder, key };
       encodeItem = {
         encode: encoder,
+
         id: value.id,
         optional: value.optional === undefined ? optional : Boolean(value.optional),
       };

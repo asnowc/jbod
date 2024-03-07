@@ -1,6 +1,5 @@
 import { EncodeContext, DecodeContext, Defined } from "./defined/mod.js";
-import { DEFAULT_TYPE, JS_OBJECT_EXTRA_TYPE } from "./defined/mod.js";
-import { toTypeCode } from "./defined/item/mod.js";
+import { DEFAULT_TYPE, JS_OBJECT_EXTRA_TYPE, toTypeCode } from "./defined/mod.js";
 
 const ENCODE_CONTEXT: EncodeContext = {
   classTypes: new Map(),
