@@ -1,5 +1,6 @@
 import type { DecodeResult, Encoder, Decoder, DataWriter } from "../type.js";
 import {
+  StructDefined,
   Struct,
   StructType,
   StructDecodeInfo,
@@ -50,4 +51,4 @@ export class StructTrans<T extends object = any> implements Encoder, Decoder {
     return new StructWriter(this.encodeDefine, data, this.encContext);
   }
 }
-export type { Struct, StructType };
+export type { Struct, StructType, StructDefined };

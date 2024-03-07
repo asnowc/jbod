@@ -1,9 +1,9 @@
 ## JavaScript Binary Object Data
 
-**目前尚不稳定**
+支持更多 JS 数据类型的序列化与反序列化库，序列化后大小占用很小。可用于传输、和存储。
+借鉴了 BSON 和 ProtoBuf, 不过设计 JBOD 的主要用于传输 JavaScript 数据。 [查看 JBOD 数据帧格式](./docs/jbod.md)
 
-JBOD 借鉴了 BSON 和 ProtoBuf, 不过设计 JBOD 的主要用于传输 JavaScript 数据，当然也可以用于存储数据。 [查看 JBOD 数据帧格式](./docs/jbod.md)
-JBOD 比 JSON 支持更多的 JavaScript 数据类型
+**目前尚不稳定**
 
 ### 功能特性
 

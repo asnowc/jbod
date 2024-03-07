@@ -3,6 +3,7 @@
   "version": "0.4.3",
   "description": "",
   "type": "module",
+  "types": "./dist/mod.d.ts",
   "scripts": {
     "ci:test": "vitest run",
     "ci:build": "pnpm rollup -c",
@@ -21,11 +22,12 @@
     "typescript": "^5.3.3",
     "vitest": "^1.2.2"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/asnowc/jbod"
+  },
   "exports": {
-    ".": {
-      "import": "./dist/mod.js",
-      "types": "./dist/mod.d.ts"
-    }
+    ".": "./dist/mod.js"
   },
   "files": [
     "dist/**/*.js",
