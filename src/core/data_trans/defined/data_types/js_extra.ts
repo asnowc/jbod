@@ -10,7 +10,7 @@ export const symbol: Defined<symbol> = {
     return new StructWriter(symbolStruct.encodeDefined, data, ctx);
   } as any,
   decoder: function (buf, offset, ctx) {
-    const info = decodeStruct(buf, offset, symbolStruct.decodeDefined, ctx) as DecodeResult;
+    const info = decodeStruct(buf, offset, ctx, symbolStruct.decodeDefined) as DecodeResult;
     info.data = Symbol(info.data.description);
     return info;
   },
@@ -23,7 +23,7 @@ export const error: Defined<Error> = {
     return new StructWriter(errorStruct.encodeDefined, data, ctx);
   } as any,
   decoder: function (buf, offset, ctx) {
-    const info = decodeStruct(buf, offset, errorStruct.decodeDefined, ctx) as DecodeResult;
+    const info = decodeStruct(buf, offset, ctx, errorStruct.decodeDefined) as DecodeResult;
     const data = info.data;
     info.data = new JbodError(data.message, { cause: data.cause });
     if (data.code) info.data.code = data.code;
@@ -38,7 +38,7 @@ export const regExp: Defined<RegExp> = {
     return new StructWriter(regExpStruct.encodeDefined, data, ctx);
   } as any,
   decoder: function (buf, offset, ctx) {
-    const info = decodeStruct(buf, offset, regExpStruct.decodeDefined, ctx) as DecodeResult;
+    const info = decodeStruct(buf, offset, ctx, regExpStruct.decodeDefined) as DecodeResult;
     info.data = new RegExp(info.data.source, info.data.flags);
     return info;
   },

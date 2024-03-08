@@ -127,7 +127,7 @@ export const array: Defined<any[]> = {
     let arrayList: unknown[] = [];
     let res: DecodeResult;
     for (let i = 0; i < length; i++) {
-      res = fastDecodeJbod(ctx, buf, offset, type);
+      res = fastDecodeJbod(buf, offset, ctx, type);
       offset = res.offset;
       arrayList[i] = res.data;
     }
@@ -146,7 +146,7 @@ export const dyArray: Defined<any[]> = {
     while (offset < buf.byteLength) {
       type = buf[offset++];
       if (type === VOID_ID) break;
-      res = fastDecodeJbod(ctx, buf, offset, type);
+      res = fastDecodeJbod(buf, offset, ctx, type);
       offset = res.offset;
       arrayList[i++] = res.data;
     }
@@ -169,7 +169,7 @@ export const dyRecord: Defined<object> = {
       res = stringDecode(buf, offset);
       offset = res.offset;
       key = res.data;
-      res = fastDecodeJbod(ctx, buf, res.offset, type);
+      res = fastDecodeJbod(buf, res.offset, ctx, type);
 
       map[key] = res.data;
       offset = res.offset;

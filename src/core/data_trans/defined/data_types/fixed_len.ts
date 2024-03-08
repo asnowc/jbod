@@ -53,6 +53,7 @@ export const NO_CONTENT: DataWriter = {
     return offset;
   },
 };
+/* @__NO_SIDE_EFFECTS__ */
 export function createNoContent<T>(decodeFn: DecodeFn<T>): Defined<T> {
   return {
     encoder: NoContent as any,

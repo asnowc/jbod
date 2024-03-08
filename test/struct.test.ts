@@ -1,10 +1,10 @@
-import { StructTrans, FieldType } from "jbod";
+import { StructTrans } from "jbod";
 import { describe, expect, test } from "vitest";
 import { formatBin } from "./utils/mod.js";
 const s1 = StructTrans.define<{ f1: boolean; f2: number; f3: any }>(
   {
-    f1: { id: 1, type: FieldType.bool },
-    f2: { id: 2, type: FieldType.i32 },
+    f1: { id: 1, type: "bool" },
+    f2: { id: 2, type: "i32" },
     f3: 3,
   },
   { required: true }
@@ -12,16 +12,31 @@ const s1 = StructTrans.define<{ f1: boolean; f2: number; f3: any }>(
 describe("encode", function () {
   test("基础", function () {
     const u8Arr = s1.encode({ f1: true, f2: 9, f3: "ab" });
-    expect(formatBin(u8Arr), "decode").toBe(`01030200000009030a02616200`);
+    expect(formatBin(u8Arr), "decode").toBe("0103" + "0200000009" + "030a026162" + "00");
   });
-
+  test("repeat", function () {
+    const s1 = StructTrans.define(
+      {
+        f1: { id: 1, type: "bool", repeat: true },
+        f2: { id: 2, type: "any", repeat: true },
+        f3: { id: 3, type: "i32", repeat: true },
+      },
+      { required: true }
+    );
+    const u8Arr = s1.encode({
+      f1: [true, false], // type repeat
+      f2: [1, true], // any repeat
+      f3: [], // any repeat
+    });
+    expect(formatBin(u8Arr), "decode").toBe("01020304" + "0202140000000103" + "0300" + "00");
+  });
   test("字段缺失", function () {
     expect(() => s1.encode({ f1: true, f2: 9n } as any)).toThrowError();
   });
   test("可选类型", function () {
     const s1 = StructTrans.define<Partial<{ f1: boolean; f2: number; f3: any }>>({
-      f1: { id: 1, type: FieldType.bool },
-      f2: { id: 2, type: FieldType.i32 },
+      f1: { id: 1, type: "bool" },
+      f2: { id: 2, type: "i32" },
       f3: 3,
     });
     const u8Arr = s1.encode({ f2: 9 });
@@ -30,8 +45,8 @@ describe("encode", function () {
 });
 describe("decode", function () {
   const optionalStruct = StructTrans.define<Partial<{ f1: boolean; f2: number; f3: any }>>({
-    f1: { id: 1, type: FieldType.bool },
-    f2: { id: 2, type: FieldType.i32 },
+    f1: { id: 1, type: "bool" },
+    f2: { id: 2, type: "i32" },
     f3: 3,
   });
   test("基础", function () {
@@ -58,5 +73,23 @@ describe("decode", function () {
     const buf = optionalStruct.encode(raw);
     const res = optionalStruct.decode(buf);
     expect(res.data).toEqual(raw);
+  });
+  test("repeat", function () {
+    const struct = StructTrans.define({
+      i32: { repeat: true, type: "i32", id: 1 },
+      bool: { repeat: true, id: 2 },
+      void: { id: 3, repeat: true },
+      struct: {
+        id: 4,
+        type: {
+          k2: 1,
+        },
+        repeat: true,
+      },
+    });
+    const raw = { i32: [1, 2, 3], bool: [true, false], struct: [{ k2: 0.2 }] };
+    const u8Arr = struct.encode(raw);
+    const data = struct.decode(u8Arr);
+    expect(data.data).toEqual(raw);
   });
 });

@@ -28,12 +28,14 @@ export class StructTrans<T extends object = any> implements Encoder, Decoder {
   }
   /** @deprecated 改用 createWriter()*/
   byteLength(data: T): { byteLength: number; pretreatment: unknown };
+  /** @deprecated 改用 createWriter()*/
   byteLength(data: Record<string | number | symbol, any>) {
     const writer = new StructWriter(this.encodeDefine, data, this.encContext);
     return { byteLength: writer.byteLength, pretreatment: writer };
   }
   /** @deprecated 改用 createWriter()*/
   encodeInto(calcRes: { byteLength: number; pretreatment: unknown }, buf: Uint8Array, offset?: number): number;
+  /** @deprecated 改用 createWriter()*/
   encodeInto(calcRes: { byteLength: number; pretreatment: StructWriter }, buf: Uint8Array, offset = 0): number {
     return calcRes.pretreatment.encodeTo(buf, offset);
   }
@@ -45,7 +47,7 @@ export class StructTrans<T extends object = any> implements Encoder, Decoder {
     return u8Arr;
   }
   decode(buf: Uint8Array, offset: number = 0): DecodeResult<T> {
-    return decodeStruct(buf, offset, this.decodeDefine, this.decContext) as DecodeResult;
+    return decodeStruct(buf, offset, this.decContext, this.decodeDefine) as DecodeResult;
   }
   createWriter(data: any): DataWriter {
     return new StructWriter(this.encodeDefine, data, this.encContext);

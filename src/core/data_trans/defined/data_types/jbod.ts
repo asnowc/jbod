@@ -108,7 +108,7 @@ export function fastJbodWriter(data: any, ctx: EncodeContext): TypeDataWriter {
   return writer;
 }
 
-export function fastDecodeJbod(ctx: DecodeContext, buf: Uint8Array, offset: number, type: number): DecodeResult<any> {
+export function fastDecodeJbod(buf: Uint8Array, offset: number, ctx: DecodeContext, type: number): DecodeResult<any> {
   switch (type) {
     case DataType.i32:
       return { data: readInt32BE(buf, offset), offset: offset + 4 };
@@ -129,4 +129,8 @@ export function fastDecodeJbod(ctx: DecodeContext, buf: Uint8Array, offset: numb
       return ctx[type](buf, offset, ctx);
     }
   }
+}
+export function jbodDecoder(buf: Uint8Array, offset: number, ctx: DecodeContext) {
+  let type = buf[offset++];
+  return fastDecodeJbod(buf, offset, ctx, type);
 }
