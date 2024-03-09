@@ -1,4 +1,4 @@
-// @deno-types="https://esm.sh/jbod@0.4"
+// @deno-types="https://esm.sh/jbod@0.4.x"
 import { StructTrans } from "jbod";
 import { objData, createList } from "./__mocks__/compare.cases.ts";
 import * as protobuf from "./protobuf.ts";
@@ -6,37 +6,24 @@ import * as JSON from "./json.ts";
 
 const listData = createList(1000, objData);
 const protoBufType = protobuf.defined.lookupType("object");
-const jbodStruct = StructTrans.define({ disabled: 1, count: 2, name: 3, dataStamp: 4, id: 5 });
-function jbodEncode(struct: StructTrans, data: any[]) {
-  let len = 0;
-  let pre: ReturnType<StructTrans["createWriter"]>[] = [];
-  for (let i = 0; i < data.length; i++) {
-    let res = struct.createWriter(data[i]);
-    len += res.byteLength;
-    pre[i] = res;
-  }
-  const buf = new Uint8Array(len);
-  let offset = 0;
-  for (let i = 0; i < data.length; i++) {
-    offset = pre[i].encodeTo(buf, offset);
-  }
-  return buf;
-}
-function jbodDecode(struct: StructTrans, buf: Uint8Array, offset = 0) {
-  let arr: any = [];
-  let i = 0;
-  let max = buf.byteLength;
-  do {
-    let res = struct.decode(buf, offset);
-    offset = res.offset;
-    arr[i++] = res.data;
-  } while (offset < max);
-  return arr;
-}
+
+const jbodStruct = StructTrans.define({
+  key: {
+    type: {
+      disabled: 1,
+      count: 2,
+      name: 3,
+      dataStamp: 4,
+      id: 5,
+    },
+    id: 1,
+    repeat: true,
+  },
+} as any);
 
 function benchEncode() {
   Deno.bench("JBOD", { group: "Encode" }, () => {
-    jbodEncode(jbodStruct, listData);
+    jbodStruct.encode({ key: listData });
   });
   Deno.bench("JSON", { group: "Encode" }, () => {
     JSON.encode(listData);
@@ -48,10 +35,10 @@ function benchEncode() {
 
 function benchDecode() {
   let d1 = JSON.encode(listData);
-  let d2 = jbodEncode(jbodStruct, listData);
+  let d2 = jbodStruct.encode({ key: listData });
   let d3 = protobuf.encodeArray(listData, protoBufType);
   Deno.bench("JBOD", { group: "Decode" }, () => {
-    jbodDecode(jbodStruct, d2);
+    jbodStruct.decode(d2);
   });
   Deno.bench("JSON", { group: "Decode" }, () => {
     JSON.decode(d1);

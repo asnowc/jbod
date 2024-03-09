@@ -18,8 +18,9 @@ casesList.push({ name: "map", value: map, size: 1000 });
 
 casesList
   .map(({ size, value, name }) => {
-    const listData = JBOD.encode(createList(size, value));
-    const b_listData = B_JBOD.encode(createList(size, value));
+    const data = createList(size, value);
+    const listData = JBOD.encode(data);
+    const b_listData = B_JBOD.encode(data);
 
     return {
       size,

@@ -20,7 +20,7 @@ casesList.push({ name: "map", value: map, size: 1000 });
 const benchFn = casesList.map(({ name, size, value }) => {
   const listData = createList(size, value);
   const res1 = JBOD.createContentWriter(listData);
-  const res2 = B_JBOD.createContentWriter(listData);
+  // const res2 = B_JBOD.createContentWriter(listData);
   let buf = new Uint8Array(res1.byteLength);
   return {
     name,
@@ -30,7 +30,7 @@ const benchFn = casesList.map(({ name, size, value }) => {
     },
     B_JBOD: () => {
       const res2 = B_JBOD.createContentWriter(listData);
-      res1.encodeTo(buf, 0);
+      res2.encodeTo(buf, 0);
     },
   };
 });

@@ -14,8 +14,9 @@ export type StructEncodeInfo = {
   id: number;
   optional: boolean;
   repeat: boolean;
+  key: Key;
 };
-export type StructEncodeDefine = Map<Key, StructEncodeInfo>;
+export type StructEncodeDefine = StructEncodeInfo[];
 class RepeatWriter implements DataWriter {
   constructor(private writers: DataWriter[], public byteLength: number) {
     this.byteLength += calcU32DByte(writers.length);
@@ -64,23 +65,31 @@ export class StructWriter implements DataWriter {
   constructor(encodeStruct: StructEncodeDefine, data: object, ctx: EncodeContext);
   constructor(encodeStruct: StructEncodeDefine, data: Record<Key, any>, ctx: EncodeContext) {
     let len = 1;
-    let value;
-    let preMap = new Map<number, DataWriter>();
+    let ids: number[] = [];
+    let dataWriter: DataWriter[] = [];
     let res: DataWriter;
-    for (const [key, define] of encodeStruct) {
-      value = data[key];
-      if (value === undefined) {
-        if (define.optional) continue;
-        else throw new Error(`字段 '${String(key)}' 不是可选类型, 不能为为 undefined`);
-      }
-      res = this.getWriter(value, define, ctx);
 
-      len += calcU32DByte(define.id) + res.byteLength;
-      preMap.set(define.id, res);
+    let info: StructEncodeInfo;
+    let value;
+    let y = 0;
+    for (let i = 0; i < encodeStruct.length; i++) {
+      info = encodeStruct[i];
+      value = data[info.key];
+      if (value === undefined) {
+        if (info.optional) continue;
+        else throw new Error(`The field '${String(info.key)}' cannot be undefined`);
+      }
+      res = this.getWriter(value, info, ctx);
+
+      len += calcU32DByte(info.id) + res.byteLength;
+      ids[y] = info.id;
+      dataWriter[y] = res;
+      y++;
     }
 
     this.byteLength = len;
-    this.pretreatment = preMap;
+    this.writers = dataWriter;
+    this.ids = ids;
   }
   private getWriter(value: any, define: StructEncodeInfo, ctx: EncodeContext): DataWriter {
     let encoder: DataWriterCreator;
@@ -122,12 +131,15 @@ export class StructWriter implements DataWriter {
       return new RepeatWriter(writers, totalLen);
     } else return new encoder(value, ctx);
   }
-  private pretreatment: Map<number, DataWriter>;
+  private ids: number[];
+  private writers: DataWriter[];
   readonly byteLength: number;
   encodeTo(buf: Uint8Array, offset: number): number {
-    for (const [key, value] of this.pretreatment) {
-      offset = encodeU32DInto(key, buf, offset);
-      offset = value.encodeTo(buf, offset);
+    const ids = this.ids;
+    const writers = this.writers;
+    for (let i = 0; i < writers.length; i++) {
+      offset = encodeU32DInto(ids[i], buf, offset);
+      offset = writers[i].encodeTo(buf, offset);
     }
     buf[offset++] = VOID_ID;
     return offset;
@@ -231,6 +243,7 @@ function initStructDefineItem(
       repeat: value.repeat ?? false,
       id: value.id,
       optional: value.optional === undefined ? !opts.required : Boolean(value.optional),
+      key,
     },
   };
 }
@@ -241,7 +254,7 @@ type DefinedOpts = {
 export function defineStruct(definedMap: Struct, opts: DefinedOpts = {}) {
   const optional = !opts.required;
   const keys = Object.keys(definedMap);
-  const encodeDefined: StructEncodeDefine = new Map();
+  const encodeDefined: StructEncodeDefine = [];
   const decodeDefined: Record<number, StructDecodeInfo> = {};
 
   let key: string;
@@ -254,7 +267,7 @@ export function defineStruct(definedMap: Struct, opts: DefinedOpts = {}) {
 
     if (typeof value === "number") {
       // 仅定义ID： any 类型
-      encodeItem = { encode: JbodWriter, repeat: false, id: value, optional };
+      encodeItem = { encode: JbodWriter, repeat: false, id: value, optional, key };
       decodeItem = { decode: jbodDecoder, repeat: false, key };
     } else if (typeof value === "object") {
       const res = initStructDefineItem(value, key, opts);
@@ -265,7 +278,7 @@ export function defineStruct(definedMap: Struct, opts: DefinedOpts = {}) {
     if (encodeItem.id <= 0) throw new Error(`[${key}]无效id`);
     if (encodeItem.id % 1 !== 0) throw new Error(`[${key}]无效id`);
 
-    encodeDefined.set(key, encodeItem);
+    encodeDefined[i] = encodeItem;
     decodeDefined[encodeItem.id] = decodeItem;
   }
   return { encodeDefined, decodeDefined };
