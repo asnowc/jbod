@@ -1,4 +1,4 @@
-import { calcU32DByte, decodeU32D, encodeU32DInto } from "../../../dynamic_binary_number.js";
+import { calcU32DByte, decodeU32D, encodeU32DInto } from "../../../dbn/mod.js";
 import { DataType, VOID_ID, DecodeError } from "../const.js";
 import { JbodWriter, fastDecodeJbod, jbodDecoder } from "./jbod.js";
 import type { DecodeResult } from "../../../type.js";

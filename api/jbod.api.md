@@ -139,50 +139,6 @@ function encodeU32DInto(value: u32, buf: Uint8Array, offset?: number): number;
 function encodeU64DInto(value: u64, buf: Uint8Array, offset?: number): number;
 
 // @public (undocumented)
-export enum FieldType {
-    // (undocumented)
-    any = 0,
-    // (undocumented)
-    array = 11,
-    // (undocumented)
-    binary = 9,
-    // (undocumented)
-    bool = 3,
-    // (undocumented)
-    dyArray = 13,
-    // (undocumented)
-    dyNum = 8,
-    // (undocumented)
-    dyNumR = 7,
-    // (undocumented)
-    dyRecord = 14,
-    // (undocumented)
-    error = 32,
-    // (undocumented)
-    f32 = 5,
-    // (undocumented)
-    f64 = 6,
-    // (undocumented)
-    i32 = 20,
-    // (undocumented)
-    i64 = 23,
-    // (undocumented)
-    map = 33,
-    // (undocumented)
-    null = 1,
-    // (undocumented)
-    record = 12,
-    // (undocumented)
-    regExp = 35,
-    // (undocumented)
-    set = 34,
-    // (undocumented)
-    string = 10,
-    // (undocumented)
-    symbol = 37
-}
-
-// @public (undocumented)
 export class JbodError extends Error {
 }
 
@@ -237,7 +193,7 @@ export type Struct = {
 
 // @public (undocumented)
 export type StructDefined = {
-    type?: FieldType | StructType | Struct;
+    type?: StructType | Struct | FieldType;
     id: number;
     optional?: boolean;
     repeat?: boolean;
@@ -277,10 +233,13 @@ export class StructType<T = any> {
     encoder: DataWriterCreator<T>;
 }
 
-// Warning: (ae-forgotten-export) The symbol "ByteParser" needs to be exported by the entry point mod.d.ts
-//
 // @public (undocumented)
-class U32DByteParser extends ByteParser<number> {
+class U32DByteParser {
+    // (undocumented)
+    finish(): {
+        value: number;
+        residue?: Uint8Array | undefined;
+    };
     // (undocumented)
     next(buf: Uint8Array): boolean;
     // (undocumented)
@@ -294,9 +253,10 @@ export class UnsupportedDataTypeError extends Error {
 
 // Warnings were encountered during analysis:
 //
-// src/core/data_trans/defined/type.ts:19:3 - (ae-forgotten-export) The symbol "DataWriterCreator" needs to be exported by the entry point mod.d.ts
-// src/core/data_trans/defined/type.ts:20:3 - (ae-forgotten-export) The symbol "DecodeFn" needs to be exported by the entry point mod.d.ts
-// src/core/data_trans/defined/type.ts:21:3 - (ae-forgotten-export) The symbol "ClassType" needs to be exported by the entry point mod.d.ts
+// src/data_trans/defined/data_types/struct.ts:312:3 - (ae-forgotten-export) The symbol "FieldType" needs to be exported by the entry point mod.d.ts
+// src/data_trans/defined/type.ts:20:3 - (ae-forgotten-export) The symbol "DataWriterCreator" needs to be exported by the entry point mod.d.ts
+// src/data_trans/defined/type.ts:21:3 - (ae-forgotten-export) The symbol "DecodeFn" needs to be exported by the entry point mod.d.ts
+// src/data_trans/defined/type.ts:22:3 - (ae-forgotten-export) The symbol "ClassType" needs to be exported by the entry point mod.d.ts
 
 // (No @packageDocumentation comment for this package)
 

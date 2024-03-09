@@ -1,11 +1,12 @@
-import { DecodeResult, EncodeFn, DataWriter } from "../../type.js";
+import { DecodeResult, DataWriter } from "../../type.js";
 export type DataWriterCreator<T = any> = new (data: T, ctx: EncodeContext) => DataWriter;
 export interface TypeDataWriter extends DataWriter {
   type: number;
 }
-export type { EncodeFn, DataWriter };
+export type { DataWriter };
 export type DecodeFn<T = any> = (buf: Uint8Array, offset: number, ctx: DecodeContext) => DecodeResult<T>;
 
+export type EncodeFn<T = any> = (data: T, buf: Uint8Array, offset: number) => number;
 export interface EncodeContext {
   [key: number]: DataWriterCreator;
   toTypeCode(data: any): number;

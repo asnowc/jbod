@@ -44,4 +44,4 @@ function benchDecode() {
   });
 }
 benchEncode();
-// benchDecode();
+benchDecode();
