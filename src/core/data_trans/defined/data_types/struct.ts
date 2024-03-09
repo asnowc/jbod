@@ -1,5 +1,5 @@
 import { calcU32DByte, decodeU32D, encodeU32DInto } from "../../../dynamic_binary_number.js";
-import { DataType, VOID_ID } from "../const.js";
+import { DataType, VOID_ID, DecodeError } from "../const.js";
 import { JbodWriter, fastDecodeJbod, fastJbodWriter, jbodDecoder } from "./jbod.js";
 import type { DecodeResult } from "../../../type.js";
 import type { EncodeContext, DecodeContext, DataWriter, DataWriterCreator, DecodeFn, Defined } from "../type.js";
@@ -157,9 +157,9 @@ export function decodeStruct<T = any>(
   let info: StructDecodeInfo | undefined;
   let value: DecodeResult;
   while (idRes.value > 0) {
-    offset += idRes.byte;
     info = struct[idRes.value];
-    if (!info) throw new Error("Undefined field ID: " + idRes.value);
+    if (!info) throw new DecodeError(offset, "Undefined field ID: " + idRes.value);
+    offset += idRes.byte;
 
     switch (typeof info.decode) {
       case "number": {
@@ -176,7 +176,7 @@ export function decodeStruct<T = any>(
         else value = decodeStruct(buf, offset, ctx, info.decode);
         break;
       default:
-        throw new Error("decode field error");
+        throw new DecodeError(offset, "decode field error");
     }
 
     obj[info.key] = value.data;
