@@ -1,5 +1,3 @@
-import { ByteParser } from "../lib/mod.js";
-
 /**
  * @public
  * @remarks 计算字无符号整型编码成DBN后的字节数
@@ -81,9 +79,14 @@ export function decodeU32D(buf: Uint8Array, offset = 0) {
 
   return { value, byte };
 }
+
 /** @public */
-export class U32DByteParser extends ByteParser<number> {
+export class U32DByteParser {
   value = 0;
+  private result?: {
+    value: number;
+    residue?: Uint8Array;
+  };
   next(buf: Uint8Array): boolean {
     let max = buf.byteLength;
     let next: number;
@@ -98,6 +101,12 @@ export class U32DByteParser extends ByteParser<number> {
     this.result = { value: this.value, residue: byteLen < max ? buf.subarray(byteLen) : undefined };
     this.value = 0;
     return true;
+  }
+  finish() {
+    const result = this.result;
+    if (!result) throw new Error("unfinished");
+    this.result = undefined;
+    return result;
   }
 }
 

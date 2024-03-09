@@ -4,7 +4,7 @@ import { DecodeResult } from "../../../type.js";
 import { VOID_ID } from "../const.js";
 import { fastDecodeJbod, fastJbodWriter } from "./jbod.js";
 import { stringDecode } from "./dy_len.js";
-import { calcUtf8Length, encodeUtf8Into } from "../../../../uint_array_util/mod.js";
+import { calcUtf8Length, encodeUtf8Into } from "./string.js";
 
 class ArrayWriter implements DataWriter {
   constructor(arr: any[], ctx: EncodeContext, fixed?: boolean) {

@@ -1,15 +1,9 @@
 import type { TypeDataWriter, DataWriter, DecodeContext, EncodeContext } from "../type.js";
 import type { DecodeResult } from "../../../type.js";
-import {
-  writeDoubleBE,
-  writeBigInt64BE,
-  writeInt32BE,
-  readInt32BE,
-  readBigInt64BE,
-  readDoubleBE,
-} from "../../../../uint_array_util/mod.js";
+
 import { DataType, UnsupportedDataTypeError } from "../const.js";
 import { NO_CONTENT } from "../data_types/fixed_len.js";
+import * as numberTrans from "./fixed_len.js";
 
 export class JbodWriter implements TypeDataWriter {
   constructor(data: any, ctx: EncodeContext) {
@@ -65,23 +59,19 @@ function getClassTypeCode(data: object, classTypes: Map<object, number>) {
   }
   return DataType.dyRecord;
 }
+const { encoder: F64Writer, decoder: encodeF64 } = numberTrans.f64;
+const { encoder: I32Writer, decoder: encodeI32 } = numberTrans.i32;
+const { encoder: I64Writer, decoder: encodeI64 } = numberTrans.i64;
 
-function i32(this: { data: number }, buf: Uint8Array, offset: number) {
-  return writeInt32BE(this.data, buf, offset);
-}
-function F64(this: { data: number }, buf: Uint8Array, offset: number) {
-  return writeDoubleBE(this.data, buf, offset);
-}
-function i64(this: { data: bigint }, buf: Uint8Array, offset: number) {
-  return writeBigInt64BE(this.data, buf, offset);
-}
-
+const f64 = F64Writer.prototype.encodeTo;
+const i32 = I32Writer.prototype.encodeTo;
+const i64 = I64Writer.prototype.encodeTo;
 export function fastJbodWriter(data: any, ctx: EncodeContext): TypeDataWriter {
   let type: number;
   switch (typeof data) {
     case "number":
       if (data % 1 !== 0 || data < -2147483648 || data > 2147483647)
-        return { byteLength: 8, encodeTo: F64, data, type: DataType.f64 } as any;
+        return { byteLength: 8, encodeTo: f64, data, type: DataType.f64 } as any;
       else return { byteLength: 4, encodeTo: i32, data, type: DataType.i32 } as any;
     case "bigint":
       return { byteLength: 4, encodeTo: i64, data, type: DataType.f64 } as any;
@@ -111,11 +101,11 @@ export function fastJbodWriter(data: any, ctx: EncodeContext): TypeDataWriter {
 export function fastDecodeJbod(buf: Uint8Array, offset: number, ctx: DecodeContext, type: number): DecodeResult<any> {
   switch (type) {
     case DataType.i32:
-      return { data: readInt32BE(buf, offset), offset: offset + 4 };
+      return encodeI32(buf, offset, ctx);
     case DataType.i64:
-      return { data: readBigInt64BE(buf, offset), offset: offset + 8 };
+      return encodeI64(buf, offset, ctx);
     case DataType.f64:
-      return { data: readDoubleBE(buf, offset), offset: offset + 8 };
+      return encodeF64(buf, offset, ctx);
     case DataType.true:
       return { data: true, offset };
     case DataType.false:
@@ -125,8 +115,9 @@ export function fastDecodeJbod(buf: Uint8Array, offset: number, ctx: DecodeConte
     case DataType.undefined:
       return { data: undefined, offset };
     default: {
-      if (typeof ctx[type] !== "function") throw new UnsupportedDataTypeError(DataType[type] ?? type);
-      return ctx[type](buf, offset, ctx);
+      const decode = ctx[type];
+      if (typeof decode !== "function") throw new UnsupportedDataTypeError(DataType[type] ?? type);
+      return decode(buf, offset, ctx);
     }
   }
 }

@@ -1,6 +1,6 @@
 import { calcU32DByte, decodeU32D, encodeU32DInto } from "../../../dynamic_binary_number.js";
 import { DataType, VOID_ID, DecodeError } from "../const.js";
-import { JbodWriter, fastDecodeJbod, fastJbodWriter, jbodDecoder } from "./jbod.js";
+import { JbodWriter, fastDecodeJbod, jbodDecoder } from "./jbod.js";
 import type { DecodeResult } from "../../../type.js";
 import type { EncodeContext, DecodeContext, DataWriter, DataWriterCreator, DecodeFn, Defined } from "../type.js";
 type Key = string | number | symbol;

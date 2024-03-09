@@ -1,6 +1,6 @@
 import type { EncodeContext, Defined, DataWriter } from "../type.js";
 import { calcU32DByte, decodeU32D, encodeU32DInto } from "../../../dynamic_binary_number.js";
-import { calcUtf8Length, decodeUtf8, encodeUtf8Into } from "../../../../uint_array_util/mod.js";
+import { calcUtf8Length, decodeUtf8, encodeUtf8Into } from "./string.js";
 
 export const string: Defined<string> = {
   encoder: class StringWriter implements DataWriter {
