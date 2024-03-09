@@ -1,8 +1,8 @@
 // @deno-types="https://esm.sh/jbod@0.4.x"
 import { StructTrans } from "jbod";
 import { objData, createList } from "./__mocks__/compare.cases.ts";
-import * as protobuf from "./protobuf.ts";
-import * as JSON from "./json.ts";
+import * as protobuf from "./lib/protobuf.ts";
+import * as JSON from "./lib/json.ts";
 
 const listData = createList(1000, objData);
 const protoBufType = protobuf.defined.lookupType("object");
