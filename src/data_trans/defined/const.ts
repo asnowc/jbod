@@ -9,14 +9,18 @@ export enum DataType {
   false = 4,
   f32 = 5,
   f64 = 6,
-  dyNumR = 7,
-  dyNum = 8,
+  dyI32 = 7,
+  dyI64 = 8,
   binary = 9,
   string = 10,
   array = 11,
   record = 12,
+  /** @deprecated 改用 anyArray */
   dyArray = 13,
+  anyArray = 13,
+  /** @deprecated 改用 anyRecord */
   dyRecord = 14,
+  anyRecord = 14,
 
   i32 = 0b1_0100,
   i64 = 0b1_0111,
@@ -32,7 +36,6 @@ export enum DataType {
 }
 export const VOID_ID = 0;
 
-export type IterableDataType = DataType.dyArray | DataType.dyRecord | DataType.set | DataType.map;
 /**
  * @public
  * @remarks 当读取到一个未知类型的错误

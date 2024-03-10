@@ -15,28 +15,28 @@ type: 0000_0000 ~ 0111_111
 | 4   | 0100 | false     | 1                                           |
 | 5   | 0101 | f32       | 8                                           |
 | 6   | 0110 | f64       | 8                                           |
-| 7   | 0111 | -dyNumber | DBN                                         |
-| 8   | 1000 | +dyNumber | DBN                                         |
-| 9   | 1001 | binary    | contentLen(DBN) + content                   |
+| 7   | 0111 | dyI32     | varints                                     |
+| 8   | 1000 | dyI64     | varints                                     |
+| 9   | 1001 | binary    | contentLen(varints) + content               |
 | 10  | 1010 | \*string  | binary                                      |
 | 11  | 1011 | array     | item-len, item-type, item...                |
 | 12  | 1100 | record    | item-len ,key-type, value-type, key-item... |
-| 13  | 1101 | dyArray   | item, item, ..., void                       |
-| 14  | 1110 | dyRecord  | item, item, ..., void                       |
+| 13  | 1101 | anyArray  | item, item, ..., void                       |
+| 14  | 1110 | anyRecord | item, item, ..., void                       |
 | 15  | 1111 |           |                                             |
 
 001_xxxx:
 
 | DEC | BIN  | type | content length |
 | --- | ---- | ---- | -------------- |
-| 16  | 0000 | i8   | 1              |
-| 17  | 0001 | u8   | 1              |
-| 18  | 0010 | i16  | 2              |
-| 19  | 0011 | u16  | 2              |
-| 20  | 0100 | i32  | 4              |
-| 21  | 0101 | u32  | 4              |
-| 23  | 0111 | i64  | 8              |
-| 24  | 1000 | u64  | 8              |
+| 16  | 0000 |      |                |
+| 17  | 0001 |      |                |
+| 18  | 0010 |      |                |
+| 19  | 0011 |      |                |
+| 20  | 0100 |      |                |
+| 21  | 0101 |      |                |
+| 23  | 0111 |      |                |
+| 24  | 1000 |      |                |
 | 25  | 1001 |      |                |
 | 26  | 1010 |      |                |
 | 27  | 1011 |      |                |

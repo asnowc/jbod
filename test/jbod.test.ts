@@ -4,23 +4,23 @@ import "./expects/expect.js";
 import { describe, expect, test } from "vitest";
 
 describe("encode", function () {
-  test("dyRecord", function () {
+  test("anyRecord", function () {
     const data = { a: 1, b: 2, c: 3 };
     const buf = JBOD.encode(data);
 
     const k1 = [DataType.i32, 1, 97, 0, 0, 0, 1];
     const k2 = [DataType.i32, 1, 98, 0, 0, 0, 2];
     const k3 = [DataType.i32, 1, 99, 0, 0, 0, 3];
-    expect(Buffer.from(buf)).toEqual(Buffer.from([DataType.dyRecord, ...k1, ...k2, ...k3, 0]));
+    expect(Buffer.from(buf)).toEqual(Buffer.from([DataType.anyRecord, ...k1, ...k2, ...k3, 0]));
   });
-  test("dyArray", function () {
+  test("anyArray", function () {
     const data = [1, "a", null];
     const buf = JBOD.encode(data);
 
     const v1 = [DataType.i32, 0, 0, 0, 1];
     const v2 = [DataType.string, 1, 97];
     const v3 = [DataType.null];
-    expect(Buffer.from(buf)).toEqual(Buffer.from([DataType.dyArray, ...v1, ...v2, ...v3, 0]));
+    expect(Buffer.from(buf)).toEqual(Buffer.from([DataType.anyArray, ...v1, ...v2, ...v3, 0]));
   });
   test("doubleArray", function () {
     const data: number[] = [1 / 3, 1 / 3, 1 / 3];

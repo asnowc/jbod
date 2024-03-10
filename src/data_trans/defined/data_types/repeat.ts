@@ -1,4 +1,4 @@
-import { calcU32DByte, decodeU32D, encodeU32DInto } from "../../../dbn/mod.js";
+import { calcU32DByte, decodeU32D, encodeU32DInto } from "../../../varints/mod.js";
 import type { EncodeContext, DataWriter, TypeDataWriter, Defined } from "../type.js";
 import { DecodeResult } from "../../../type.js";
 import { VOID_ID } from "../const.js";

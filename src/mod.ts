@@ -3,8 +3,12 @@ export { StructTrans, type Struct, type StructType } from "./data_trans/struct.j
 export { JbodTrans, type JbodTransConfig, type Defined } from "./data_trans/trans.js";
 export type * from "./type.js";
 export * from "./data_trans/mod.js";
-import * as DBN from "./dbn/mod.js";
-export { DBN };
+import * as varints from "./varints/mod.js";
+export {
+  /** @deprecated - 改用 varints */
+  varints as DBN,
+  varints,
+};
 class UserJbodTrans extends JbodTrans {
   /**
    * @public

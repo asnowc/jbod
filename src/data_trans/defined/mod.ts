@@ -18,8 +18,8 @@ export const DEFAULT_TYPE: Record<number, Defined> = {
   [DataType.string]: string,
   [DataType.binary]: binary,
 
-  [DataType.dyArray]: dyArray,
-  [DataType.dyRecord]: dyRecord,
+  [DataType.anyArray]: dyArray,
+  [DataType.anyRecord]: dyRecord,
 };
 /** @internal */
 export const JS_OBJECT_EXTRA_TYPE: Record<number, Defined> = {

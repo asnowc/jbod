@@ -57,7 +57,7 @@ function getClassTypeCode(data: object, classTypes: Map<object, number>) {
     if (type !== undefined) return type;
     constructor = Reflect.getPrototypeOf(constructor);
   }
-  return DataType.dyRecord;
+  return DataType.anyRecord;
 }
 const { encoder: F64Writer, decoder: encodeF64 } = numberTrans.f64;
 const { encoder: I32Writer, decoder: encodeI32 } = numberTrans.i32;

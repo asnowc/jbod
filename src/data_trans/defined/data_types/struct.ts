@@ -1,4 +1,4 @@
-import { calcU32DByte, decodeU32D, encodeU32DInto } from "../../../dbn/mod.js";
+import { calcU32DByte, decodeU32D, encodeU32DInto } from "../../../varints/mod.js";
 import { DataType, VOID_ID, DecodeError } from "../const.js";
 import { JbodWriter, fastDecodeJbod, jbodDecoder } from "./jbod.js";
 import type { DecodeResult } from "../../../type.js";
@@ -289,14 +289,12 @@ const FIELD_TYPE_MAP = {
   bool: DataType.true,
   f32: DataType.f32,
   f64: DataType.f64,
-  dyNumR: DataType.dyNumR,
-  dyNum: DataType.dyNum,
+  dyI64: DataType.dyI64,
+  dyI32: DataType.dyI32,
   binary: DataType.binary,
   string: DataType.string,
-  // array: DataType.array,
-  // record: DataType.record,
-  dyArray: DataType.dyArray,
-  dyRecord: DataType.dyRecord,
+  anyArray: DataType.anyArray,
+  anyRecord: DataType.anyRecord,
 
   i32: DataType.i32,
   i64: DataType.i64,

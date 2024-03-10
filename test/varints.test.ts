@@ -1,8 +1,8 @@
-import * as dbn from "../src/core/dynamic_binary_number.js";
+import * as varints from "../src/varints/mod.js";
 import "./expects/expect.js";
 import { describe, expect, test } from "vitest";
 
-describe("DyNumber", function () {
+describe("varints", function () {
   describe("encode", function () {
     const casesNumber: [number, string][] = [
       [1, "1"],
@@ -29,7 +29,8 @@ describe("DyNumber", function () {
     });
     describe("bigint", function () {
       test.each(casesBigint)("%s", function (input, output) {
-        expect(formatBin(encodeU64D(BigInt(input))), "u64d:" + input.toString(16)).toBe(output);
+        const bin = encodeU64D(BigInt(input));
+        expect(formatBin(bin), "u64d:" + input.toString(16)).toBe(output);
       });
     });
   });
@@ -51,7 +52,7 @@ describe("DyNumber", function () {
     cases_bigint.forEach((value, i) => {
       test(value + "-" + value.toString(16), function () {
         const dldBuf = encodeU64D(value);
-        let res = dbn.decodeU64D(dldBuf);
+        let res = varints.decodeU64D(dldBuf);
         expect(res).toEqual({ value, byte: dldBuf.byteLength });
       });
     });
@@ -60,7 +61,7 @@ describe("DyNumber", function () {
     cases_int.slice(0, -1).forEach((value, i) => {
       test(value + "-" + value.toString(16), function () {
         const dldBuf = encodeU32D(value as number);
-        let res = dbn.decodeU32D(dldBuf);
+        let res = varints.decodeU32D(dldBuf);
         expect(res).toEqual({ value: value, byte: dldBuf.byteLength });
       });
     });
@@ -90,12 +91,12 @@ function formatBin(num_buf: number | Uint8Array) {
 }
 
 function encodeU64D(data: bigint) {
-  const buf = new Uint8Array(dbn.calcU64DByte(data));
-  dbn.encodeU64DInto(data, buf);
+  const buf = new Uint8Array(varints.calcU64DByte(data));
+  varints.encodeU64DInto(data, buf);
   return buf;
 }
 function encodeU32D(data: number) {
-  const buf = new Uint8Array(dbn.calcU32DByte(data));
-  dbn.encodeU32DInto(data, buf);
+  const buf = new Uint8Array(varints.calcU32DByte(data));
+  varints.encodeU32DInto(data, buf);
   return buf;
 }

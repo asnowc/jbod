@@ -12,21 +12,25 @@ function calcU32DByte(value: u32): number;
 // Warning: (ae-forgotten-export) The symbol "u64" needs to be exported by the entry point mod.d.ts
 //
 // @public (undocumented)
-function calcU64DByte(value: u64): number;
+function calcU64DByte(bigint: u64): number;
 
 // @public (undocumented)
 export enum DataType {
     // (undocumented)
+    anyArray = 13,
+    // (undocumented)
+    anyRecord = 14,
+    // (undocumented)
     array = 11,
     // (undocumented)
     binary = 9,
-    // (undocumented)
+    // @deprecated (undocumented)
     dyArray = 13,
     // (undocumented)
-    dyNum = 8,
+    dyI32 = 7,
     // (undocumented)
-    dyNumR = 7,
-    // (undocumented)
+    dyI64 = 8,
+    // @deprecated (undocumented)
     dyRecord = 14,
     // (undocumented)
     error = 32,
@@ -70,18 +74,14 @@ export interface DataWriter {
     encodeTo(buf: Uint8Array, offset: number): number;
 }
 
-declare namespace DBN {
-    export {
-        calcU64DByte,
-        encodeU64DInto,
-        calcU32DByte,
-        encodeU32DInto,
-        decodeU64D,
-        decodeU32D,
-        U32DByteParser
-    }
-}
-export { DBN }
+// @public
+function decodeDyInt(buf: Uint8Array, offset?: number): {
+    value: number;
+    byte: number;
+} | {
+    value: bigint;
+    byte: number;
+};
 
 // @public (undocumented)
 export type Decoder<T = any> = {
@@ -136,7 +136,7 @@ export interface Encoder<T = any> {
 function encodeU32DInto(value: u32, buf: Uint8Array, offset?: number): number;
 
 // @public (undocumented)
-function encodeU64DInto(value: u64, buf: Uint8Array, offset?: number): number;
+function encodeU64DInto(bigint: u64, buf: Uint8Array, offset?: number): number;
 
 // @public (undocumented)
 export class JbodError extends Error {
@@ -251,9 +251,24 @@ export class UnsupportedDataTypeError extends Error {
     constructor(desc?: string | number);
 }
 
+declare namespace varints {
+    export {
+        calcU64DByte,
+        encodeU64DInto,
+        calcU32DByte,
+        encodeU32DInto,
+        decodeU64D,
+        decodeU32D,
+        decodeDyInt,
+        U32DByteParser
+    }
+}
+export { varints as DBN }
+export { varints }
+
 // Warnings were encountered during analysis:
 //
-// src/data_trans/defined/data_types/struct.ts:312:3 - (ae-forgotten-export) The symbol "FieldType" needs to be exported by the entry point mod.d.ts
+// src/data_trans/defined/data_types/struct.ts:310:3 - (ae-forgotten-export) The symbol "FieldType" needs to be exported by the entry point mod.d.ts
 // src/data_trans/defined/type.ts:20:3 - (ae-forgotten-export) The symbol "DataWriterCreator" needs to be exported by the entry point mod.d.ts
 // src/data_trans/defined/type.ts:21:3 - (ae-forgotten-export) The symbol "DecodeFn" needs to be exported by the entry point mod.d.ts
 // src/data_trans/defined/type.ts:22:3 - (ae-forgotten-export) The symbol "ClassType" needs to be exported by the entry point mod.d.ts

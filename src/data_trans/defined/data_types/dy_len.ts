@@ -1,5 +1,5 @@
 import type { EncodeContext, Defined, DataWriter } from "../type.js";
-import { calcU32DByte, decodeU32D, encodeU32DInto } from "../../../dbn/mod.js";
+import { calcU32DByte, decodeU32D, encodeU32DInto } from "../../../varints/mod.js";
 import { calcUtf8Length, decodeUtf8, encodeUtf8Into } from "./string.js";
 
 export const string: Defined<string> = {
