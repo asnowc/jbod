@@ -1,6 +1,6 @@
 import { DataType } from "./const.js";
 import { Defined } from "./type.js";
-import { binary, string } from "./data_types/dy_len.js";
+import { binary, string, dyI32, dyI64 } from "./data_types/dy_len.js";
 import { f64, i32, i64, createNoContent } from "./data_types/fixed_len.js";
 export { NO_CONTENT } from "./data_types/fixed_len.js";
 import { dyArray, dyRecord } from "./data_types/repeat.js";
@@ -11,7 +11,8 @@ export const DEFAULT_TYPE: Record<number, Defined> = {
   [DataType.true]: createNoContent<true>((buf, offset) => ({ data: true, offset })),
   [DataType.false]: createNoContent<false>((buf, offset) => ({ data: false, offset })),
   [DataType.null]: createNoContent<null>((buf, offset) => ({ data: null, offset })),
-
+  [DataType.dyI32]: dyI32,
+  [DataType.dyI64]: dyI64,
   [DataType.i32]: i32,
   [DataType.i64]: i64,
   [DataType.f64]: f64,

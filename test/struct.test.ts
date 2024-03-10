@@ -28,7 +28,7 @@ describe("encode", function () {
       f2: [1, true], // any repeat
       f3: [], // any repeat
     });
-    expect(formatBin(u8Arr), "decode").toBe("01020304" + "0202140000000103" + "0300" + "00");
+    expect(formatBin(u8Arr), "decode").toBe("01020304" + "0202070203" + "0300" + "00");
   });
   test("字段缺失", function () {
     expect(() => s1.encode({ f1: true, f2: 9n } as any)).toThrowError();

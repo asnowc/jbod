@@ -1,4 +1,4 @@
-import JBOD, { DataType, UnsupportedDataTypeError } from "jbod";
+import JBOD, { DataType, UnsupportedDataTypeError, varints } from "jbod";
 import { baseDataTypes, compoundTypes, unsupportedData } from "./__mocks__/data_type.cases.js";
 import "./expects/expect.js";
 import { describe, expect, test } from "vitest";
@@ -8,16 +8,16 @@ describe("encode", function () {
     const data = { a: 1, b: 2, c: 3 };
     const buf = JBOD.encode(data);
 
-    const k1 = [DataType.i32, 1, 97, 0, 0, 0, 1];
-    const k2 = [DataType.i32, 1, 98, 0, 0, 0, 2];
-    const k3 = [DataType.i32, 1, 99, 0, 0, 0, 3];
+    const k1 = [DataType.dyI32, 1, 97, varints.zigzagEncodeI32(1)];
+    const k2 = [DataType.dyI32, 1, 98, varints.zigzagEncodeI32(2)];
+    const k3 = [DataType.dyI32, 1, 99, varints.zigzagEncodeI32(3)];
     expect(Buffer.from(buf)).toEqual(Buffer.from([DataType.anyRecord, ...k1, ...k2, ...k3, 0]));
   });
   test("anyArray", function () {
     const data = [1, "a", null];
     const buf = JBOD.encode(data);
 
-    const v1 = [DataType.i32, 0, 0, 0, 1];
+    const v1 = [DataType.dyI32, varints.zigzagEncodeI32(1)];
     const v2 = [DataType.string, 1, 97];
     const v3 = [DataType.null];
     expect(Buffer.from(buf)).toEqual(Buffer.from([DataType.anyArray, ...v1, ...v2, ...v3, 0]));
@@ -39,10 +39,9 @@ describe("jbod fn", function () {
   });
   test("decode-offset", function () {
     const data = [1, "a", null];
-    const res = JBOD.byteLength(data);
+    const res = JBOD.createWriter(data);
     const buf = new Uint8Array(res.byteLength + 4);
-    JBOD.encodeInto(res, buf, 4);
-
+    res.encodeTo(buf, 4);
     expect(JBOD.decode(buf, 4).data).toEqual(data);
   });
 });

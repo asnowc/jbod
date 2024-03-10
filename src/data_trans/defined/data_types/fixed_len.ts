@@ -1,75 +1,68 @@
 import type { Defined, DecodeFn, DataWriter } from "../type.js";
 import { encodeF64BE, decodeF64BE } from "./float.js";
 
-function decodeI32(buf: Uint8Array, offset: number) {
-  //first << 24 可能溢出
-  const data = (buf[offset++] << 24) + (buf[offset++] << 16) + (buf[offset++] << 8) + buf[offset++];
-  return {
-    data,
-    offset: offset,
-  };
-}
-
-class I32Writer implements DataWriter {
-  constructor(private data: number) {}
-  byteLength = 4;
-  encodeTo(buf: Uint8Array, offset: number): number {
-    let value = this.data;
-    buf[offset + 3] = value;
-    value = value >>> 8;
-    buf[offset + 2] = value;
-    value = value >>> 8;
-    buf[offset + 1] = value;
-    value = value >>> 8;
-    buf[offset] = value;
-    return offset + 4;
-  }
-}
-
 export const i32: Defined<number> = {
-  encoder: I32Writer,
-  decoder: decodeI32,
+  encoder: class I32Writer implements DataWriter {
+    constructor(private data: number) {}
+    byteLength = 4;
+    encodeTo(buf: Uint8Array, offset: number): number {
+      let value = this.data;
+      buf[offset + 3] = value;
+      value = value >>> 8;
+      buf[offset + 2] = value;
+      value = value >>> 8;
+      buf[offset + 1] = value;
+      value = value >>> 8;
+      buf[offset] = value;
+      return offset + 4;
+    }
+  },
+  decoder: function decodeI32(buf: Uint8Array, offset: number) {
+    //first << 24 可能溢出
+    const data = (buf[offset++] << 24) + (buf[offset++] << 16) + (buf[offset++] << 8) + buf[offset++];
+    return {
+      data,
+      offset: offset,
+    };
+  },
 };
 
-function decodeI64(buf: Uint8Array, offset = 0): { data: bigint; offset: number } {
-  //first << 24 可能溢出
-  let val: number | bigint = (buf[offset++] << 24) + (buf[offset++] << 16) + (buf[offset++] << 8) + buf[offset++];
-  val =
-    (BigInt(val) << 32n) +
-    BigInt(buf[offset++] * 2 ** 24 + (buf[offset++] << 16) + (buf[offset++] << 8) + buf[offset++]);
-  return {
-    data: val,
-    offset: offset,
-  };
-}
-class I64Writer implements DataWriter {
-  constructor(private data: bigint) {}
-  byteLength = 8;
-  encodeTo(buf: Uint8Array, offset: number): number {
-    const value = this.data;
-    let lo = Number(value & 0xffffffffn);
-    buf[offset + 7] = lo;
-    lo = lo >> 8;
-    buf[offset + 6] = lo;
-    lo = lo >> 8;
-    buf[offset + 5] = lo;
-    lo = lo >> 8;
-    buf[offset + 4] = lo;
-    let hi = Number((value >> 32n) & 0xffffffffn);
-    buf[offset + 3] = hi;
-    hi = hi >> 8;
-    buf[offset + 2] = hi;
-    hi = hi >> 8;
-    buf[offset + 1] = hi;
-    hi = hi >> 8;
-    buf[offset] = hi;
-    return offset + 8;
-  }
-}
-
 export const i64: Defined<bigint> = {
-  encoder: I64Writer,
-  decoder: decodeI64,
+  encoder: class I64Writer implements DataWriter {
+    constructor(private data: bigint) {}
+    byteLength = 8;
+    encodeTo(buf: Uint8Array, offset: number): number {
+      const value = this.data;
+      let lo = Number(value & 0xffffffffn);
+      buf[offset + 7] = lo;
+      lo = lo >> 8;
+      buf[offset + 6] = lo;
+      lo = lo >> 8;
+      buf[offset + 5] = lo;
+      lo = lo >> 8;
+      buf[offset + 4] = lo;
+      let hi = Number((value >> 32n) & 0xffffffffn);
+      buf[offset + 3] = hi;
+      hi = hi >> 8;
+      buf[offset + 2] = hi;
+      hi = hi >> 8;
+      buf[offset + 1] = hi;
+      hi = hi >> 8;
+      buf[offset] = hi;
+      return offset + 8;
+    }
+  },
+  decoder: function decodeI64(buf: Uint8Array, offset = 0): { data: bigint; offset: number } {
+    //first << 24 可能溢出
+    let val: number | bigint = (buf[offset++] << 24) + (buf[offset++] << 16) + (buf[offset++] << 8) + buf[offset++];
+    val =
+      (BigInt(val) << 32n) +
+      BigInt(buf[offset++] * 2 ** 24 + (buf[offset++] << 16) + (buf[offset++] << 8) + buf[offset++]);
+    return {
+      data: val,
+      offset: offset,
+    };
+  },
 };
 
 export const NO_CONTENT: DataWriter = {

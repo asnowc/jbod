@@ -18,9 +18,9 @@ export const compoundTypes = {
 
 export const baseDataTypes = {
   noContent: [undefined, null, true, false],
-  int: [-2147483648, -66, -1, 0, 1, 2147483647],
+  int: [-2147483648, -66, -1, 0, 1, 0x3fff_ffff, 2147483647],
   bigint: [-9223372036854775808n, -1n, 0n, 1n, 9223372036854775807n],
-  double: [-1.1, 1.1, NaN, Infinity, -Infinity],
+  double: [-1.1, 1.1, -2147483649, 2147483648, NaN, Infinity, -Infinity],
   arrayBuffer: [new ArrayBuffer(5), new ArrayBuffer(0)],
 
   string: ["abcd中文123", ""],

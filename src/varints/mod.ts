@@ -157,3 +157,12 @@ export class U32DByteParser {
 
 type u32 = number;
 type u64 = bigint;
+// zigzag 编码
+export function zigzagEncodeI32(val: number) {
+  return (val << 1) ^ (val >> 31);
+}
+
+// zigzag解码
+export function zigzagDecodeI32(val: number) {
+  return (val >> 1) ^ -(val & 1);
+}

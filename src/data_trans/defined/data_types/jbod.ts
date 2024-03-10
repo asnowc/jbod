@@ -4,6 +4,7 @@ import type { DecodeResult } from "../../../type.js";
 import { DataType, UnsupportedDataTypeError } from "../const.js";
 import { NO_CONTENT } from "../data_types/fixed_len.js";
 import * as numberTrans from "./fixed_len.js";
+import { decodeU32D, decodeDyInt, decodeU64D } from "../../../varints/mod.js";
 
 export class JbodWriter implements TypeDataWriter {
   constructor(data: any, ctx: EncodeContext) {
@@ -25,10 +26,10 @@ export function toTypeCode(this: EncodeContext, data: any): number {
   switch (typeof data) {
     case "number":
       if (data % 1 !== 0 || data < -2147483648 || data > 2147483647) type = DataType.f64;
-      else type = DataType.i32;
+      else type = DataType.dyI32;
       break;
     case "bigint":
-      type = DataType.i64;
+      type = DataType.dyI64;
       break;
     case "boolean":
       return data ? DataType.true : DataType.false;
@@ -60,21 +61,21 @@ function getClassTypeCode(data: object, classTypes: Map<object, number>) {
   return DataType.anyRecord;
 }
 const { encoder: F64Writer, decoder: encodeF64 } = numberTrans.f64;
-const { encoder: I32Writer, decoder: encodeI32 } = numberTrans.i32;
-const { encoder: I64Writer, decoder: encodeI64 } = numberTrans.i64;
+const { decoder: encodeI32 } = numberTrans.i32;
+const { decoder: encodeI64 } = numberTrans.i64;
 
 const f64 = F64Writer.prototype.encodeTo;
-const i32 = I32Writer.prototype.encodeTo;
-const i64 = I64Writer.prototype.encodeTo;
 export function fastJbodWriter(data: any, ctx: EncodeContext): TypeDataWriter {
   let type: number;
   switch (typeof data) {
     case "number":
       if (data % 1 !== 0 || data < -2147483648 || data > 2147483647)
         return { byteLength: 8, encodeTo: f64, data, type: DataType.f64 } as any;
-      else return { byteLength: 4, encodeTo: i32, data, type: DataType.i32 } as any;
+      else type = DataType.dyI32;
+      break;
     case "bigint":
-      return { byteLength: 4, encodeTo: i64, data, type: DataType.f64 } as any;
+      type = DataType.dyI64;
+      break;
     case "boolean":
       return { type: data ? DataType.true : DataType.false, byteLength: 0, encodeTo: NO_CONTENT.encodeTo };
     case "string":
@@ -106,6 +107,14 @@ export function fastDecodeJbod(buf: Uint8Array, offset: number, ctx: DecodeConte
       return encodeI64(buf, offset, ctx);
     case DataType.f64:
       return encodeF64(buf, offset, ctx);
+    case DataType.dyI32: {
+      const res = decodeDyInt(buf, offset) as { value: number; byte: number };
+      return { data: (res.value >> 1) ^ -(res.value & 1), offset: offset + res.byte };
+    }
+    case DataType.dyI64: {
+      const res = decodeU64D(buf, offset);
+      return { data: (res.value >> 1n) ^ -(res.value & 1n), offset: offset + res.byte };
+    }
     case DataType.true:
       return { data: true, offset };
     case DataType.false:
