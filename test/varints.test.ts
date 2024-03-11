@@ -8,8 +8,8 @@ describe("varints", function () {
       [1, "1"],
       [0xff, "11111111_00000001"],
       [0xffff, "11111111_11111111_00000011"],
-      [0xffffff, "11111111_11111111_11111111_00000111"],
-      [0xffffffff, "11111111_11111111_11111111_11111111_00001111"],
+      [0xff_ffff, "11111111_11111111_11111111_00000111"],
+      [0xffff_ffff, "11111111_11111111_11111111_11111111_00001111"],
     ];
     const casesBigint: [bigint, string][] = [
       ...casesNumber.map(([val, bin]): [bigint, string] => [BigInt(val), bin]),
@@ -18,7 +18,7 @@ describe("varints", function () {
       [0xffff_ffffffffn, "11111111_11111111_11111111_11111111_11111111_11111111_00111111"],
       [0xffffff_ffffffffn, "11111111_11111111_11111111_11111111_11111111_11111111_11111111_01111111"],
       [
-        0xffffffff_ffffffffn,
+        0xffff_ffff_ffff_ffffn,
         "11111111_11111111_11111111_11111111_11111111_11111111_11111111_11111111_11111111_00000001",
       ],
     ];
@@ -26,17 +26,28 @@ describe("varints", function () {
       test.each(casesNumber)("%s", function (input, output) {
         expect(formatBin(encodeU32D(input)), "u32d:" + input.toString(16)).toBe(output);
       });
+      test("-1", function () {
+        //-1 对应无符号整型的 0xffffff
+        expect(formatBin(encodeU32D(-1)), "u32d: -1").toBe("11111111_11111111_11111111_11111111_00001111");
+      });
     });
     describe("bigint", function () {
       test.each(casesBigint)("%s", function (input, output) {
         const bin = encodeU64D(BigInt(input));
         expect(formatBin(bin), "u64d:" + input.toString(16)).toBe(output);
       });
+      test("-1", function () {
+        const bin = encodeU64D(-1n);
+        //-1 对应无符号整型的 0xffffff
+        expect(formatBin(bin), "u64d: -1n").toBe(
+          "11111111_11111111_11111111_11111111_11111111_11111111_11111111_11111111_11111111_00000001"
+        );
+      });
     });
   });
 
   /** 极值 */
-  const cases_int: number[] = [0, 0x7f, 0x80, 0x3fff, 0x4000, 0x1fffff, 0x200000, 0xfffffff, 0x10000000, 0xffffffff];
+  const cases_int: number[] = [0, 0x7f, 0x80, 0x3fff, 0x4000, 0x1fffff, 0x200000, 0xfffffff, 0x10000000];
   const cases_bigint = [
     ...cases_int.map(BigInt),
 
@@ -58,12 +69,18 @@ describe("varints", function () {
     });
   });
   describe("write/read:number", function () {
-    cases_int.slice(0, -1).forEach((value, i) => {
+    cases_int.forEach((value, i) => {
       test(value + "-" + value.toString(16), function () {
         const dldBuf = encodeU32D(value as number);
         let res = varints.decodeU32D(dldBuf);
         expect(res).toEqual({ value: value, byte: dldBuf.byteLength });
       });
+    });
+    test("0xffffffff/-1", function () {
+      const dldBuf = encodeU32D(0xffffffff);
+      expect(encodeU32D(-1)).toEqual(dldBuf);
+      let res = varints.decodeU32D(dldBuf);
+      expect(res).toEqual({ value: -1, byte: dldBuf.byteLength });
     });
   });
 });

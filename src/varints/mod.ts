@@ -2,46 +2,59 @@ import { DecodeError } from "../const.js";
 
 /**
  * @public
+ * @param bigint - 一个 u64类型，传入负数为解析为 u64 类型
  * @remarks 计算字无符号整型编码成DBN后的字节数
  */
-export function calcU64DByte(bigint: u64) {
+export function calcU64DByte(bigint: bigint) {
+  let next = bigint <= 0xfff_ffff && bigint > 0; //bigint 为 i64 类型， 算法需要 u64 类型
   let len = 0;
   do {
-    let value = Number(bigint & 0xfffffffn);
+    let value = Number(bigint & 0xfff_ffffn);
     let max = len + 4;
     do {
-      if (value <= 0b01111111 && bigint <= 0xfffffff) return len + 1;
+      if (value <= 0b0111_1111 && next) return len + 1;
       len++;
       value >>>= 7;
     } while (len < max);
 
     bigint >>= 28n;
+    if (bigint < 0) bigint &= 0xf_ffff_ffffn; // bigint 没有逻辑右移
+    next = bigint <= 0xfff_ffff;
   } while (true);
 }
 
 /**
  * @public
+ * @param bigint - 一个 u64类型，传入负数为解析为 u64 类型
  * @returns 返回 Uint8Array 偏移量
  */
-export function encodeU64DInto(bigint: u64, buf: Uint8Array, offset = 0) {
+export function encodeU64DInto(bigint: bigint, buf: Uint8Array, offset = 0) {
+  let next = bigint <= 0xfff_ffff && bigint > 0; //bigint 为 i64 类型， 算法需要 u64 类型
   do {
-    let value = Number(bigint & 0xfffffffn);
+    let value = Number(bigint & 0xfff_ffffn);
     let max = offset + 4;
     do {
-      if (value <= 0b0111_1111 && bigint <= 0xfffffff) {
+      if (value <= 0b0111_1111 && next) {
         buf[offset++] = value;
         return offset;
       }
-      buf[offset++] = 0b1000_0000 | (value & 0b0111_1111);
+      buf[offset++] = 0b1000_0000 | value;
       value >>>= 7;
     } while (offset < max);
 
     bigint >>= 28n;
+    if (bigint < 0) bigint &= 0xf_ffff_ffffn; // bigint 没有逻辑右移
+
+    next = bigint <= 0xfff_ffff;
   } while (true);
 }
 /** @public */
-export function calcU32DByte(value: u32) {
+export function calcU32DByte(value: number) {
   let len = 1;
+  if (value < 0) {
+    len++;
+    value >>>= 7;
+  }
   while (value > 0b0111_1111) {
     value >>>= 7;
     len++;
@@ -50,10 +63,15 @@ export function calcU32DByte(value: u32) {
 }
 /**
  * @public
+ * @param value - 一个 u32类型，传入负数为解析为 u32 类型
  * @returns 返回 Uint8Array 偏移量 */
-export function encodeU32DInto(value: u32, buf: Uint8Array, offset = 0) {
+export function encodeU32DInto(value: number, buf: Uint8Array, offset = 0) {
+  if (value < 0) {
+    buf[offset++] = 0b1000_0000 | value;
+    value >>>= 7;
+  }
   while (value > 0b0111_1111) {
-    buf[offset++] = 0b1000_0000 | (value & 0b0111_1111);
+    buf[offset++] = 0b1000_0000 | value;
     value >>>= 7;
   }
   buf[offset++] = value;
@@ -155,8 +173,6 @@ export class U32DByteParser {
   }
 }
 
-type u32 = number;
-type u64 = bigint;
 // zigzag 编码
 export function zigzagEncodeI32(val: number) {
   return (val << 1) ^ (val >> 31);
