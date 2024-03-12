@@ -67,6 +67,12 @@ describe("varints", function () {
         expect(res).toEqual({ value, byte: dldBuf.byteLength });
       });
     });
+    test("0xffffffff_ffffffffn/-1n", function () {
+      const dldBuf = encodeU64D(-1n);
+      expect(encodeU64D(0xffffffff_ffffffffn)).toEqual(dldBuf);
+      let res = varints.decodeU64D(dldBuf);
+      expect(res).toEqual({ value: 0xffffffff_ffffffffn, byte: dldBuf.byteLength });
+    });
   });
   describe("write/read:number", function () {
     cases_int.forEach((value, i) => {

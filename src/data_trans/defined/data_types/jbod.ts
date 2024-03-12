@@ -4,7 +4,7 @@ import type { DecodeResult } from "../../../type.js";
 import { DataType, UnsupportedDataTypeError } from "../const.js";
 import { NO_CONTENT } from "../data_types/fixed_len.js";
 import * as numberTrans from "./fixed_len.js";
-import { decodeU32D, decodeDyInt, decodeU64D } from "../../../varints/mod.js";
+import { decodeDyInt, decodeU64D, zigzagDecodeI64, zigzagDecodeI32 } from "../../../varints/mod.js";
 
 export class JbodWriter implements TypeDataWriter {
   constructor(data: any, ctx: EncodeContext) {
@@ -109,11 +109,11 @@ export function fastDecodeJbod(buf: Uint8Array, offset: number, ctx: DecodeConte
       return encodeF64(buf, offset, ctx);
     case DataType.dyI32: {
       const res = decodeDyInt(buf, offset) as { value: number; byte: number };
-      return { data: (res.value >> 1) ^ -(res.value & 1), offset: offset + res.byte };
+      return { data: zigzagDecodeI32(res.value), offset: offset + res.byte };
     }
     case DataType.dyI64: {
       const res = decodeU64D(buf, offset);
-      return { data: (res.value >> 1n) ^ -(res.value & 1n), offset: offset + res.byte };
+      return { data: zigzagDecodeI64(res.value), offset: offset + res.byte };
     }
     case DataType.true:
       return { data: true, offset };

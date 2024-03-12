@@ -79,14 +79,19 @@ export function encodeU32DInto(value: number, buf: Uint8Array, offset = 0) {
 }
 
 /**
- * @public */
+ *  需要确保数字范围是无符号长整型的范围，否则结果可能错误
+ *  @public */
 export function decodeU64D(buf: Uint8Array, offset = 0): { value: bigint; byte: number } {
   const res: { value: any; byte: number } = decodeDyInt(buf, offset);
   if (typeof res.value === "bigint") return res;
   res.value = BigInt(res.value);
   return res;
 }
-/** @public */
+/**
+ * 需要确保数字范围是无符号整型的范围，否则结果可能错误
+ * @public
+ *
+ */
 export function decodeU32D(buf: Uint8Array, offset = 0) {
   let next = buf[offset];
   let value = next & 0b0111_1111;
@@ -106,10 +111,10 @@ export function decodeU32D(buf: Uint8Array, offset = 0) {
  */
 export function decodeDyInt(buf: Uint8Array, offset: number = 0) {
   let next: number;
-  let beforeValue = 0;
+  let beforeValue: number | bigint = 0;
   let beforeByte = 0;
 
-  // 小于等于31位使用位运算 (实际 4*7=28 位)
+  // 小于等于32位 (实际 4*7=28 位)
   do {
     next = buf[offset + beforeByte];
     beforeValue |= (next & 0b0111_1111) << (beforeByte * 7);
@@ -121,7 +126,7 @@ export function decodeDyInt(buf: Uint8Array, offset: number = 0) {
   let byte = 0;
   let value = 0;
 
-  // 小于等于52位使用指数运算 (实际 7*7=49 位)
+  // 小于等于64位 (实际 8*7=56 位)
   do {
     next = buf[offset + byte];
     value += (next & 0b0111_1111) << (byte * 7);
@@ -129,19 +134,29 @@ export function decodeDyInt(buf: Uint8Array, offset: number = 0) {
     if (next <= 0b0111_1111) {
       byte += beforeByte;
       if (byte > 7) return { value: BigInt(beforeValue) + (BigInt(value) << 28n), byte };
-      else return { value: beforeValue + value * 2 ** 28, byte };
+      else return { value: beforeValue + value * 0x1000_0000, byte }; // 0x1000_0000 =
     }
   } while (byte < 4);
 
   // bigint 位运算
-  offset += beforeByte;
+  offset += byte;
+  beforeByte += byte;
+  beforeValue = BigInt(beforeValue) + (BigInt(value) << 28n);
 
-  next = buf[offset + 8];
-  if (next > 0b0111_1111) throw new DecodeError(offset, "DyInt is more than 9 bytes");
-  return {
-    value: BigInt(value) | (BigInt(next & 0b0111_1111) << 56n),
-    byte: 9,
-  };
+  byte = 0;
+  value = 0;
+  // 小于等于80位使用指数运算 (实际 10*7=70 位)
+  do {
+    next = buf[offset + byte];
+    value += (next & 0b0111_1111) << (byte * 7);
+    byte++;
+    if (next <= 0b0111_1111) {
+      byte += beforeByte;
+      return { value: beforeValue + BigInt(value) * 0x100_0000_0000_0000n, byte };
+    }
+  } while (byte < 2);
+
+  throw new DecodeError(offset, "DyInt is more than 10 bytes");
 }
 /** @public */
 export class U32DByteParser {
@@ -173,12 +188,24 @@ export class U32DByteParser {
   }
 }
 
-// zigzag 编码
+/** @public */
 export function zigzagEncodeI32(val: number) {
   return (val << 1) ^ (val >> 31);
 }
 
-// zigzag解码
+/** @public */
 export function zigzagDecodeI32(val: number) {
-  return (val >> 1) ^ -(val & 1);
+  return (val >>> 1) ^ -(val & 1);
+}
+/** @public */
+export function zigzagEncodeI64(val: bigint) {
+  return (val << 1n) ^ (val >> 63n);
+}
+
+/** @public */
+export function zigzagDecodeI64(value: bigint) {
+  let a: bigint;
+  if (value < 0) a = (value >> 1n) & 0x7fff_ffff_ffff_ffffn;
+  else a = value >> 1n;
+  return a ^ -(value & 1n);
 }

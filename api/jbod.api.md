@@ -4,15 +4,11 @@
 
 ```ts
 
-// Warning: (ae-forgotten-export) The symbol "u32" needs to be exported by the entry point mod.d.ts
-//
 // @public (undocumented)
-function calcU32DByte(value: u32): number;
+function calcU32DByte(value: number): number;
 
-// Warning: (ae-forgotten-export) The symbol "u64" needs to be exported by the entry point mod.d.ts
-//
 // @public (undocumented)
-function calcU64DByte(bigint: u64): number;
+function calcU64DByte(bigint: bigint): number;
 
 // @public (undocumented)
 export enum DataType {
@@ -94,13 +90,13 @@ export type DecodeResult<T = any> = {
     offset: number;
 };
 
-// @public (undocumented)
+// @public
 function decodeU32D(buf: Uint8Array, offset?: number): {
     value: number;
     byte: number;
 };
 
-// @public (undocumented)
+// @public
 function decodeU64D(buf: Uint8Array, offset?: number): {
     value: bigint;
     byte: number;
@@ -133,10 +129,10 @@ export interface Encoder<T = any> {
 }
 
 // @public (undocumented)
-function encodeU32DInto(value: u32, buf: Uint8Array, offset?: number): number;
+function encodeU32DInto(value: number, buf: Uint8Array, offset?: number): number;
 
 // @public (undocumented)
-function encodeU64DInto(bigint: u64, buf: Uint8Array, offset?: number): number;
+function encodeU64DInto(bigint: bigint, buf: Uint8Array, offset?: number): number;
 
 // @public (undocumented)
 export class JbodError extends Error {
@@ -260,11 +256,27 @@ declare namespace varints {
         decodeU64D,
         decodeU32D,
         decodeDyInt,
+        zigzagEncodeI32,
+        zigzagDecodeI32,
+        zigzagEncodeI64,
+        zigzagDecodeI64,
         U32DByteParser
     }
 }
 export { varints as DBN }
 export { varints }
+
+// @public (undocumented)
+function zigzagDecodeI32(val: number): number;
+
+// @public (undocumented)
+function zigzagDecodeI64(value: bigint): bigint;
+
+// @public (undocumented)
+function zigzagEncodeI32(val: number): number;
+
+// @public (undocumented)
+function zigzagEncodeI64(val: bigint): bigint;
 
 // Warnings were encountered during analysis:
 //
