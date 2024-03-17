@@ -10,13 +10,12 @@ export type StructDecodeInfo = {
   repeat: boolean;
 };
 export type StructEncodeInfo = {
-  encode: number | DataWriterCreator | StructEncodeDefine;
+  encode: number | DataWriterCreator | StructEncodeInfo[];
   id: number;
   optional: boolean;
   repeat: boolean;
   key: Key;
 };
-export type StructEncodeDefine = StructEncodeInfo[];
 class RepeatWriter implements DataWriter {
   constructor(private writers: DataWriter[], public byteLength: number) {
     this.byteLength += calcU32DByte(writers.length);
@@ -62,8 +61,8 @@ function decodeBool(buf: Uint8Array, offset: number): DecodeResult {
   return { data, offset };
 }
 export class StructWriter implements DataWriter {
-  constructor(encodeStruct: StructEncodeDefine, data: object, ctx: EncodeContext);
-  constructor(encodeStruct: StructEncodeDefine, data: Record<Key, any>, ctx: EncodeContext) {
+  constructor(encodeStruct: StructEncodeInfo[], data: object, ctx: EncodeContext);
+  constructor(encodeStruct: StructEncodeInfo[], data: Record<Key, any>, ctx: EncodeContext) {
     let len = 1;
     let ids: number[] = [];
     let dataWriter: DataWriter[] = [];
@@ -254,7 +253,7 @@ type DefinedOpts = {
 export function defineStruct(definedMap: Struct, opts: DefinedOpts = {}) {
   const optional = !opts.required;
   const keys = Object.keys(definedMap);
-  const encodeDefined: StructEncodeDefine = [];
+  const encodeDefined: StructEncodeInfo[] = [];
   const decodeDefined: Record<number, StructDecodeInfo> = {};
 
   let key: string;

@@ -4,10 +4,10 @@ import {
   Struct,
   StructType,
   StructDecodeInfo,
-  StructEncodeDefine,
   StructWriter,
   defineStruct,
   decodeStruct,
+  StructEncodeInfo,
 } from "./defined/mod.js";
 import { DecodeContext, EncodeContext, createContext } from "./ctx.js";
 /** @public */
@@ -19,7 +19,7 @@ export class StructTrans<T extends object = any> implements Encoder, Decoder {
   private encContext: EncodeContext;
   private decContext: DecodeContext;
   private constructor(
-    private encodeDefine: StructEncodeDefine,
+    private encodeDefine: StructEncodeInfo[],
     private decodeDefine: Record<number, StructDecodeInfo>
   ) {
     const { dec, enc } = createContext();

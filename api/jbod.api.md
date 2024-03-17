@@ -280,7 +280,7 @@ function zigzagEncodeI64(val: bigint): bigint;
 
 // Warnings were encountered during analysis:
 //
-// src/data_trans/defined/data_types/struct.ts:310:3 - (ae-forgotten-export) The symbol "FieldType" needs to be exported by the entry point mod.d.ts
+// src/data_trans/defined/data_types/struct.ts:309:3 - (ae-forgotten-export) The symbol "FieldType" needs to be exported by the entry point mod.d.ts
 // src/data_trans/defined/type.ts:20:3 - (ae-forgotten-export) The symbol "DataWriterCreator" needs to be exported by the entry point mod.d.ts
 // src/data_trans/defined/type.ts:21:3 - (ae-forgotten-export) The symbol "DecodeFn" needs to be exported by the entry point mod.d.ts
 // src/data_trans/defined/type.ts:22:3 - (ae-forgotten-export) The symbol "ClassType" needs to be exported by the entry point mod.d.ts
