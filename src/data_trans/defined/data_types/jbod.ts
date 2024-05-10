@@ -20,7 +20,9 @@ export class JbodWriter implements TypeDataWriter {
     return this.writer.encodeTo(buf, offset + 1);
   }
 }
-
+/**
+ * @remarks 获取数据类型对应的代码
+ */
 export function toTypeCode(this: EncodeContext, data: any): number {
   let type: number;
   switch (typeof data) {
@@ -41,12 +43,11 @@ export function toTypeCode(this: EncodeContext, data: any): number {
     case "symbol":
       type = DataType.symbol;
       break;
-    case "object": {
-      if (data === null) return DataType.null;
-      return getClassTypeCode(data, this.classTypes);
-    }
+    case "object":
+      if (data !== null) return getClassTypeCode(data, this.classTypes);
     default:
-      throw new UnsupportedDataTypeError(typeof data);
+      //TODO: function 待实现
+      return DataType.null;
   }
   return type;
 }
@@ -65,6 +66,9 @@ const { decoder: encodeI32 } = numberTrans.i32;
 const { decoder: encodeI64 } = numberTrans.i64;
 
 const f64 = F64Writer.prototype.encodeTo;
+/**
+ * @remarks 判断数据类型，并返回对应 带类型的 DataWriter
+ */
 export function fastJbodWriter(data: any, ctx: EncodeContext): TypeDataWriter {
   let type: number;
   switch (typeof data) {
@@ -92,7 +96,7 @@ export function fastJbodWriter(data: any, ctx: EncodeContext): TypeDataWriter {
       break;
     }
     default:
-      throw new UnsupportedDataTypeError(typeof data);
+      return { type: DataType.null, byteLength: 0, encodeTo: NO_CONTENT.encodeTo };
   }
   const writer = new ctx[type](data, ctx) as any;
   writer.type = type;

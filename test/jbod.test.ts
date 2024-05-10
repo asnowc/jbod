@@ -1,4 +1,4 @@
-import JBOD, { DataType, UnsupportedDataTypeError, varints } from "jbod";
+import JBOD, { DataType, varints } from "jbod";
 import { baseDataTypes, compoundTypes, unsupportedData } from "./__mocks__/data_type.cases.js";
 import "./expects/expect.js";
 import { describe, expect, test } from "vitest";
@@ -69,6 +69,17 @@ describe("encode-pase", function () {
   });
 });
 
-test("不支持的数据类型", function () {
-  expect(() => JBOD.encode(unsupportedData.function[0])).toThrowError(UnsupportedDataTypeError);
+describe("不支持的数据类型", function () {
+  //todo: function 待支持
+  const fn = unsupportedData.function[0];
+  test("function", function () {
+    const u8Arr = JBOD.encode(fn);
+    const data = JBOD.decode(u8Arr).data;
+    expect(data).toBe(null);
+  });
+  test("function array", function () {
+    const u8Arr = JBOD.encode([fn, fn]);
+    const data = JBOD.decode(u8Arr).data;
+    expect(data).toEqual([null, null]);
+  });
 });
