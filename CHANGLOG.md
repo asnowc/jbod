@@ -1,3 +1,8 @@
+### 0.4.5
+
+- feat: 废弃 JbodError。 改用原生 Error 对象代替
+- feat(encode): 编码遇到 function 类型时，将转为 null
+
 ### 0.4.3
 
 ### Feature

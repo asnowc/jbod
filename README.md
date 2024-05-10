@@ -1,30 +1,28 @@
 ## JavaScript Binary Object Data
 
 支持更多 JS 数据类型的序列化与反序列化库，序列化后大小占用很小。可用于传输、和存储。
-借鉴了 BSON 和 ProtoBuf, 不过设计 JBOD 的主要用于传输 JavaScript 数据。 [查看 JBOD 数据帧格式](./docs/jbod.md)
-
-**目前尚不稳定**
+借鉴了 BSON 和 ProtoBuf, 不过设计 JBOD 的主要用于传输 JavaScript 数据。 [查看 JBOD 编码格式](./docs/jbod.md)
 
 ### 功能特性
 
 ##### 更多的 JavaScript 数据类型
 
-| 类型       | 备注                                                                  |
-| ---------- | --------------------------------------------------------------------- |
-| boolean    |                                                                       |
-| null       |                                                                       |
-| undefined  |                                                                       |
-| number     | 支持 NaN、-Infinity、+Infinity                                        |
-| bigint     |                                                                       |
-| Uint8Array |                                                                       |
-| string     |                                                                       |
-| RegExp     |                                                                       |
-| Array      |                                                                       |
-| Object     |                                                                       |
-| Symbol     | 意义不大, 转换后只保留 description 属性                               |
-| Error      | 仅支持保留 cause、code、message、name 属性 , 转换后会转变成 JbodError |
-| Map        |                                                                       |
-| Set        |                                                                       |
+| 类型       | 备注                                       |
+| ---------- | ------------------------------------------ |
+| boolean    |                                            |
+| null       |                                            |
+| undefined  |                                            |
+| number     | 支持 NaN、-Infinity、+Infinity             |
+| bigint     |                                            |
+| Uint8Array |                                            |
+| string     |                                            |
+| RegExp     |                                            |
+| Array      |                                            |
+| Object     |                                            |
+| Symbol     | 意义不大, 转换后只保留 description 属性    |
+| Error      | 仅支持保留 cause、code、message、name 属性 |
+| Map        |                                            |
+| Set        |                                            |
 
 ##### 更小的二进制数据大小
 
@@ -80,7 +78,7 @@ import JBOD from "jbod";
 const data = [1, "string", new Set([7, 2, 4]), new Uint8Array([1, 2, 3]), 12n];
 
 const u8Arr = JBOD.encode(data);
-const data2 = JBOD.decode(u8Arr);
+const data2 = JBOD.decode(u8Arr).data;
 ```
 
 #### deno 或浏览器
@@ -90,7 +88,7 @@ import JBOD from "https://esm.sh/jbod";
 const data = [1, "string", new Set([7, 2, 4]), new Uint8Array([1, 2, 3]), 12n];
 
 const u8Arr = JBOD.encode(data);
-const data2 = JBOD.decode(u8Arr);
+const data2 = JBOD.decode(u8Arr).data;
 ```
 
 #### StructTrans 定义
@@ -116,7 +114,7 @@ const struct = StructTrans.define({
 const rawData = { name: "test", count: 9, custom: [1] };
 const u8Arr = struct.encode(rawData);
 
-const data = struct.decode(u8Arr);
+const data = struct.decode(u8Arr).data;
 console.log(data);
 ```
 
