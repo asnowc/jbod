@@ -1,6 +1,4 @@
-import { Assertion, AsymmetricMatchersContaining } from "vitest";
 import { expect } from "vitest";
-import { JbodError } from "jbod";
 
 interface CustomMatchers<R = unknown> {
   isJbodSymbol(num: number): R;
@@ -67,7 +65,7 @@ expect.extend({
     return res;
   },
   isJbodError(received: Error, expected: Error) {
-    expect(received).instanceof(JbodError);
+    expect(received).instanceof(Error);
     expect(received).toMatchObject({
       message: expected.message,
       name: expected.name,

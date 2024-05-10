@@ -47,7 +47,8 @@ export class UnsupportedDataTypeError extends Error {
 }
 /**
  * @public
+ * @deprecated 已弃用
  * @remarks 远程发送的异常类型
  */
-export class JbodError extends Error {}
+export const JbodError = Error;
 export { DecodeError } from "../../const.js";

@@ -1,7 +1,6 @@
 import { DecodeResult } from "../../../type.js";
 import { defineStruct, StructWriter, decodeStruct } from "./struct.js";
 import { EncodeContext, Defined } from "../type.js";
-import { JbodError } from "../const.js";
 import { dyArray } from "./repeat.js";
 const symbolStruct = defineStruct({ description: 1 });
 
@@ -25,7 +24,7 @@ export const error: Defined<Error> = {
   decoder: function (buf, offset, ctx) {
     const info = decodeStruct(buf, offset, ctx, errorStruct.decodeDefined) as DecodeResult;
     const data = info.data;
-    info.data = new JbodError(data.message, { cause: data.cause });
+    info.data = new Error(data.message, { cause: data.cause });
     if (data.code) info.data.code = data.code;
     return info;
   },

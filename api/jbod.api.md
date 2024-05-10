@@ -134,9 +134,8 @@ function encodeU32DInto(value: number, buf: Uint8Array, offset?: number): number
 // @public (undocumented)
 function encodeU64DInto(bigint: bigint, buf: Uint8Array, offset?: number): number;
 
-// @public (undocumented)
-export class JbodError extends Error {
-}
+// @public @deprecated (undocumented)
+export const JbodError: ErrorConstructor;
 
 // Warning: (ae-internal-missing-underscore) The name "JbodTrans" should be prefixed with an underscore because the declaration is marked as @internal
 //
