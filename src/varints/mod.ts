@@ -8,8 +8,9 @@ import { DecodeError } from "../const.ts";
 export function calcU64DByte(bigint: bigint) {
   let next = bigint <= 0xfff_ffff && bigint > 0; //bigint 为 i64 类型， 算法需要 u64 类型
   let len = 0;
+  const N28 = BigInt(28);
   do {
-    let value = Number(bigint & 0xfff_ffffn);
+    let value = Number(bigint & BigInt(0xfff_ffff));
     let max = len + 4;
     do {
       if (value <= 0b0111_1111 && next) return len + 1;
@@ -17,8 +18,8 @@ export function calcU64DByte(bigint: bigint) {
       value >>>= 7;
     } while (len < max);
 
-    bigint >>= 28n;
-    if (bigint < 0) bigint &= 0xf_ffff_ffffn; // bigint 没有逻辑右移
+    bigint >>= N28;
+    if (bigint < 0) bigint &= BigInt(0xf_ffff_ffff); // bigint 没有逻辑右移
     next = bigint <= 0xfff_ffff;
   } while (true);
 }
@@ -30,8 +31,9 @@ export function calcU64DByte(bigint: bigint) {
  */
 export function encodeU64DInto(bigint: bigint, buf: Uint8Array, offset = 0) {
   let next = bigint <= 0xfff_ffff && bigint > 0; //bigint 为 i64 类型， 算法需要 u64 类型
+  const N28 = BigInt(28);
   do {
-    let value = Number(bigint & 0xfff_ffffn);
+    let value = Number(bigint & BigInt(0xfff_ffff));
     let max = offset + 4;
     do {
       if (value <= 0b0111_1111 && next) {
@@ -42,8 +44,8 @@ export function encodeU64DInto(bigint: bigint, buf: Uint8Array, offset = 0) {
       value >>>= 7;
     } while (offset < max);
 
-    bigint >>= 28n;
-    if (bigint < 0) bigint &= 0xf_ffff_ffffn; // bigint 没有逻辑右移
+    bigint >>= N28;
+    if (bigint < 0) bigint &= BigInt(0xf_ffff_ffff); // bigint 没有逻辑右移
 
     next = bigint <= 0xfff_ffff;
   } while (true);
@@ -78,7 +80,7 @@ export function encodeU32DInto(value: number, buf: Uint8Array, offset = 0) {
   return offset;
 }
 
-/**
+/** 从二进制解码64位无符号整数。
  *  需要确保数字范围是无符号长整型的范围，否则结果可能错误
  *  @public */
 export function decodeU64D(buf: Uint8Array, offset = 0): { value: bigint; byte: number } {
@@ -87,8 +89,7 @@ export function decodeU64D(buf: Uint8Array, offset = 0): { value: bigint; byte: 
   res.value = BigInt(res.value);
   return res;
 }
-/**
- * 需要确保数字范围是无符号整型的范围，否则结果可能错误
+/** 从二进制解码32位无符号整数。需要确保数字范围是无符号整型的范围，否则结果可能错误
  * @public
  *
  */
@@ -104,6 +105,13 @@ export function decodeU32D(buf: Uint8Array, offset = 0) {
 
   return { value, byte };
 }
+/* 
+如果在 ES2020 之前的环境，值为 0
+兼容 ES2020 之前的版本
+*/
+const X_100_0000_0000_0000 = typeof BigInt === "function" ? BigInt(0x100_0000_0000) << BigInt(16) : 0;
+const X_7fff_ffff_ffff_ffff =
+  typeof BigInt === "function" ? (BigInt(0x7fff_ffff) << BigInt(32)) | BigInt(0xffff_ffff) : 0;
 
 /**
  * @public
@@ -125,6 +133,7 @@ export function decodeDyInt(buf: Uint8Array, offset: number = 0) {
   offset += beforeByte;
   let byte = 0;
   let value = 0;
+  const N28 = BigInt(28);
 
   // 小于等于64位 (实际 8*7=56 位)
   do {
@@ -133,15 +142,15 @@ export function decodeDyInt(buf: Uint8Array, offset: number = 0) {
     byte++;
     if (next <= 0b0111_1111) {
       byte += beforeByte;
-      if (byte > 7) return { value: BigInt(beforeValue) + (BigInt(value) << 28n), byte };
-      else return { value: beforeValue + value * 0x1000_0000, byte }; // 0x1000_0000 =
+      if (byte > 7) return { value: BigInt(beforeValue) + (BigInt(value) << N28), byte };
+      else return { value: beforeValue + value * 0x1000_0000, byte };
     }
   } while (byte < 4);
 
   // bigint 位运算
   offset += byte;
   beforeByte += byte;
-  beforeValue = BigInt(beforeValue) + (BigInt(value) << 28n);
+  beforeValue = BigInt(beforeValue) + (BigInt(value) << N28);
 
   byte = 0;
   value = 0;
@@ -152,7 +161,7 @@ export function decodeDyInt(buf: Uint8Array, offset: number = 0) {
     byte++;
     if (next <= 0b0111_1111) {
       byte += beforeByte;
-      return { value: beforeValue + BigInt(value) * 0x100_0000_0000_0000n, byte };
+      return { value: beforeValue + BigInt(value) * (X_100_0000_0000_0000 as bigint), byte }; //如果在 ES2020 之前的环境执行， bigint 与 0 进行位运算会抛出异常
     }
   } while (byte < 2);
 
@@ -199,13 +208,14 @@ export function zigzagDecodeI32(val: number) {
 }
 /** @public */
 export function zigzagEncodeI64(val: bigint) {
-  return (val << 1n) ^ (val >> 63n);
+  return (val << BigInt(1)) ^ (val >> BigInt(63));
 }
 
 /** @public */
 export function zigzagDecodeI64(value: bigint) {
   let a: bigint;
-  if (value < 0) a = (value >> 1n) & 0x7fff_ffff_ffff_ffffn;
-  else a = value >> 1n;
-  return a ^ -(value & 1n);
+  if (value < 0) a = (value >> BigInt(1)) & (X_7fff_ffff_ffff_ffff as bigint);
+  //如果在 ES2020 之前的环境执行， bigint 与 0 进行位运算会抛出异常
+  else a = value >> BigInt(1);
+  return a ^ -(value & BigInt(1));
 }

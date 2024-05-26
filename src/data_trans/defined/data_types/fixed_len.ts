@@ -33,7 +33,7 @@ export const i64: Defined<bigint> = {
     byteLength = 8;
     encodeTo(buf: Uint8Array, offset: number): number {
       const value = this.data;
-      let lo = Number(value & 0xffffffffn);
+      let lo = Number(value & BigInt(0xffff_ffff));
       buf[offset + 7] = lo;
       lo = lo >> 8;
       buf[offset + 6] = lo;
@@ -41,7 +41,7 @@ export const i64: Defined<bigint> = {
       buf[offset + 5] = lo;
       lo = lo >> 8;
       buf[offset + 4] = lo;
-      let hi = Number((value >> 32n) & 0xffffffffn);
+      let hi = Number((value >> BigInt(32)) & BigInt(0xffff_ffff));
       buf[offset + 3] = hi;
       hi = hi >> 8;
       buf[offset + 2] = hi;
@@ -56,7 +56,7 @@ export const i64: Defined<bigint> = {
     //first << 24 可能溢出
     let val: number | bigint = (buf[offset++] << 24) + (buf[offset++] << 16) + (buf[offset++] << 8) + buf[offset++];
     val =
-      (BigInt(val) << 32n) +
+      (BigInt(val) << BigInt(32)) +
       BigInt(buf[offset++] * 2 ** 24 + (buf[offset++] << 16) + (buf[offset++] << 8) + buf[offset++]);
     return {
       data: val,

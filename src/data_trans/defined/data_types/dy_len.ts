@@ -80,7 +80,7 @@ export const dyI64: Defined<bigint> = {
   encoder: class DyI64 implements DataWriter {
     private data: bigint;
     constructor(data: bigint) {
-      data = (data << 1n) ^ (data >> 63n);
+      data = (data << BigInt(1)) ^ (data >> BigInt(63));
       this.data = data;
       this.byteLength = calcU64DByte(data);
     }

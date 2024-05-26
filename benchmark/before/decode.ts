@@ -1,19 +1,8 @@
 import JBOD from "jbod";
 // @deno-types="jbod"
 import B_JBOD from "jbod-before";
-import { cases, createList } from "../__mocks__/compare.cases.ts";
-const map = new Map(
-  Object.entries({
-    disabled: false,
-    count: 100837,
-    name: "Documentation",
-    dataStamp: 4 / 7,
-    id: 876,
-  })
-);
-
-const casesList: { size: number; value: any; name: string }[] = cases.slice(1);
-casesList.push({ name: "map", value: map, size: 1000 });
+import { createList } from "../__mocks__/compare.cases.ts";
+import { casesList } from "./data/mod.ts";
 
 casesList
   .map(({ size, value, name }) => {

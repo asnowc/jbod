@@ -13,7 +13,7 @@ export default defineConfig({
     tsPlugin({
       include: ["./src/**"],
       compilerOptions: {
-        target: "ES2022",
+        target: "ES2020",
         module: "nodenext",
         declaration: true,
         declarationDir: "dist",

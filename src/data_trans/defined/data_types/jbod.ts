@@ -4,7 +4,7 @@ import type { DecodeResult } from "../../../type.ts";
 import { DataType, UnsupportedDataTypeError } from "../const.ts";
 import { NO_CONTENT } from "../data_types/fixed_len.ts";
 import * as numberTrans from "./fixed_len.ts";
-import { decodeDyInt, decodeU64D, zigzagDecodeI64, zigzagDecodeI32 } from "../../../varints/mod.ts";
+import { decodeU32D, decodeU64D, zigzagDecodeI64, zigzagDecodeI32 } from "../../../varints/mod.ts";
 
 export class JbodWriter implements TypeDataWriter {
   constructor(data: any, ctx: EncodeContext) {
@@ -61,9 +61,9 @@ function getClassTypeCode(data: object, classTypes: Map<object, number>) {
   }
   return DataType.anyRecord;
 }
-const { encoder: F64Writer, decoder: encodeF64 } = numberTrans.f64;
-const { decoder: encodeI32 } = numberTrans.i32;
-const { decoder: encodeI64 } = numberTrans.i64;
+const { encoder: F64Writer, decoder: decodeF64 } = numberTrans.f64;
+const { decoder: decodeI32 } = numberTrans.i32;
+const { decoder: decodeI64 } = numberTrans.i64;
 
 const f64 = F64Writer.prototype.encodeTo;
 /**
@@ -106,13 +106,13 @@ export function fastJbodWriter(data: any, ctx: EncodeContext): TypeDataWriter {
 export function fastDecodeJbod(buf: Uint8Array, offset: number, ctx: DecodeContext, type: number): DecodeResult<any> {
   switch (type) {
     case DataType.i32:
-      return encodeI32(buf, offset, ctx);
+      return decodeI32(buf, offset, ctx);
     case DataType.i64:
-      return encodeI64(buf, offset, ctx);
+      return decodeI64(buf, offset, ctx);
     case DataType.f64:
-      return encodeF64(buf, offset, ctx);
+      return decodeF64(buf, offset, ctx);
     case DataType.dyI32: {
-      const res = decodeDyInt(buf, offset) as { value: number; byte: number };
+      const res = decodeU32D(buf, offset) as { value: number; byte: number };
       return { data: zigzagDecodeI32(res.value), offset: offset + res.byte };
     }
     case DataType.dyI64: {
