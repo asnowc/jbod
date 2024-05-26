@@ -1,6 +1,5 @@
-/**
+/** JBOD 数据类型
  * @public
- * @remarks JBOD 数据类型
  */
 export enum DataType {
   null = 1,
@@ -36,19 +35,17 @@ export enum DataType {
 }
 export const VOID_ID = 0;
 
-/**
+/** 当读取到一个未知类型的错误
  * @public
- * @remarks 当读取到一个未知类型的错误
  */
 export class UnsupportedDataTypeError extends Error {
   constructor(desc?: string | number) {
     super("Unsupported data type: " + desc);
   }
 }
-/**
+/** 远程发送的异常类型
  * @public
  * @deprecated 已弃用
- * @remarks 远程发送的异常类型
  */
 export const JbodError = Error;
 export { DecodeError } from "../../const.ts";

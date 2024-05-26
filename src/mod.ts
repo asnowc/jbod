@@ -10,9 +10,8 @@ export {
   varints,
 };
 class UserJbodTrans extends JbodTrans {
-  /**
+  /** 将数据编码为携带类型的 Uint8Array, 这会比 encodeContent 多一个字节
    * @public
-   * @remarks 将数据编码为携带类型的 Uint8Array, 这会比 encodeContent 多一个字节
    */
   encode(data: any) {
     const res = this.createWriter(data);
@@ -20,9 +19,8 @@ class UserJbodTrans extends JbodTrans {
     res.encodeTo(buf, 0);
     return buf;
   }
-  /**
+  /** 将数据编码为不携带类型的 Uint8Array, 这会比 encode 少一个字节
    * @public
-   * @remarks 将数据编码为不携带类型的 Uint8Array, 这会比 encode 少一个字节
    */
   encodeContent(data: any) {
     const res = this.createContentWriter(data);

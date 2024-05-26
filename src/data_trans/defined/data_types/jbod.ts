@@ -20,8 +20,7 @@ export class JbodWriter implements TypeDataWriter {
     return this.writer.encodeTo(buf, offset + 1);
   }
 }
-/**
- * @remarks 获取数据类型对应的代码
+/** 获取数据类型对应的代码
  */
 export function toTypeCode(this: EncodeContext, data: any): number {
   let type: number;
@@ -66,8 +65,7 @@ const { decoder: decodeI32 } = numberTrans.i32;
 const { decoder: decodeI64 } = numberTrans.i64;
 
 const f64 = F64Writer.prototype.encodeTo;
-/**
- * @remarks 判断数据类型，并返回对应 带类型的 DataWriter
+/** 判断数据类型，并返回对应 带类型的 DataWriter
  */
 export function fastJbodWriter(data: any, ctx: EncodeContext): TypeDataWriter {
   let type: number;

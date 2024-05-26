@@ -1,9 +1,8 @@
 import { DecodeError } from "../const.ts";
 
-/**
+/** 计算字无符号整型编码成DBN后的字节数
  * @public
  * @param bigint - 一个 u64类型，传入负数为解析为 u64 类型
- * @remarks 计算字无符号整型编码成DBN后的字节数
  */
 export function calcU64DByte(bigint: bigint) {
   let next = bigint <= 0xfff_ffff && bigint > 0; //bigint 为 i64 类型， 算法需要 u64 类型

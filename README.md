@@ -134,8 +134,7 @@ const struct = StructTrans.define({
 ```ts
 type UserCalcResult = { byteLength: number; type: number; pretreatment: unknown };
 declare const JBOD: {
-  /**
-   * @remarks 从 Uint8Array 解析数据
+  /** 从 Uint8Array 解析数据
    * @param type - 指定解析的数据类型. 对于 createWriter() 编码的数据，不应指定。 对于 encodeContentWriter() 编码的数据，需要指定才能正确解析。
    */
   decode(buffer: Uint8Array, offset?: number, type?: number): DecodeResult;
@@ -143,14 +142,11 @@ declare const JBOD: {
   createWriter(data: any): DataWriter;
   /** 创建 DataWriter 用于编码 将数据编码为不携带类型的 Uint8Array, 这会比 encodeInto 少一个字节  */
   encodeContentWriter(data: any): DataWriter;
-  /**
-   * @public
-   * @remarks 获取数据对应的类型 ID
+  /** 获取数据对应的类型 ID
    */
   toTypeCode(data: any): number;
-  /**
+  /** 将数据直接编码为二进制数据
    * @public
-   * @remarks 将数据直接编码为二进制数据
    */
   encode(data: any): Uint8Array;
 };

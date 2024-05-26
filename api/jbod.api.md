@@ -7,10 +7,10 @@
 // @public (undocumented)
 function calcU32DByte(value: number): number;
 
-// @public (undocumented)
+// @public
 function calcU64DByte(bigint: bigint): number;
 
-// @public (undocumented)
+// @public
 export enum DataType {
     // (undocumented)
     anyArray = 13,
@@ -134,7 +134,7 @@ function encodeU32DInto(value: number, buf: Uint8Array, offset?: number): number
 // @public (undocumented)
 function encodeU64DInto(bigint: bigint, buf: Uint8Array, offset?: number): number;
 
-// @public @deprecated (undocumented)
+// @public @deprecated
 export const JbodError: ErrorConstructor;
 
 // Warning: (ae-internal-missing-underscore) The name "JbodTrans" should be prefixed with an underscore because the declaration is marked as @internal
@@ -144,27 +144,25 @@ export class JbodTrans implements Encoder<any>, Decoder {
     constructor(config?: JbodTransConfig);
     // Warning: (ae-forgotten-export) The symbol "UserCalcResult" needs to be exported by the entry point mod.d.ts
     //
-    // @deprecated (undocumented)
+    // @deprecated
     byteLength(data: any): UserCalcResult;
-    // (undocumented)
     createContentWriter(data: any): DataWriter;
-    // (undocumented)
     createWriter(data: any): DataWriter;
     // Warning: (ae-forgotten-export) The symbol "DecodeContext" needs to be exported by the entry point mod.d.ts
     //
     // (undocumented)
     protected decContext: DecodeContext;
-    // @public (undocumented)
+    // @public
     decode<T = any>(buffer: Uint8Array, offset?: number, type?: number): DecodeResult<T>;
     // Warning: (ae-forgotten-export) The symbol "EncodeContext" needs to be exported by the entry point mod.d.ts
     //
     // (undocumented)
     protected encContext: EncodeContext;
-    // @deprecated (undocumented)
+    // @deprecated
     encodeContentInto(value: UserCalcResult, buf: Uint8Array, offset?: number): number;
-    // @deprecated (undocumented)
+    // @deprecated
     encodeInto(value: UserCalcResult, buf: Uint8Array, offset?: number): number;
-    // @public (undocumented)
+    // @public
     toTypeCode(data: any): number;
 }
 
@@ -241,7 +239,7 @@ class U32DByteParser {
     value: number;
 }
 
-// @public (undocumented)
+// @public
 export class UnsupportedDataTypeError extends Error {
     constructor(desc?: string | number);
 }
