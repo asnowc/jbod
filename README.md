@@ -1,6 +1,21 @@
+[![ESM-only package][package]][package-url]
+[![NPM version][npm]][npm-url]
+[![Install size][size]][size-url]
+[![Build status][build]][build-url]
+
+[package]: https://img.shields.io/badge/package-ESM--only-ffe536.svg
+[package-url]: https://nodejs.org/api/esm.html
+[npm]: https://img.shields.io/npm/v/jbod.svg
+[npm-url]: https://npmjs.com/package/jbod
+[size]: https://packagephobia.com/badge?p=jbod
+[size-url]: https://packagephobia.com/result?p=jbod
+[build]: https://github.com/asnowc/jbod/actions/workflows/ci.yaml/badge.svg?branch=main
+[build-url]: https://github.com/asnowc/jbod/actions
+
 ## JavaScript Binary Object Data
 
-支持更多 JS 数据类型的序列化与反序列化库，序列化后大小占用很小。可用于传输、和存储。
+JavaScript 二进制序列化与反序列库。支持更多的 JS 数据类型，序列化后大小占用很小。可用于传输、和存储。\
+JavaScript Binary Serialization and deserialization lib. Support for more JS data types。Can be used for transmission, and storage. \
 借鉴了 BSON 和 ProtoBuf, 不过设计 JBOD 的主要用于传输 JavaScript 数据。 [查看 JBOD 编码格式](./docs/jbod.md)
 
 ### 功能特性
@@ -134,20 +149,19 @@ const struct = StructTrans.define({
 ```ts
 type UserCalcResult = { byteLength: number; type: number; pretreatment: unknown };
 declare const JBOD: {
-  /** 从 Uint8Array 解析数据
-   * @param type - 指定解析的数据类型. 对于 createWriter() 编码的数据，不应指定。 对于 encodeContentWriter() 编码的数据，需要指定才能正确解析。
+  /**
+   * 从 Uint8Array 解析数据
+   * @param type - 指定解析的数据类型. 对于 createWriter() 编码的数据，不应指定。 
+   * 对于 encodeContentWriter() 编码的数据，需要指定才能正确解析。
    */
   decode(buffer: Uint8Array, offset?: number, type?: number): DecodeResult;
   /** 创建 DataWriter 用于编码, 这个方法创建的 DataWriter 会比 encodeContentWriter 多一个字节 */
   createWriter(data: any): DataWriter;
   /** 创建 DataWriter 用于编码 将数据编码为不携带类型的 Uint8Array, 这会比 encodeInto 少一个字节  */
   encodeContentWriter(data: any): DataWriter;
-  /** 获取数据对应的类型 ID
-   */
+  /** 获取数据对应的类型 ID */
   toTypeCode(data: any): number;
-  /** 将数据直接编码为二进制数据
-   * @public
-   */
+  /** 将数据直接编码为二进制数据 */
   encode(data: any): Uint8Array;
 };
 export type { JBOD as default };
