@@ -1,5 +1,5 @@
-import * as varints from "../src/varints/mod.js";
-import "./expects/expect.js";
+import * as varints from "../src/varints/mod.ts";
+import "./expects/expect.ts";
 import { describe, expect, test } from "vitest";
 
 describe("varints", function () {

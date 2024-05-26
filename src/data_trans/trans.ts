@@ -1,7 +1,7 @@
-import type { DecodeResult, Decoder, Encoder } from "../type.js";
-import { createContext, EncodeContext, DecodeContext } from "./ctx.js";
-import { DataWriter, Defined } from "./defined/type.js";
-import { JbodWriter } from "./defined/mod.js";
+import type { DecodeResult, Decoder, Encoder } from "../type.ts";
+import { createContext, EncodeContext, DecodeContext } from "./ctx.ts";
+import { DataWriter, Defined } from "./defined/type.ts";
+import { JbodWriter } from "./defined/mod.ts";
 /** @internal */
 export interface JbodTransConfig {
   customObjet?: Record<number, Defined>;

@@ -4,6 +4,6 @@ import path from "node:path";
 const root = __dirname;
 export default defineConfig({
   test: {
-    alias: [{ find: /^jbod$/, replacement: path.resolve(root, "src/mod.js") }],
+    alias: [{ find: /^jbod$/, replacement: path.resolve(root, "src/mod.ts") }],
   },
 });

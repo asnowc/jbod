@@ -1,10 +1,10 @@
-import { calcU32DByte, decodeU32D, encodeU32DInto } from "../../../varints/mod.js";
-import type { EncodeContext, DataWriter, TypeDataWriter, Defined } from "../type.js";
-import { DecodeResult } from "../../../type.js";
-import { VOID_ID } from "../const.js";
-import { fastDecodeJbod, fastJbodWriter } from "./jbod.js";
-import { stringDecode } from "./dy_len.js";
-import { calcUtf8Length, encodeUtf8Into } from "./string.js";
+import { calcU32DByte, decodeU32D, encodeU32DInto } from "../../../varints/mod.ts";
+import type { EncodeContext, DataWriter, TypeDataWriter, Defined } from "../type.ts";
+import { DecodeResult } from "../../../type.ts";
+import { VOID_ID } from "../const.ts";
+import { fastDecodeJbod, fastJbodWriter } from "./jbod.ts";
+import { stringDecode } from "./dy_len.ts";
+import { calcUtf8Length, encodeUtf8Into } from "./string.ts";
 
 class ArrayWriter implements DataWriter {
   constructor(arr: any[], ctx: EncodeContext, fixed?: boolean) {

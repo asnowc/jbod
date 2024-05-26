@@ -5,13 +5,14 @@
     "target": "ES2022",
     "lib": ["ESNext"],
     "strict": true,
+    "allowImportingTsExtensions": true,
     "skipDefaultLibCheck": true,
     "noEmit": true,
     "allowJs": true,
     "isolatedModules": true,
     "baseUrl": ".",
     "paths": {
-      "jbod": ["./src/mod.js"]
+      "jbod": ["./src/mod.ts"]
     }
   },
 

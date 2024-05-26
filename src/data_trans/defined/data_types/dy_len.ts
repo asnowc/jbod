@@ -1,4 +1,4 @@
-import type { EncodeContext, Defined, DataWriter } from "../type.js";
+import type { EncodeContext, Defined, DataWriter } from "../type.ts";
 import {
   calcU32DByte,
   calcU64DByte,
@@ -7,8 +7,8 @@ import {
   encodeU32DInto,
   encodeU64DInto,
   zigzagDecodeI64,
-} from "../../../varints/mod.js";
-import { calcUtf8Length, decodeUtf8, encodeUtf8Into } from "./string.js";
+} from "../../../varints/mod.ts";
+import { calcUtf8Length, decodeUtf8, encodeUtf8Into } from "./string.ts";
 
 export const string: Defined<string> = {
   encoder: class StringWriter implements DataWriter {

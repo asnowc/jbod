@@ -1,5 +1,5 @@
-import type { Defined, DecodeFn, DataWriter } from "../type.js";
-import { encodeF64BE, decodeF64BE } from "./float.js";
+import type { Defined, DecodeFn, DataWriter } from "../type.ts";
+import { encodeF64BE, decodeF64BE } from "./float.ts";
 
 export const i32: Defined<number> = {
   encoder: class I32Writer implements DataWriter {

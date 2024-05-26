@@ -1,6 +1,6 @@
 import { StructTrans } from "jbod";
 import { describe, expect, test } from "vitest";
-import { formatBin } from "./utils/mod.js";
+import { formatBin } from "./utils/mod.ts";
 const s1 = StructTrans.define<{ f1: boolean; f2: number; f3: any }>(
   {
     f1: { id: 1, type: "bool" },

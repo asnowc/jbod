@@ -1,7 +1,7 @@
-import { DecodeResult } from "../../../type.js";
-import { defineStruct, StructWriter, decodeStruct } from "./struct.js";
-import { EncodeContext, Defined } from "../type.js";
-import { dyArray } from "./repeat.js";
+import { DecodeResult } from "../../../type.ts";
+import { defineStruct, StructWriter, decodeStruct } from "./struct.ts";
+import { EncodeContext, Defined } from "../type.ts";
+import { dyArray } from "./repeat.ts";
 const symbolStruct = defineStruct({ description: 1 });
 
 export const symbol: Defined<symbol> = {

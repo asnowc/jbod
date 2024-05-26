@@ -1,6 +1,6 @@
 import JBOD, { DataType, varints } from "jbod";
-import { baseDataTypes, compoundTypes, unsupportedData } from "./__mocks__/data_type.cases.js";
-import "./expects/expect.js";
+import { baseDataTypes, compoundTypes, unsupportedData } from "./__mocks__/data_type.cases.ts";
+import "./expects/expect.ts";
 import { describe, expect, test } from "vitest";
 
 describe("encode", function () {

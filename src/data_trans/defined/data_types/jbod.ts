@@ -1,10 +1,10 @@
-import type { TypeDataWriter, DataWriter, DecodeContext, EncodeContext } from "../type.js";
-import type { DecodeResult } from "../../../type.js";
+import type { TypeDataWriter, DataWriter, DecodeContext, EncodeContext } from "../type.ts";
+import type { DecodeResult } from "../../../type.ts";
 
-import { DataType, UnsupportedDataTypeError } from "../const.js";
-import { NO_CONTENT } from "../data_types/fixed_len.js";
-import * as numberTrans from "./fixed_len.js";
-import { decodeDyInt, decodeU64D, zigzagDecodeI64, zigzagDecodeI32 } from "../../../varints/mod.js";
+import { DataType, UnsupportedDataTypeError } from "../const.ts";
+import { NO_CONTENT } from "../data_types/fixed_len.ts";
+import * as numberTrans from "./fixed_len.ts";
+import { decodeDyInt, decodeU64D, zigzagDecodeI64, zigzagDecodeI32 } from "../../../varints/mod.ts";
 
 export class JbodWriter implements TypeDataWriter {
   constructor(data: any, ctx: EncodeContext) {

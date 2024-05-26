@@ -6,8 +6,9 @@
     "benchmark": "deno bench -A --json > benchmark/dist/result.json"
   },
   "imports": {
-    "@eavid/vitest-tool/bench": "npm:@eavid/vitest-tool@1.2.3/bench",
-    "protobufjs": "npm:protobufjs",
-    "jbod": "./dist/mod.js"
+    "@eavid/vitest-tool": "npm:@eavid/vitest-tool@^1.2.3",
+    "jbod": "./src/mod.ts",
+    "jbod-before": "./benchmark/dist/before.js",
+    "protobufjs": "npm:protobufjs@^7.3.0"
   }
 }

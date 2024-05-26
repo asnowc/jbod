@@ -1,8 +1,8 @@
-import { calcU32DByte, decodeU32D, encodeU32DInto } from "../../../varints/mod.js";
-import { DataType, VOID_ID, DecodeError } from "../const.js";
-import { JbodWriter, fastDecodeJbod, jbodDecoder } from "./jbod.js";
-import type { DecodeResult } from "../../../type.js";
-import type { EncodeContext, DecodeContext, DataWriter, DataWriterCreator, DecodeFn, Defined } from "../type.js";
+import { calcU32DByte, decodeU32D, encodeU32DInto } from "../../../varints/mod.ts";
+import { DataType, VOID_ID, DecodeError } from "../const.ts";
+import { JbodWriter, fastDecodeJbod, jbodDecoder } from "./jbod.ts";
+import type { DecodeResult } from "../../../type.ts";
+import type { EncodeContext, DecodeContext, DataWriter, DataWriterCreator, DecodeFn, Defined } from "../type.ts";
 type Key = string | number | symbol;
 export type StructDecodeInfo = {
   decode: number | DecodeFn | Record<number, StructDecodeInfo>;

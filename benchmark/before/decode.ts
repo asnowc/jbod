@@ -1,7 +1,6 @@
-// @deno-types="https://esm.sh/jbod@0.4.x"
 import JBOD from "jbod";
-// @deno-types="https://esm.sh/jbod@0.4.x"
-import B_JBOD from "../dist/before.js";
+// @deno-types="jbod"
+import B_JBOD from "jbod-before";
 import { cases, createList } from "../__mocks__/compare.cases.ts";
 const map = new Map(
   Object.entries({

@@ -1,4 +1,4 @@
-import { DecodeError } from "../const.js";
+import { DecodeError } from "../const.ts";
 
 /**
  * @public

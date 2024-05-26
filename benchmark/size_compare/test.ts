@@ -1,4 +1,3 @@
-// @deno-types="https://esm.sh/jbod@0.4.x"
 import JBOD, { StructTrans } from "jbod";
 import { Buffer } from "node:buffer";
 function encodeJSON(data: any) {

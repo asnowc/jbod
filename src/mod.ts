@@ -1,9 +1,9 @@
-import { JbodTrans } from "./data_trans/trans.js";
-export { StructTrans, type Struct, type StructType } from "./data_trans/struct.js";
-export { JbodTrans, type JbodTransConfig, type Defined } from "./data_trans/trans.js";
-export type * from "./type.js";
-export * from "./data_trans/mod.js";
-import * as varints from "./varints/mod.js";
+import { JbodTrans } from "./data_trans/trans.ts";
+export { StructTrans, type Struct, type StructType } from "./data_trans/struct.ts";
+export { JbodTrans, type JbodTransConfig, type Defined } from "./data_trans/trans.ts";
+export type * from "./type.ts";
+export * from "./data_trans/mod.ts";
+import * as varints from "./varints/mod.ts";
 export {
   /** @deprecated - 改用 varints */
   varints as DBN,

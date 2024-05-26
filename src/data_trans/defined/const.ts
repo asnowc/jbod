@@ -51,4 +51,4 @@ export class UnsupportedDataTypeError extends Error {
  * @remarks 远程发送的异常类型
  */
 export const JbodError = Error;
-export { DecodeError } from "../../const.js";
+export { DecodeError } from "../../const.ts";

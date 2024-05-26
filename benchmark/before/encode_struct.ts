@@ -1,6 +1,6 @@
-// @deno-types="https://esm.sh/jbod@0.4.x"
 import { StructTrans } from "jbod";
-import { StructTrans as B_StructTrans } from "../dist/before.js";
+// @deno-types="jbod"
+import { StructTrans as B_StructTrans } from "jbod-before";
 import { objData, createList } from "../__mocks__/compare.cases.ts";
 
 const listData = createList(500, objData);

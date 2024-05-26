@@ -3,7 +3,7 @@
   "compilerOptions": {
     "outDir": "../out",
     "types": [],
-    "noEmit": false,
+    "noEmit": true,
     "declaration": true,
     "declarationMap": true
   }

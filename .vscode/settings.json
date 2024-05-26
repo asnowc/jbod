@@ -1,7 +1,5 @@
 {
-  "cSpell.words": ["binaryify", "jbod"],
-  "deno.enablePaths": [
-    "./scripts",
-    "./benchmark"
-  ]
+  "cSpell.words": ["jbod"],
+  "deno.config": "./deno.json",
+  "deno.enablePaths": ["./scripts", "./benchmark"]
 }

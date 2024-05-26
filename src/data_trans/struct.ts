@@ -1,4 +1,4 @@
-import type { DecodeResult, Encoder, Decoder, DataWriter } from "../type.js";
+import type { DecodeResult, Encoder, Decoder, DataWriter } from "../type.ts";
 import {
   StructDefined,
   Struct,
@@ -8,8 +8,8 @@ import {
   defineStruct,
   decodeStruct,
   StructEncodeInfo,
-} from "./defined/mod.js";
-import { DecodeContext, EncodeContext, createContext } from "./ctx.js";
+} from "./defined/mod.ts";
+import { DecodeContext, EncodeContext, createContext } from "./ctx.ts";
 /** @public */
 export class StructTrans<T extends object = any> implements Encoder, Decoder {
   static define<T extends object>(definedMap: Struct, opts: { required?: boolean } = {}): StructTrans<T> {
