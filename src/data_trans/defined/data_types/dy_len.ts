@@ -51,11 +51,13 @@ export const binary: Defined<Uint8Array> = {
   decoder: function decode(buf: Uint8Array, offset: number) {
     const res = decodeU32D(buf, offset);
     offset += res.byte;
+    let end = offset + res.value;
     return {
-      data: buf.subarray(offset, res.value),
-      offset,
+      data: buf.subarray(offset, end),
+      offset: end,
     };
   },
+  class: Uint8Array,
 };
 
 export const dyI32: Defined<number> = {

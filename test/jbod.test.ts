@@ -46,7 +46,8 @@ describe("jbod fn", function () {
   });
 });
 
-describe("encode-pase", function () {
+/** 测试编码后再解码，确定数据正确性 */
+describe("encode-decode", function () {
   describe.each(Object.entries({ ...baseDataTypes, ...compoundTypes }))("%s", function (type, cases) {
     test.each(cases as any[])("%s", function (data) {
       const buf = JBOD.encode(data);
