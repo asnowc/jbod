@@ -1,4 +1,4 @@
-import { DecodeResult, DataWriter } from "../../type.ts";
+import { DecodeResult, DataWriter } from "../type.ts";
 export type DataWriterCreator<T = any> = new (data: T, ctx: EncodeContext) => DataWriter;
 export interface TypeDataWriter extends DataWriter {
   type: number;

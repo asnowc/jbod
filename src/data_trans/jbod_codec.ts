@@ -1,18 +1,19 @@
 import type { DecodeResult, Decoder, Encoder } from "../type.ts";
 import { createContext, EncodeContext, DecodeContext } from "./ctx.ts";
-import { DataWriter, Defined } from "./defined/type.ts";
-import { JbodWriter } from "./defined/mod.ts";
+import { DataWriter, Defined } from "../defined/type.ts";
+import { JbodWriter } from "../defined/mod.ts";
 /** @internal */
-export interface JbodTransConfig {
+export interface JbodCodecOpts {
   customObjet?: Record<number, Defined>;
 }
+
 type UserCalcResult = { byteLength: number; type: number; pretreatment: unknown };
 
 /** @internal */
 export class JbodCodec implements Encoder<any>, Decoder {
   protected encContext: EncodeContext;
   protected decContext: DecodeContext;
-  constructor(config: JbodTransConfig = {}) {
+  constructor(config: JbodCodecOpts = {}) {
     const { dec, enc } = createContext(config.customObjet);
     this.encContext = enc;
     this.decContext = dec;
@@ -29,7 +30,7 @@ export class JbodCodec implements Encoder<any>, Decoder {
   /** 获取数据对应的类型 ID
    * @public
    */
-  toTypeCode(data: any) {
+  toTypeCode(data: any): number {
     return this.encContext.toTypeCode(data);
   }
   /** 创建 DataWriter 用于编码, 这个方法创建的 DataWriter 会比 encodeContentWriter 多一个字节
@@ -66,14 +67,14 @@ export class JbodCodec implements Encoder<any>, Decoder {
   }
   /** 将数据编码为携带类型的 Uint8Array, 这会比 encodeContentInto 多一个字节
    * @deprecated 改用 createContentWriter() */
-  encodeInto(value: UserCalcResult, buf: Uint8Array, offset: number = 0) {
+  encodeInto(value: UserCalcResult, buf: Uint8Array, offset: number = 0): number {
     buf[offset++] = value.type;
     return (value.pretreatment as DataWriter).encodeTo(buf, offset);
   }
   /** 将数据编码为不携带类型的 Uint8Array, 这会比 encodeInto 少一个字节
    * @deprecated 改用 createContentWriter()
    */
-  encodeContentInto(value: UserCalcResult, buf: Uint8Array, offset: number = 0) {
+  encodeContentInto(value: UserCalcResult, buf: Uint8Array, offset: number = 0): number {
     return (value.pretreatment as DataWriter).encodeTo(buf, offset);
   }
 }

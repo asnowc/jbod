@@ -4,7 +4,7 @@ import { DecodeError } from "../const.ts";
  * @public
  * @param bigint - 一个 u64类型，传入负数为解析为 u64 类型
  */
-export function calcU64DByte(bigint: bigint) {
+export function calcU64DByte(bigint: bigint): number {
   let next = bigint <= 0xfff_ffff && bigint > 0; //bigint 为 i64 类型， 算法需要 u64 类型
   let len = 0;
   const N28 = BigInt(28);
@@ -28,7 +28,7 @@ export function calcU64DByte(bigint: bigint) {
  * @param bigint - 一个 u64类型，传入负数为解析为 u64 类型
  * @returns 返回 Uint8Array 偏移量
  */
-export function encodeU64DInto(bigint: bigint, buf: Uint8Array, offset = 0) {
+export function encodeU64DInto(bigint: bigint, buf: Uint8Array, offset = 0): number {
   let next = bigint <= 0xfff_ffff && bigint > 0; //bigint 为 i64 类型， 算法需要 u64 类型
   const N28 = BigInt(28);
   do {
@@ -50,7 +50,7 @@ export function encodeU64DInto(bigint: bigint, buf: Uint8Array, offset = 0) {
   } while (true);
 }
 /** @public */
-export function calcU32DByte(value: number) {
+export function calcU32DByte(value: number): number {
   let len = 1;
   if (value < 0) {
     len++;
@@ -66,7 +66,7 @@ export function calcU32DByte(value: number) {
  * @public
  * @param value - 一个 u32类型，传入负数为解析为 u32 类型
  * @returns 返回 Uint8Array 偏移量 */
-export function encodeU32DInto(value: number, buf: Uint8Array, offset = 0) {
+export function encodeU32DInto(value: number, buf: Uint8Array, offset = 0): number {
   if (value < 0) {
     buf[offset++] = 0b1000_0000 | value;
     value >>>= 7;
@@ -92,7 +92,7 @@ export function decodeU64D(buf: Uint8Array, offset = 0): { value: bigint; byte: 
  * @public
  *
  */
-export function decodeU32D(buf: Uint8Array, offset = 0) {
+export function decodeU32D(buf: Uint8Array, offset = 0): { value: number; byte: number } {
   let next = buf[offset];
   let value = next & 0b0111_1111;
   let byte = 1;
@@ -116,7 +116,7 @@ const X_7fff_ffff_ffff_ffff =
  * @public
  * 2**53 (Number.MAX_SAFE_INTEGER + 1 ): 返回 number
  */
-export function decodeDyInt(buf: Uint8Array, offset: number = 0) {
+export function decodeDyInt(buf: Uint8Array, offset: number = 0): { value: bigint | number; byte: number } {
   let next: number;
   let beforeValue: number | bigint = 0;
   let beforeByte = 0;
@@ -166,13 +166,16 @@ export function decodeDyInt(buf: Uint8Array, offset: number = 0) {
 
   throw new DecodeError(offset, "DyInt is more than 10 bytes");
 }
-/** @public */
+/**
+ * 32位无符号整型的 varins解码器. 收集多个不完整的二进制块. 然后解码
+ * @public */
 export class U32DByteParser {
   value = 0;
   private result?: {
     value: number;
     residue?: Uint8Array;
   };
+  /** 传入二进制块，如果数据完整，则返回true, 否则返回false */
   next(buf: Uint8Array): boolean {
     let max = buf.byteLength;
     let next: number;
@@ -188,7 +191,11 @@ export class U32DByteParser {
     this.value = 0;
     return true;
   }
-  finish() {
+  /** 完成收集，返回解码的值*/
+  finish(): {
+    value: number;
+    residue?: Uint8Array | undefined;
+  } {
     const result = this.result;
     if (!result) throw new Error("unfinished");
     this.result = undefined;
@@ -197,21 +204,21 @@ export class U32DByteParser {
 }
 
 /** @public */
-export function zigzagEncodeI32(val: number) {
+export function zigzagEncodeI32(val: number): number {
   return (val << 1) ^ (val >> 31);
 }
 
 /** @public */
-export function zigzagDecodeI32(val: number) {
+export function zigzagDecodeI32(val: number): number {
   return (val >>> 1) ^ -(val & 1);
 }
 /** @public */
-export function zigzagEncodeI64(val: bigint) {
+export function zigzagEncodeI64(val: bigint): bigint {
   return (val << BigInt(1)) ^ (val >> BigInt(63));
 }
 
 /** @public */
-export function zigzagDecodeI64(value: bigint) {
+export function zigzagDecodeI64(value: bigint): bigint {
   let a: bigint;
   if (value < 0) a = (value >> BigInt(1)) & (X_7fff_ffff_ffff_ffff as bigint);
   //如果在 ES2020 之前的环境执行， bigint 与 0 进行位运算会抛出异常

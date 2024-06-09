@@ -22,8 +22,8 @@
   "apiReport": {
     "enabled": true,
     "reportFileName": "<unscopedPackageName>.api.md",
-    "reportFolder": "<projectFolder>/api/",
-    "reportTempFolder": "<projectFolder>/api/temp/"
+    "reportFolder": "<projectFolder>/docs/api/",
+    "reportTempFolder": "<projectFolder>/docs/api/temp/"
     // "includeForgottenExports": false
   },
 

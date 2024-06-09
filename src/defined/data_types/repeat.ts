@@ -1,6 +1,6 @@
-import { calcU32DByte, decodeU32D, encodeU32DInto } from "../../../varints/mod.ts";
+import { calcU32DByte, decodeU32D, encodeU32DInto } from "../../varints/mod.ts";
 import type { EncodeContext, DataWriter, TypeDataWriter, Defined } from "../type.ts";
-import { DecodeResult } from "../../../type.ts";
+import { DecodeResult } from "../../type.ts";
 import { VOID_ID } from "../const.ts";
 import { fastDecodeJbod, fastJbodWriter } from "./jbod.ts";
 import { stringDecode } from "./dy_len.ts";

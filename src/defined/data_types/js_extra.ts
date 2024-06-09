@@ -1,4 +1,4 @@
-import { DecodeResult } from "../../../type.ts";
+import { DecodeResult } from "../../type.ts";
 import { defineStruct, StructWriter, decodeStruct } from "./struct.ts";
 import { EncodeContext, Defined } from "../type.ts";
 import { dyArray } from "./repeat.ts";

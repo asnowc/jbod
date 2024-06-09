@@ -2,6 +2,7 @@
   "extends": "../tsconfig.json",
   "compilerOptions": {
     "outDir": "../out",
+    "target": "ES2017",
     "types": [],
     "noEmit": true,
     "declaration": true,

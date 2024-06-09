@@ -7,7 +7,7 @@ import {
   encodeU32DInto,
   encodeU64DInto,
   zigzagDecodeI64,
-} from "../../../varints/mod.ts";
+} from "../../varints/mod.ts";
 import { calcUtf8Length, decodeUtf8, encodeUtf8Into } from "./string.ts";
 
 export const string: Defined<string> = {

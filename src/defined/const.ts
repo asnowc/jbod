@@ -48,4 +48,4 @@ export class UnsupportedDataTypeError extends Error {
  * @deprecated 已弃用
  */
 export const JbodError = Error;
-export { DecodeError } from "../../const.ts";
+export { DecodeError } from "../const.ts";

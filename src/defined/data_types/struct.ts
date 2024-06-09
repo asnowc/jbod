@@ -1,7 +1,7 @@
-import { calcU32DByte, decodeU32D, encodeU32DInto } from "../../../varints/mod.ts";
+import { calcU32DByte, decodeU32D, encodeU32DInto } from "../../varints/mod.ts";
 import { DataType, VOID_ID, DecodeError } from "../const.ts";
 import { JbodWriter, fastDecodeJbod, jbodDecoder } from "./jbod.ts";
-import type { DecodeResult } from "../../../type.ts";
+import type { DecodeResult } from "../../type.ts";
 import type { EncodeContext, DecodeContext, DataWriter, DataWriterCreator, DecodeFn, Defined } from "../type.ts";
 type Key = string | number | symbol;
 export type StructDecodeInfo = {
@@ -303,15 +303,20 @@ const FIELD_TYPE_MAP = {
   set: DataType.set,
   regExp: DataType.regExp,
 };
-type FieldType = keyof typeof FIELD_TYPE_MAP;
-/** @public */
+/** JBOD类型描述
+ *  @public */
+export type StructFieldType = keyof typeof FIELD_TYPE_MAP;
+/** Struct 定义
+ *  @public */
 export type StructDefined = {
-  type?: StructType | Struct | FieldType;
+  /** 值类型 */
+  type?: StructType | Struct | StructFieldType;
   id: number;
+  /** 键是否可选 */
   optional?: boolean;
   repeat?: boolean;
 };
-/**
+/** 结构类型-描述对象结构
  * @example
  * ```js
  *  const struct={
@@ -328,7 +333,8 @@ export type StructDefined = {
 export type Struct = {
   [key: string]: StructDefined | number;
 };
-/** @public */
+/** Struct 自定义类型
+ * @public */
 export class StructType<T = any> {
   constructor(defined: Defined) {
     this.decoder = defined.decoder;

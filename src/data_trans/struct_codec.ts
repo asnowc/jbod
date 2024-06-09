@@ -8,9 +8,11 @@ import {
   defineStruct,
   decodeStruct,
   StructEncodeInfo,
-} from "./defined/mod.ts";
+} from "../defined/mod.ts";
 import { DecodeContext, EncodeContext, createContext } from "./ctx.ts";
-/** @public */
+/**
+ * 固定结构解码器
+ * @public */
 export class StructCodec<T extends object = any> implements Encoder, Decoder {
   static define<T extends object>(definedMap: Struct, opts: { required?: boolean } = {}): StructCodec<T> {
     const { decodeDefined, encodeDefined } = defineStruct(definedMap, opts);
@@ -26,19 +28,6 @@ export class StructCodec<T extends object = any> implements Encoder, Decoder {
     this.encContext = enc;
     this.decContext = dec;
   }
-  /** @deprecated 改用 createWriter()*/
-  byteLength(data: T): { byteLength: number; pretreatment: unknown };
-  /** @deprecated 改用 createWriter()*/
-  byteLength(data: Record<string | number | symbol, any>) {
-    const writer = new StructWriter(this.encodeDefine, data, this.encContext);
-    return { byteLength: writer.byteLength, pretreatment: writer };
-  }
-  /** @deprecated 改用 createWriter()*/
-  encodeInto(calcRes: { byteLength: number; pretreatment: unknown }, buf: Uint8Array, offset?: number): number;
-  /** @deprecated 改用 createWriter()*/
-  encodeInto(calcRes: { byteLength: number; pretreatment: StructWriter }, buf: Uint8Array, offset = 0): number {
-    return calcRes.pretreatment.encodeTo(buf, offset);
-  }
 
   encode(data: T): Uint8Array {
     const writer = new StructWriter(this.encodeDefine, data, this.encContext);
@@ -52,11 +41,25 @@ export class StructCodec<T extends object = any> implements Encoder, Decoder {
   createWriter(data: any): DataWriter {
     return new StructWriter(this.encodeDefine, data, this.encContext);
   }
+
+  /** @deprecated 改用 createWriter()*/
+  byteLength(data: T): { byteLength: number; pretreatment: unknown };
+  /** @deprecated 改用 createWriter()*/
+  byteLength(data: Record<string | number | symbol, any>) {
+    const writer = new StructWriter(this.encodeDefine, data, this.encContext);
+    return { byteLength: writer.byteLength, pretreatment: writer };
+  }
+  /** @deprecated 改用 createWriter()*/
+  encodeInto(calcRes: { byteLength: number; pretreatment: unknown }, buf: Uint8Array, offset?: number): number;
+  /** @deprecated 改用 createWriter()*/
+  encodeInto(calcRes: { byteLength: number; pretreatment: StructWriter }, buf: Uint8Array, offset = 0): number {
+    return calcRes.pretreatment.encodeTo(buf, offset);
+  }
 }
 
-export {
-  /** StructCodec 的别名
-   * @deprecated 改用 StructCodec */
-  StructCodec as StructTrans,
-};
+/** StructCodec 的别名
+ * @public
+ * @deprecated 改用 StructCodec */
+export const StructTrans = StructCodec;
+
 export type { Struct, StructType, StructDefined };
