@@ -1,12 +1,12 @@
-[![ESM-only package][package]][package-url]
 [![NPM version][npm]][npm-url]
+[![JSR version][jsr]][jsr-url]
 [![Install size][size]][size-url]
 [![Build status][build]][build-url]
 
-[package]: https://img.shields.io/badge/package-ESM--only-ffe536.svg
-[package-url]: https://nodejs.org/api/esm.html
 [npm]: https://img.shields.io/npm/v/jbod.svg
 [npm-url]: https://npmjs.com/package/jbod
+[jsr]: https://jsr.io/badges/@asn/jbod
+[jsr-url]: https://jsr.io/@asn/jbod
 [size]: https://packagephobia.com/badge?p=jbod
 [size-url]: https://packagephobia.com/result?p=jbod
 [build]: https://github.com/asnowc/jbod/actions/workflows/ci.yaml/badge.svg?branch=main
@@ -14,11 +14,14 @@
 
 ## JavaScript Binary Object Data
 
-JavaScript 二进制序列化与反序列库。支持更多的 JS 数据类型，序列化后大小占用很小。可用于传输、和存储。\
 JavaScript Binary Serialization and deserialization lib. Support for more JS data types。Can be used for transmission, and storage. \
-借鉴了 BSON 和 ProtoBuf, 不过设计 JBOD 的主要用于传输 JavaScript 数据。 [查看 JBOD 编码格式](./docs/jbod.md)
+JavaScript 二进制序列化与反序列库。支持更多的 JS 数据类型，序列化后大小占用很小。可用于传输、和存储。\
 
-### 功能特性
+借鉴了 BSON 和 [ProtoBuf](https://protobuf.dev/), 相比于 ProtoBuf，更为灵活。更适用于像 JavaScript 这种动态类型语言。 [查看 JBOD 编码格式](./docs/jbod.md)
+
+[API Document](https://jsr.io/@asn/jbod/doc)
+
+## 功能特性
 
 ##### 更多的 JavaScript 数据类型
 
@@ -53,7 +56,7 @@ JavaScript Binary Serialization and deserialization lib. Support for more JS dat
 **实际测试**
 
 ```ts
-import JBOD, { StructTrans } from "jbod";
+import JBOD, { StructCodec } from "jbod";
 import { Buffer } from "node:buffer";
 function encodeJSON(data: any) {
   return Buffer.from(JSON.stringify(data));
@@ -66,8 +69,8 @@ export const objData = {
   id: 876,
 };
 
-const anyStruct = StructTrans.define({ disabled: 1, count: 2, name: 3, dataStamp: 4, id: 5 });
-const fixedStruct = StructTrans.define({
+const anyStruct = StructCodec.define({ disabled: 1, count: 2, name: 3, dataStamp: 4, id: 5 });
+const fixedStruct = StructCodec.define({
   disabled: { id: 1, type: "bool" },
   count: { id: 2, type: "dyI32" },
   name: { id: 3, type: "string" },
@@ -81,9 +84,11 @@ console.log(anyStruct.encode(objData).byteLength); // 38 (55% of JSON)
 console.log(fixedStruct.encode(objData).byteLength); // 34 (35% of JSON)
 ```
 
-### 使用
+查看 [StructCodec](#structcodec)
 
-#### node
+## Usage
+
+### Node
 
 `npm install jbod`
 
@@ -96,7 +101,7 @@ const u8Arr = JBOD.encode(data);
 const data2 = JBOD.decode(u8Arr).data;
 ```
 
-#### deno 或浏览器
+### Deno or Browser
 
 ```ts
 import JBOD from "https://esm.sh/jbod";
@@ -106,73 +111,11 @@ const u8Arr = JBOD.encode(data);
 const data2 = JBOD.decode(u8Arr).data;
 ```
 
-#### StructTrans 定义
+## StructCodec
 
-假设当前需要定义如下数据结构：
+有些场景，数据结构比较固定，那么传输时携带类型信息会比较冗余。例如 object 类型，其键名非常占用空间，并且在 Javascript 环境下还非常影响性能 [查看基准测试](#基准测试)，在一些场景，键是固定，这时候理想情况下编码后不应保留键的信息，仅编码值，解码方根据预先定义好的结构解码值，然后还原对象数据。这个功能借鉴了 ProtoBuf。
 
-```ts
-interface Data {
-  name: string;
-  count: number;
-  custom: any;
-}
-```
-
-对应的 Struct:
-
-```ts
-const struct = StructTrans.define({
-  name: { id: 1, type: "string" },
-  count: { id: 2, type: "dyInt" },
-  custom: { id: 111, type: "any" },
-});
-const rawData = { name: "test", count: 9, custom: [1] };
-const u8Arr = struct.encode(rawData);
-
-const data = struct.decode(u8Arr).data;
-console.log(data);
-```
-
-需要注意的是，id 用于与键名进行映射，它必须是正整数，并且不能重复。
-对于 any 类型，可以省略类型的编写，本例子中 custom 字段可以这样定义：
-
-```ts
-const struct = StructTrans.define({
-  name: { id: 1, type: "string" },
-  count: { id: 2, type: "dyInt" },
-  custom: 111,
-});
-```
-
-### API
-
-```ts
-type UserCalcResult = { byteLength: number; type: number; pretreatment: unknown };
-declare const JBOD: {
-  /**
-   * 从 Uint8Array 解析数据
-   * @param type - 指定解析的数据类型. 对于 createWriter() 编码的数据，不应指定。 
-   * 对于 encodeContentWriter() 编码的数据，需要指定才能正确解析。
-   */
-  decode(buffer: Uint8Array, offset?: number, type?: number): DecodeResult;
-  /** 创建 DataWriter 用于编码, 这个方法创建的 DataWriter 会比 encodeContentWriter 多一个字节 */
-  createWriter(data: any): DataWriter;
-  /** 创建 DataWriter 用于编码 将数据编码为不携带类型的 Uint8Array, 这会比 encodeInto 少一个字节  */
-  encodeContentWriter(data: any): DataWriter;
-  /** 获取数据对应的类型 ID */
-  toTypeCode(data: any): number;
-  /** 将数据直接编码为二进制数据 */
-  encode(data: any): Uint8Array;
-};
-export type { JBOD as default };
-
-export interface DataWriter {
-  encodeTo(buf: Uint8Array, offset: number): number;
-  readonly byteLength: number;
-}
-```
-
-#### StructTrans 数据类型
+### Struct 数据类型
 
 | 可用类型  | 描述                              | js 类型    |
 | --------- | --------------------------------- | ---------- |
@@ -195,13 +138,62 @@ export interface DataWriter {
 | set       |                                   | Set        |
 | symbol    |                                   | symbol     |
 
-### 基准测试
+any 类型。any 类型会比固定类型多出一个字节，用来保存类型信息
 
-通过与 JSON、ProtoBuf 对不同数据类型的编解码的耗时进行了对比。为了获得更精准的结果，使用了 Deno 进行基准测试。
+### Struct 定义实例
+
+假设当前需要定义如下数据结构：
+
+```ts
+interface Data {
+  name: string;
+  count: number;
+  custom: any;
+}
+```
+
+定义 Struct:
+
+```ts
+const struct = StructCodec.define({
+  name: { id: 1, type: "string" },
+  count: { id: 2, type: "dyInt" },
+  custom: { id: 111, type: "any" },
+});
+const rawData = { name: "test", count: 9, custom: [1] };
+const u8Arr = struct.encode(rawData);
+
+const data = struct.decode(u8Arr).data;
+console.log(data);
+```
+
+需要注意的是，id 用于与键名进行映射，它必须是正整数，并且不能重复。
+对于 any 类型，可以省略类型的编写，本例子中 custom 字段可以这样定义：
+
+```ts
+const struct = StructCodec.define({
+  name: { id: 1, type: "string" },
+  count: { id: 2, type: "dyInt" },
+  custom: 111,
+});
+```
+
+any 类型会比固定类型多出一个字节，用来保存类型信息，可根据场景自行选择
+
+## 基准测试
+
+通过与 JSON、ProtoBuf 对不同数据类型的编解码的耗时进行了对比。
 对于 JSON 的编码，是先将数据编码成字符串，再将字符串编码为 utf8 二进制数据。解码则是将二进制数据通过 utf-8 解码，然后解析字符串 JSON
 对于 ProtoBuf，由于它不支持直接定义数组类型，在测试中定义了一个只有一个字段的对象，这个对象的类型为 repeat 类型。也就是说，在下面的测试中，JSON 和 JBOD 处理的如果是 10000 个 8 的数组，那么 ProtoBuf 处理的则是 1 个带有 10000 个 8 的数组的对象。
 
-#### 不同数据类型的编解码对比
+### 运行项目中的基准测试
+
+为了获得更精准的结果，使用了 Deno 进行基准测试。
+
+- 运行 `deno task benchmark`，测试结果输出到 benchmark/dist/result.json
+- 运行 `deno task bench-ui`, 启动 web 服务器，查看测试结果
+
+### 不同数据类型的编解码对比
 
 <img src="./docs/bench/cp.png"/>
 上图的基准测试中，是对一个数组进行编解码，其中数组的值是相同的，每组测试的数据如下

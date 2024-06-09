@@ -1,6 +1,11 @@
-### 0.4.6
-- fix: ES2020 之前因没有 bigint 特性导致 jbod 导入失败. 解决构建工具无法降级转移
+### 0.4.7
 
+- feat: 废弃 StructTrans，重命名为为 StructCodec
+- fix: Binary 类型编解码错误
+
+### 0.4.6
+
+- fix: ES2020 之前因没有 bigint 特性导致 jbod 导入失败. 解决构建工具无法降级转移
 
 ### 0.4.5
 
