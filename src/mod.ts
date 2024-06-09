@@ -1,6 +1,6 @@
-import { JbodTrans } from "./data_trans/trans.ts";
+import { JbodCodec } from "./data_trans/codec.ts";
 export { StructTrans, type Struct, type StructType } from "./data_trans/struct.ts";
-export { JbodTrans, type JbodTransConfig, type Defined } from "./data_trans/trans.ts";
+export { JbodCodec, type JbodTransConfig, type Defined } from "./data_trans/codec.ts";
 export type * from "./type.ts";
 export * from "./data_trans/mod.ts";
 import * as varints from "./varints/mod.ts";
@@ -9,7 +9,7 @@ export {
   varints as DBN,
   varints,
 };
-class UserJbodTrans extends JbodTrans {
+class UserJbodCodec extends JbodCodec {
   /** 将数据编码为携带类型的 Uint8Array, 这会比 encodeContent 多一个字节
    * @public
    */
@@ -29,4 +29,4 @@ class UserJbodTrans extends JbodTrans {
     return buf;
   }
 }
-export default new UserJbodTrans();
+export default new UserJbodCodec();

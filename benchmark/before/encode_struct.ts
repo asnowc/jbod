@@ -1,6 +1,6 @@
-import { StructTrans } from "jbod";
+import { StructCodec } from "jbod";
 // @deno-types="jbod"
-import { StructTrans as B_StructTrans } from "jbod-before";
+import { StructCodec as B_StructCodec } from "jbod-before";
 import { objData, createList } from "../__mocks__/compare.cases.ts";
 
 const listData = createList(500, objData);
@@ -17,8 +17,8 @@ const defined: any = {
     repeat: true,
   },
 };
-const currentStruct = StructTrans.define(defined);
-const beforeStruct = B_StructTrans.define(defined);
+const currentStruct = StructCodec.define(defined);
+const beforeStruct = B_StructCodec.define(defined);
 
 function benchEncode() {
   const len = currentStruct.createWriter({ key: listData }).byteLength;

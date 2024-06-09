@@ -1,4 +1,4 @@
-import JBOD, { StructTrans } from "jbod";
+import JBOD, { StructCodec } from "jbod";
 import { Buffer } from "node:buffer";
 function encodeJSON(data: any) {
   return Buffer.from(JSON.stringify(data));
@@ -11,8 +11,8 @@ export const objData = {
   id: 876,
 };
 
-const anyStruct = StructTrans.define({ disabled: 1, count: 2, name: 3, dataStamp: 4, id: 5 });
-const fixedStruct = StructTrans.define({
+const anyStruct = StructCodec.define({ disabled: 1, count: 2, name: 3, dataStamp: 4, id: 5 });
+const fixedStruct = StructCodec.define({
   disabled: { id: 1, type: "bool" },
   count: { id: 2, type: "dyI32" },
   name: { id: 3, type: "string" },

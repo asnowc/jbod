@@ -51,8 +51,8 @@ describe("encode-decode", function () {
   describe.each(Object.entries({ ...baseDataTypes, ...compoundTypes }))("%s", function (type, cases) {
     test.each(cases as any[])("%s", function (data) {
       const buf = JBOD.encode(data);
-      const { data: transData, offset } = JBOD.decode(buf);
-      expect(transData).jbodEqual(data);
+      const { data: decodedData, offset } = JBOD.decode(buf);
+      expect(decodedData).jbodEqual(data);
       expect(offset).toBe(buf.byteLength);
     });
   });

@@ -1,4 +1,4 @@
-import { StructTrans } from "jbod";
+import { StructCodec } from "jbod";
 import { objData, createList } from "./__mocks__/compare.cases.ts";
 import * as protobuf from "./lib/protobuf.ts";
 import * as JSON from "./lib/json.ts";
@@ -6,7 +6,7 @@ import * as JSON from "./lib/json.ts";
 const listData = createList(1000, objData);
 const protoBufType = protobuf.defined.lookupType("object");
 
-const jbodStruct = StructTrans.define({
+const jbodStruct = StructCodec.define({
   key: {
     type: {
       disabled: 1,

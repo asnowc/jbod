@@ -1,7 +1,7 @@
-import { StructTrans } from "jbod";
+import { StructCodec } from "jbod";
 import { describe, expect, test } from "vitest";
 import { formatBin } from "./utils/mod.ts";
-const s1 = StructTrans.define<{ f1: boolean; f2: number; f3: any }>(
+const s1 = StructCodec.define<{ f1: boolean; f2: number; f3: any }>(
   {
     f1: { id: 1, type: "bool" },
     f2: { id: 2, type: "i32" },
@@ -15,7 +15,7 @@ describe("encode", function () {
     expect(formatBin(u8Arr), "decode").toBe("0103" + "0200000009" + "030a026162" + "00");
   });
   test("repeat", function () {
-    const s1 = StructTrans.define(
+    const s1 = StructCodec.define(
       {
         f1: { id: 1, type: "bool", repeat: true },
         f2: { id: 2, type: "any", repeat: true },
@@ -31,10 +31,10 @@ describe("encode", function () {
     expect(formatBin(u8Arr), "decode").toBe("01020304" + "0202070203" + "0300" + "00");
   });
   test("字段缺失", function () {
-    expect(() => s1.encode({ f1: true, f2: 9n } as any)).toThrowError();
+    expect(() => s1.encode({ f1: true, f2: BigInt(9) } as any)).toThrowError();
   });
   test("可选类型", function () {
-    const s1 = StructTrans.define<Partial<{ f1: boolean; f2: number; f3: any }>>({
+    const s1 = StructCodec.define<Partial<{ f1: boolean; f2: number; f3: any }>>({
       f1: { id: 1, type: "bool" },
       f2: { id: 2, type: "i32" },
       f3: 3,
@@ -44,7 +44,7 @@ describe("encode", function () {
   });
 });
 describe("decode", function () {
-  const optionalStruct = StructTrans.define<Partial<{ f1: boolean; f2: number; f3: any }>>({
+  const optionalStruct = StructCodec.define<Partial<{ f1: boolean; f2: number; f3: any }>>({
     f1: { id: 1, type: "bool" },
     f2: { id: 2, type: "i32" },
     f3: 3,
@@ -65,7 +65,7 @@ describe("decode", function () {
     expect(optionalStruct.decode(u8Arr).data).toEqual(data);
   });
   test("嵌套", function () {
-    const optionalStruct = StructTrans.define<Partial<{ f1: number; f2: { c1: number; c2: number } }>>({
+    const optionalStruct = StructCodec.define<Partial<{ f1: number; f2: { c1: number; c2: number } }>>({
       f1: 1,
       f2: { id: 2, type: { c1: 1, c2: 2 } },
     });
@@ -75,7 +75,7 @@ describe("decode", function () {
     expect(res.data).toEqual(raw);
   });
   test("repeat", function () {
-    const struct = StructTrans.define({
+    const struct = StructCodec.define({
       i32: { repeat: true, type: "i32", id: 1 },
       bool: { repeat: true, id: 2 },
       void: { id: 3, repeat: true },

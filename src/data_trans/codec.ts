@@ -9,7 +9,7 @@ export interface JbodTransConfig {
 type UserCalcResult = { byteLength: number; type: number; pretreatment: unknown };
 
 /** @internal */
-export class JbodTrans implements Encoder<any>, Decoder {
+export class JbodCodec implements Encoder<any>, Decoder {
   protected encContext: EncodeContext;
   protected decContext: DecodeContext;
   constructor(config: JbodTransConfig = {}) {

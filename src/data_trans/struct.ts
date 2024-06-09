@@ -11,8 +11,8 @@ import {
 } from "./defined/mod.ts";
 import { DecodeContext, EncodeContext, createContext } from "./ctx.ts";
 /** @public */
-export class StructTrans<T extends object = any> implements Encoder, Decoder {
-  static define<T extends object>(definedMap: Struct, opts: { required?: boolean } = {}): StructTrans<T> {
+export class StructCodec<T extends object = any> implements Encoder, Decoder {
+  static define<T extends object>(definedMap: Struct, opts: { required?: boolean } = {}): StructCodec<T> {
     const { decodeDefined, encodeDefined } = defineStruct(definedMap, opts);
     return new this(encodeDefined, decodeDefined);
   }
@@ -53,4 +53,10 @@ export class StructTrans<T extends object = any> implements Encoder, Decoder {
     return new StructWriter(this.encodeDefine, data, this.encContext);
   }
 }
+
+export {
+  /** StructCodec 的别名
+   * @deprecated 改用 StructCodec */
+  StructCodec as StructTrans,
+};
 export type { Struct, StructType, StructDefined };
