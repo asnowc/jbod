@@ -1,14 +1,23 @@
 {
+  "name": "@asn/jbod",
+  "version": "0.4.7",
+  "exports": "./src/mod.ts",
   "nodeModulesDir": false,
   "lock": false,
   "tasks": {
+    "api:gen-doc": "deno doc --output=docs/api/doc --name=jbod --private --html src/mod.ts",
     "version_snapshots": "deno run -A scripts/version_snapshots.ts",
-    "benchmark": "deno bench -A --json > benchmark/dist/result.json"
+    "benchmark": "deno bench -A --json > benchmark/dist/result.json",
+    "bench-ui": "deno run -A benchmark/ui/chart_ui.ts "
   },
   "imports": {
     "@eavid/vitest-tool": "npm:@eavid/vitest-tool@^1.2.3",
     "jbod": "./src/mod.ts",
     "jbod-before": "./benchmark/dist/before.js",
     "protobufjs": "npm:protobufjs@^7.3.0"
+  },
+
+  "publish": {
+    "include": ["LICENSE", "README.md", "src/**/*.ts"]
   }
 }

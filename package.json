@@ -1,15 +1,16 @@
 {
   "name": "jbod",
-  "version": "0.4.6",
+  "version": "0.4.7",
   "description": "JavaScript Binary Serialization and deserialization. Support for more JS data types",
   "type": "module",
   "types": "./dist/mod.d.ts",
   "scripts": {
     "ci:test": "vitest run",
     "ci:build": "pnpm rollup -c",
+    "build": "pnpm rollup -c && pnpm run api:check -l",
     "test": "vitest",
-    "api:check": "api-extractor run -c api-extractor.jsonc -v",
-    "api:check-local": "pnpm run api:check -l"
+    "type:check": "tsc",
+    "api:check": "api-extractor run -c api-extractor.jsonc -v"
   },
   "devDependencies": {
     "@microsoft/api-extractor": "^7.39.4",

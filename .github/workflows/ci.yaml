@@ -7,8 +7,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    outputs:
-      publish: ${{steps.check_tag.outputs.tags}}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -23,43 +21,3 @@ jobs:
         run: pnpm ci:test
       - name: Build
         run: pnpm run ci:build
-      - name: Check Api
-        run: pnpm run api:check
-
-      - name: Check Tag
-        id: check_tag
-        uses: asnowc/actions@check-tags/v1
-        with:
-          file: package.json
-  publish:
-    runs-on: ubuntu-latest
-    needs: build
-    if: ${{needs.build.outputs.publish}}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Setup NodeJS
-        uses: asnowc/actions@setup-node/v2
-        with:
-          node_v: 20
-          pnpm_v: 9
-          run_install: true
-      - name: Build
-        run: pnpm run ci:build
-      - name: Setup Deno
-        uses: denoland/setup-deno@v1
-        with:
-          deno-version: v1.x
-      - name: Publish
-        uses: asnowc/actions@deno-script/v1
-        with:
-          script: |
-            import { tagsPublishFlow } from "https://cdn.jsdelivr.net/gh/dnpack/action-script@0.3.x/cmd/github_repo.ts";
-            import { execCmdSync } from "https://cdn.jsdelivr.net/gh/dnpack/action-script@0.3.x/lib.ts";
-
-            await tagsPublishFlow("NEW_TAG", () => execCmdSync("npm", ["publish"], { exitIfFail: true }));
-          args: -A --no-lock
-        env:
-          NEW_TAG: ${{needs.build.outputs.publish}}
-          GITHUB_TOKEN: ${{secrets.CI_GITHUB_TOKEN}}
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
