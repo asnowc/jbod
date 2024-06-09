@@ -3,7 +3,7 @@ on:
   push:
     branches:
       - main
-
+      - feat/*
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -19,5 +19,3 @@ jobs:
           run_install: true
       - name: Test
         run: pnpm ci:test
-      - name: Build
-        run: pnpm run ci:build
