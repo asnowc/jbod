@@ -28,11 +28,11 @@ export function readByUtf8(buf: Uint8Array, chunk: number[], offset = 0, end = b
         (((buf[offset++] & 63) << 12) | ((buf[offset++] & 63) << 6) | (buf[offset++] & 63));
     }
     if (y >= chunkSize) {
-      strChunks[strIndex++] = String.fromCharCode.apply(String, chunk);
+      strChunks[strIndex++] = String.fromCodePoint.apply(String, chunk);
       y = 0;
     }
   }
-  if (y !== 0) strChunks[strIndex++] = String.fromCharCode.apply(String, chunk.slice(0, y));
+  if (y !== 0) strChunks[strIndex++] = String.fromCodePoint.apply(String, chunk.slice(0, y));
 
   if (strIndex === 1) return strChunks[0];
   return strChunks.join("");
