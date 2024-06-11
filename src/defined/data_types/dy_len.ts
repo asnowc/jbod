@@ -8,12 +8,12 @@ import {
   encodeU64DInto,
   zigzagDecodeI64,
 } from "../../varints/mod.ts";
-import { calcUtf8Length, decodeUtf8, encodeUtf8Into } from "./string.ts";
+import { calcUtf16Length, decodeUtf8, encodeUtf8Into } from "./string.ts";
 
 export const string: Defined<string> = {
   encoder: class StringWriter implements DataWriter {
     constructor(private data: string) {
-      this.strByteLen = calcUtf8Length(data);
+      this.strByteLen = calcUtf16Length(data);
       this.byteLength = calcU32DByte(this.strByteLen) + this.strByteLen;
     }
     private readonly strByteLen: number;

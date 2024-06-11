@@ -4,7 +4,7 @@ import { DecodeResult } from "../../type.ts";
 import { VOID_ID } from "../const.ts";
 import { fastDecodeJbod, fastJbodWriter } from "./jbod.ts";
 import { stringDecode } from "./dy_len.ts";
-import { calcUtf8Length, encodeUtf8Into } from "./string.ts";
+import { calcUtf16Length, encodeUtf8Into } from "./string.ts";
 
 class ArrayWriter implements DataWriter {
   constructor(arr: any[], ctx: EncodeContext, fixed?: boolean) {
@@ -83,7 +83,7 @@ class DyRecordWriter implements DataWriter {
     let keyUtf8Len: number;
 
     for (let i = 0; i < keys.length; i++) {
-      keyUtf8Len = calcUtf8Length(keys[i]);
+      keyUtf8Len = calcUtf16Length(keys[i]);
       valueRes = fastJbodWriter(data[keys[i]], ctx);
 
       totalLen += calcU32DByte(keyUtf8Len) + keyUtf8Len + valueRes.byteLength;
