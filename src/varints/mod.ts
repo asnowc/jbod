@@ -1,6 +1,6 @@
 import { DecodeError } from "../const.ts";
 
-/** 计算字无符号整型编码成DBN后的字节数
+/** 计算64位无符号整型编码成 varints 后的字节数
  * @public
  * @param bigint - 一个 u64类型，传入负数为解析为 u64 类型
  */
@@ -23,7 +23,7 @@ export function calcU64DByte(bigint: bigint): number {
   } while (true);
 }
 
-/**
+/** 将64位无符号整型编码成 varints
  * @public
  * @param bigint - 一个 u64类型，传入负数为解析为 u64 类型
  * @returns 返回 Uint8Array 偏移量
@@ -49,7 +49,8 @@ export function encodeU64DInto(bigint: bigint, buf: Uint8Array, offset = 0): num
     next = bigint <= 0xfff_ffff;
   } while (true);
 }
-/** @public */
+/** 计算32位无符号整型编码成 varints 后的字节数
+ * @public */
 export function calcU32DByte(value: number): number {
   let len = 1;
   if (value < 0) {
@@ -62,7 +63,8 @@ export function calcU32DByte(value: number): number {
   }
   return len;
 }
-/**
+/** 
+ * 将32位无符号整型编码成 varints
  * @public
  * @param value - 一个 u32类型，传入负数为解析为 u32 类型
  * @returns 返回 Uint8Array 偏移量 */
@@ -167,7 +169,7 @@ export function decodeDyInt(buf: Uint8Array, offset: number = 0): { value: bigin
   throw new DecodeError(offset, "DyInt is more than 10 bytes");
 }
 /**
- * 32位无符号整型的 varins解码器. 收集多个不完整的二进制块. 然后解码
+ * 32位无符号整型的 varins 解码器. 收集多个不完整的二进制块. 然后解码
  * @public */
 export class U32DByteParser {
   value = 0;

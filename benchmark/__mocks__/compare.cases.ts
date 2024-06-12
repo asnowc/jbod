@@ -43,16 +43,30 @@ export function linerList(length: number, distance: number, start = 0) {
   }
   return arr;
 }
-function randomChar() {
-  return Math.floor(Math.random() * 0x9fa5) + 0x4e00;
+
+function randomInt(min: number, max: number) {
+  return Math.floor(min + Math.random() * (max - min));
 }
-/** 创建一个指定长度的随机的中文 Uint8Array */
-export function createUtf8Buf(size: number) {
-  let str = "";
-  for (let i = 0, max = Math.floor(size / 3); i < max; i++) {
-    let code = randomChar();
-    str += String.fromCharCode(code);
-  }
+
+/** 创建一个指定字节长度的随机 uft8 编码的 Uint8Array */
+export function createUtf8Buf(size: number, codePointMin: number = 0, codePointMax: number = 0xffff) {
+  const str = createStr(size, codePointMax, codePointMin);
   const buf = Buffer.from(str);
-  return new Uint8Array(buf);
+  return new Uint8Array(buf.buffer, buf.byteOffset, buf.byteLength);
+}
+/** 创建一个指定字节长度的随机字符串 */
+export function createStr(byteSize: number, codePointMin: number = 0, codePointMax: number = 0xffff) {
+  const chunk = new Array(4095);
+  let offset = 0;
+  const strList: string[] = [];
+  for (let i = 0, max = Math.floor(byteSize / 3); i < max; i++) {
+    chunk[offset++] = randomInt(codePointMin, codePointMax);
+    if (offset === chunk.length) {
+      strList.push(String.fromCodePoint.apply(String, chunk));
+      offset = 0;
+    }
+  }
+  if (offset > 0) strList.push(String.fromCodePoint.apply(String, chunk.slice(0, offset)));
+
+  return strList.join("");
 }

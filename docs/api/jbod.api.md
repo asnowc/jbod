@@ -4,7 +4,7 @@
 
 ```ts
 
-// @public (undocumented)
+// @public
 function calcU32DByte(value: number): number;
 
 // @public
@@ -126,10 +126,10 @@ export interface Encoder<T = any> {
     createWriter(data: T): DataWriter;
 }
 
-// @public (undocumented)
+// @public
 function encodeU32DInto(value: number, buf: Uint8Array, offset?: number): number;
 
-// @public (undocumented)
+// @public
 function encodeU64DInto(bigint: bigint, buf: Uint8Array, offset?: number): number;
 
 // Warning: (ae-internal-missing-underscore) The name "JbodCodec" should be prefixed with an underscore because the declaration is marked as @internal
