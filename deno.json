@@ -1,7 +1,4 @@
 {
-  "name": "@asn/jbod",
-  "version": "0.4.7",
-  "exports": "./src/mod.ts",
   "nodeModulesDir": false,
   "lock": false,
   "tasks": {
@@ -15,9 +12,5 @@
     "jbod": "./src/mod.ts",
     "jbod-before": "./benchmark/dist/before.js",
     "protobufjs": "npm:protobufjs@^7.3.0"
-  },
-
-  "publish": {
-    "include": ["LICENSE", "README.md", "src/**/*.ts"]
   }
 }

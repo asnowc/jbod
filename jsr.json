@@ -1,0 +1,8 @@
+{
+  "name": "@asn/jbod",
+  "version": "0.4.8",
+  "exports": "./src/mod.ts",
+  "publish": {
+    "include": ["LICENSE", "README.md", "src/**/*.ts"]
+  }
+}

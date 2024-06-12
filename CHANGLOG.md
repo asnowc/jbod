@@ -1,3 +1,7 @@
+### 0.4.8
+
+- fix: 获取字符串 unicode 错误导致 utf8 编码错误
+
 ### 0.4.7
 
 - feat: 废弃 StructTrans，重命名为为 StructCodec
