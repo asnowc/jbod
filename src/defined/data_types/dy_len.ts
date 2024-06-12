@@ -8,7 +8,7 @@ import {
   encodeU64DInto,
   zigzagDecodeI64,
 } from "../../varints/mod.ts";
-import { calcUtf8Length, decodeUtf8, encodeUtf8Into } from "./string.ts";
+import { calcUtf8Length, decodeUtf8, encodeUtf8Into } from "../../utf8/mod.ts";
 
 export const string: Defined<string> = {
   encoder: class StringWriter implements DataWriter {

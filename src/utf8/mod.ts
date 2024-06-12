@@ -1,4 +1,4 @@
-function readByUtf8(buf: Uint8Array, chunk: number[], offset = 0, end = buf.byteLength) {
+export function readByUtf8(buf: Uint8Array, chunk: number[], offset = 0, end = buf.byteLength) {
   let y = 0;
   let strChunks = [];
   let strIndex = 0;

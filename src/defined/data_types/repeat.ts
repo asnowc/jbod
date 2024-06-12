@@ -4,7 +4,7 @@ import { DecodeResult } from "../../type.ts";
 import { VOID_ID } from "../const.ts";
 import { fastDecodeJbod, fastJbodWriter } from "./jbod.ts";
 import { stringDecode } from "./dy_len.ts";
-import { calcUtf8Length, encodeUtf8Into } from "./string.ts";
+import { calcUtf8Length, encodeUtf8Into } from "../../utf8/mod.ts";
 
 class ArrayWriter implements DataWriter {
   constructor(arr: any[], ctx: EncodeContext, fixed?: boolean) {

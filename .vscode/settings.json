@@ -1,5 +1,10 @@
 {
   "cSpell.words": ["jbod"],
   "deno.config": "./deno.json",
-  "deno.enablePaths": ["./scripts", "./benchmark"]
+  "deno.enable": true,
+  "deno.enablePaths": [
+    "./scripts",
+    "./benchmark",
+    "./examples"
+  ]
 }
