@@ -1,31 +1,33 @@
 ## JBOD Data Frame
 
-### Data Frame:
+### Type Code:
 
-type: 0000_0000 ~ 0111_111
+#### JBOD standard types:
 
-000_xxxx :
+Range: 000x_xxxx
 
-| DEC | BIN  | type      | content length                              |
-| --- | ---- | --------- | ------------------------------------------- |
-| 0   | 0000 | void      |                                             |
-| 1   | 0001 | null      | 0                                           |
-| 2   | 0010 |           |                                             |
-| 3   | 0011 | true      | 1                                           |
-| 4   | 0100 | false     | 1                                           |
-| 5   | 0101 | f32       | 8                                           |
-| 6   | 0110 | f64       | 8                                           |
-| 7   | 0111 | dyI32     | zigzag + varints                            |
-| 8   | 1000 | dyI64     | zigzag + varints                            |
-| 9   | 1001 | binary    | contentLen(varints) + content               |
-| 10  | 1010 | \*string  | contentLen(varints) + content(utf8)         |
-| 11  | 1011 | array     | item-len, item-type, item...                |
-| 12  | 1100 | record    | item-len ,key-type, value-type, key-item... |
-| 13  | 1101 | anyArray  | item, item, ..., void                       |
-| 14  | 1110 | anyRecord | item, item, ..., void                       |
-| 15  | 1111 |           |                                             |
+0000_xxxx :
 
-001_xxxx:
+| DEC | BIN  | type      | content length                                          | Description             |
+| --- | ---- | --------- | ------------------------------------------------------- | ----------------------- |
+| 0   | 0000 | void      | 0                                                       | Repeating type end flag |
+| 1   | 0001 | null      | 0                                                       |                         |
+| 2   | 0010 |           |                                                         |                         |
+| 3   | 0011 | true      | 1                                                       |                         |
+| 4   | 0100 | false     | 1                                                       |                         |
+| 5   | 0101 | f32       | 8                                                       | 32-bit float            |
+| 6   | 0110 | f64       | 8                                                       | 64-bit float            |
+| 7   | 0111 | dyI32     | zigzag + varints                                        |                         |
+| 8   | 1000 | dyI64     | zigzag + varints                                        |                         |
+| 9   | 1001 | binary    | contentLen(varints) + content                           |                         |
+| 10  | 1010 | \*string  | contentLen(varints) + content(utf8)                     |                         |
+| 11  | 1011 | array     | item-len, item-type, item...                            |                         |
+| 12  | 1100 | record    | item-len ,key-type, value-type, key, item, key, item... |                         |
+| 13  | 1101 | anyArray  | item, item, ..., void                                   |                         |
+| 14  | 1110 | anyRecord | item, item, ..., void                                   |                         |
+| 15  | 1111 |           |                                                         |                         |
+
+0001_xxxx:
 
 | DEC | BIN  | type | content length |
 | --- | ---- | ---- | -------------- |
@@ -45,7 +47,11 @@ type: 0000_0000 ~ 0111_111
 | 30  | 1110 |      |                |
 | 31  | 1111 |      |                |
 
-010_xxxx: (javascript)
+#### Language extension types
+
+Range: 0010_xxxx
+
+0010_xxxx: (javascript)
 
 | DEC | BIN  | type       | content length                                |
 | --- | ---- | ---------- | --------------------------------------------- |
@@ -66,7 +72,11 @@ type: 0000_0000 ~ 0111_111
 | 30  | 1110 |            |                                               |
 | 31  | 1111 |            |                                               |
 
-1xx_xxxx: (custom)
+#### Custom types
+
+Range: 1xxx_xxx
+
+### Encoding format
 
 #### JBOD anyArray:
 
@@ -90,3 +100,7 @@ console.log(JBOD.encode([2, "abcd", true])); //Uint8Array([5, 0, 0, 0, 2, 11, 4,
 |type|      key       |content|  |type|      key       |content| ... |type|      key       |content| |void|
 
 ```
+
+#### Other types
+
+Todo...

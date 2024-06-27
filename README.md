@@ -1,59 +1,162 @@
 [![NPM version][npm]][npm-url]
 [![JSR version][jsr]][jsr-url]
-[![Install size][size]][size-url]
-[![Build status][build]][build-url]
 
 [npm]: https://img.shields.io/npm/v/jbod.svg
 [npm-url]: https://npmjs.com/package/jbod
 [jsr]: https://jsr.io/badges/@asn/jbod
 [jsr-url]: https://jsr.io/@asn/jbod
-[size]: https://packagephobia.com/badge?p=jbod
-[size-url]: https://packagephobia.com/result?p=jbod
-[build]: https://github.com/asnowc/jbod/actions/workflows/ci.yaml/badge.svg?branch=main
-[build-url]: https://github.com/asnowc/jbod/actions
+[root]: https://github.com/mian/blob
+
+English | [中文](./README.ZH.md)
+
+[API Document](https://jsr.io/@asn/jbod/doc)
+[JBOD encoding format](https://github.com/asnowc/jbod/blob/main/docs/jbod.md)
+[Benchmark](https://github.com/asnowc/jbod/blob/main//docs/benchmark.md)
 
 ## JavaScript Binary Object Data
 
 JavaScript Binary Serialization and deserialization lib. Support for more JS data types。Can be used for transmission, and storage. \
-JavaScript 二进制序列化与反序列库。支持更多的 JS 数据类型，序列化后大小占用很小。可用于传输、和存储。\
+JavaScript 二进制序列化与反序列库。支持更多的 JS 数据类型，序列化后大小占用很小。可用于传输、和存储。
 
-借鉴了 BSON 和 [ProtoBuf](https://protobuf.dev/), 相比于 ProtoBuf，更为灵活。更适用于像 JavaScript 这种动态类型语言。 [查看 JBOD 编码格式](./docs/jbod.md)
+Inspired by [ProtoBuf](https://protobuf.dev/), JBOD is more flexible than ProtoBuf. More applicable to dynamically typed languages like JavaScript.
 
-[API Document](https://jsr.io/@asn/jbod/doc)
+## Features
 
-## 功能特性
+##### More JavaScript data types
 
-##### 更多的 JavaScript 数据类型
+| type       | Notes                                                                                                 |
+| ---------- | ----------------------------------------------------------------------------------------------------- |
+| boolean    |                                                                                                       |
+| null       |                                                                                                       |
+| undefined  |                                                                                                       |
+| number     | Support NaN、-Infinity、+Infinity                                                                     |
+| bigint     |                                                                                                       |
+| Uint8Array |                                                                                                       |
+| string     |                                                                                                       |
+| RegExp     |                                                                                                       |
+| Array      |                                                                                                       |
+| Object     |                                                                                                       |
+| Symbol     | The significance is not significant, only the description attribute will be retained after conversion |
+| Error      | Keep only the cause, code, message, and name attributes                                               |
+| Map        |                                                                                                       |
+| Set        |                                                                                                       |
 
-| 类型       | 备注                                       |
-| ---------- | ------------------------------------------ |
-| boolean    |                                            |
-| null       |                                            |
-| undefined  |                                            |
-| number     | 支持 NaN、-Infinity、+Infinity             |
-| bigint     |                                            |
-| Uint8Array |                                            |
-| string     |                                            |
-| RegExp     |                                            |
-| Array      |                                            |
-| Object     |                                            |
-| Symbol     | 意义不大, 转换后只保留 description 属性    |
-| Error      | 仅支持保留 cause、code、message、name 属性 |
-| Map        |                                            |
-| Set        |                                            |
+##### Smaller binary data size
 
-##### 更小的二进制数据大小
+| Data type                                                 | Byte size (JSON)  | Byte size (JBOD) |
+| --------------------------------------------------------- | ----------------- | ---------------- |
+| int(0~2147483647)                                         | 1~ 10             | 1~5              |
+| int (-1~-2147483648)                                      | 2~ 11             | 1~5              |
+| double                                                    | 1~22              | 8                |
+| boolean                                                   | 4(true)、5(false) | 1                |
+| null                                                      | 4                 | 1                |
+| string (Set n as the UTF-8 encoding length of the string) | n+2               | n+(1~5)          |
 
-| 数据类型                              | 字节大小(JSON)    | 字节大小(JBOD) |
-| ------------------------------------- | ----------------- | -------------- |
-| int(0~2147483647)                     | 1~ 10             | 1~5            |
-| int (-1~-2147483648)                  | 2~ 11             | 1~5            |
-| double                                | 1~22              | 8              |
-| boolean                               | 4(true)、5(false) | 1              |
-| null                                  | 4                 | 1              |
-| string (设 n 为字符串 utf-8 编码长度) | n+2               | n+(1~5)        |
+The data encoded by `JBOD.encode()` is about **70%** the size of JSON
+The data encoded by `StructCodec.encode()` is about **35%** the size of JSON. View [Structured Encoding](#structured-encoding)
 
-**实际测试**
+View [simple code size comparison example](#simple-code-size-comparison-example)
+
+## Usage
+
+### Node
+
+`npm install jbod`
+
+```ts
+import JBOD from "jbod";
+const u8Arr = JBOD.encode(data);
+const decodedData = JBOD.decode(u8Arr).data;
+```
+
+### Deno
+
+```ts
+import JBOD from "jsr:@asn/jbod";
+const u8Arr = JBOD.encode(data);
+const decodedData = JBOD.decode(u8Arr).data;
+```
+
+### Browser
+
+```ts
+import JBOD from "https://esm.sh/jbod";
+const u8Arr = JBOD.encode(data);
+const decodedData = JBOD.decode(u8Arr).data;
+```
+
+## Structured encoding
+
+There are some scenarios where the data structure is fairly fixed, in which case transmitting type information can be quite redundant. For example, the object type has very space-consuming key names, and it also has a significant impact on performance in the JavaScript environment. In some scenarios, the keys are fixed, in which case ideally, the encoding should not retain the key information, only encode the values, and the decoder should decode the values based on the predefined structure, then restore the object data. This feature is inspired by ProtoBuf.
+
+### Struct data types
+
+| Type symbol | description                                                    | js type    |
+| ----------- | -------------------------------------------------------------- | ---------- |
+| dyI32       | 32-bit Integer （Dynamic length encode by zigzag + varints ）  | number     |
+| dyI64       | 64-bit Integer （Dynamic length, encode by zigzag + varints ） | bigint     |
+| i32         | 32-bit Integer                                                 | number     |
+| i64         | 64-bit Integer                                                 | bigint     |
+| f64         | 64-bit Float                                                   | number     |
+| bool        | Boolean                                                        | boolean    |
+|             |                                                                |            |
+| string      |                                                                | string     |
+| binary      |                                                                | Uint8Array |
+| any         | Any type                                                       |            |
+| anyArray    | Array elements can be of any type                              |            |
+| anyRecord   | Object pieces and values can be of any type                    |            |
+|             |                                                                |            |
+| regExp      |                                                                | RegExp     |
+| error       |                                                                | Error      |
+| map         |                                                                | Map        |
+| set         |                                                                | Set        |
+| symbol      |                                                                | symbol     |
+
+Any type: The any type has an extra byte to hold type information than the fixed type
+
+### Example Struct definition
+
+Suppose you need to define the following data structure:
+
+```ts
+interface Data {
+  name: string;
+  count: number;
+  custom: any;
+}
+```
+
+Defining structure：
+
+```ts
+const struct = StructCodec.define({
+  name: { id: 1, type: "string" },
+  count: { id: 2, type: "dyInt" },
+  custom: { id: 111, type: "any" },
+});
+const rawObject = { name: "test", count: 9, custom: [1] };
+const u8Arr = struct.encode(rawObject);
+
+const decodedData = struct.decode(u8Arr).data;
+console.log(decodedData);
+```
+
+Note that the id is used to map with the key name, it must be a positive integer, and it cannot be repeated。\
+For the any type, you can omit the type, as in this case the custom field：
+
+```ts
+const struct = StructCodec.define({
+  name: { id: 1, type: "string" },
+  count: { id: 2, type: "dyInt" },
+  custom: 111,
+});
+```
+
+The any type contains an extra byte to hold the type information, depending on your use case
+
+## Examples
+
+### Simple code size comparison example
 
 ```ts
 import JBOD, { StructCodec } from "jbod";
@@ -83,151 +186,3 @@ console.log(JBOD.encode(objData).byteLength); // 67   (70% of JSON)
 console.log(anyStruct.encode(objData).byteLength); // 38 (55% of JSON)
 console.log(fixedStruct.encode(objData).byteLength); // 34 (35% of JSON)
 ```
-
-查看 [StructCodec](#structcodec)
-
-## Usage
-
-### Node
-
-`npm install jbod`
-
-```js
-import JBOD from "jbod";
-
-const data = [1, "string", new Set([7, 2, 4]), new Uint8Array([1, 2, 3]), 12n];
-
-const u8Arr = JBOD.encode(data);
-const data2 = JBOD.decode(u8Arr).data;
-```
-
-### Deno or Browser
-
-```ts
-import JBOD from "https://esm.sh/jbod";
-const data = [1, "string", new Set([7, 2, 4]), new Uint8Array([1, 2, 3]), 12n];
-
-const u8Arr = JBOD.encode(data);
-const data2 = JBOD.decode(u8Arr).data;
-```
-
-## StructCodec
-
-有些场景，数据结构比较固定，那么传输时携带类型信息会比较冗余。例如 object 类型，其键名非常占用空间，并且在 Javascript 环境下还非常影响性能 [查看基准测试](#基准测试)，在一些场景，键是固定，这时候理想情况下编码后不应保留键的信息，仅编码值，解码方根据预先定义好的结构解码值，然后还原对象数据。这个功能借鉴了 ProtoBuf。
-
-### Struct 数据类型
-
-| 可用类型  | 描述                              | js 类型    |
-| --------- | --------------------------------- | ---------- |
-| dyI32     | zigzag+ varints 编码              | number     |
-| dyI64     | zigzag+ varints 编码              | bigint     |
-| i32       | 32 位整型                         | number     |
-| i64       | 64 位整型                         | bigint     |
-| f64       | 64 为浮点                         | number     |
-| bool      | 布尔类型                          | boolean    |
-|           |                                   |            |
-| string    | 字符串                            | string     |
-| binary    | 二进制数据                        | Uint8Array |
-| any       | 任意类型                          |            |
-| anyArray  | 任意数组(数组元素可以是任意类型)  |            |
-| anyRecord | 任意对象 (对象字段可以是任意类型) |            |
-|           |                                   |            |
-| regExp    |                                   | RegExp     |
-| error     |                                   | Error      |
-| map       |                                   | Map        |
-| set       |                                   | Set        |
-| symbol    |                                   | symbol     |
-
-any 类型。any 类型会比固定类型多出一个字节，用来保存类型信息
-
-### Struct 定义实例
-
-假设当前需要定义如下数据结构：
-
-```ts
-interface Data {
-  name: string;
-  count: number;
-  custom: any;
-}
-```
-
-定义 Struct:
-
-```ts
-const struct = StructCodec.define({
-  name: { id: 1, type: "string" },
-  count: { id: 2, type: "dyInt" },
-  custom: { id: 111, type: "any" },
-});
-const rawData = { name: "test", count: 9, custom: [1] };
-const u8Arr = struct.encode(rawData);
-
-const data = struct.decode(u8Arr).data;
-console.log(data);
-```
-
-需要注意的是，id 用于与键名进行映射，它必须是正整数，并且不能重复。
-对于 any 类型，可以省略类型的编写，本例子中 custom 字段可以这样定义：
-
-```ts
-const struct = StructCodec.define({
-  name: { id: 1, type: "string" },
-  count: { id: 2, type: "dyInt" },
-  custom: 111,
-});
-```
-
-any 类型会比固定类型多出一个字节，用来保存类型信息，可根据场景自行选择
-
-## 基准测试
-
-通过与 JSON、ProtoBuf 对不同数据类型的编解码的耗时进行了对比。
-对于 JSON 的编码，是先将数据编码成字符串，再将字符串编码为 utf8 二进制数据。解码则是将二进制数据通过 utf-8 解码，然后解析字符串 JSON
-对于 ProtoBuf，由于它不支持直接定义数组类型，在测试中定义了一个只有一个字段的对象，这个对象的类型为 repeat 类型。也就是说，在下面的测试中，JSON 和 JBOD 处理的如果是 10000 个 8 的数组，那么 ProtoBuf 处理的则是 1 个带有 10000 个 8 的数组的对象。
-
-### 运行项目中的基准测试
-
-为了获得更精准的结果，使用了 Deno 进行基准测试。
-
-- 运行 `deno task benchmark`，测试结果输出到 benchmark/dist/result.json
-- 运行 `deno task bench-ui`, 启动 web 服务器，查看测试结果
-
-### 不同数据类型的编解码对比
-
-<img src="./docs/bench/cp.png"/>
-上图的基准测试中，是对一个数组进行编解码，其中数组的值是相同的，每组测试的数据如下
-
-| 名称                   | 数据                         |
-| ---------------------- | ---------------------------- |
-| int32: 8\*10000        | 10000 个值为 8 的数组        |
-| int32: -1234567\*10000 | 10000 个值为 -1234567 的数组 |
-| double \*10000         | 10000 个值为 4 / 7 的数组    |
-| boolean \*10000        | 10000 个值为 true 的数组     |
-| string \*1000          | 1000 个值为 "中文 abc"的数组 |
-
-object list \*1000 ：
-
-```
-{
-  disabled: false,
-  count: 100837,
-  name: "Documentation",
-  dataStamp: 4 / 7,
-  id: 876,
-}
-```
-
-**结论：**
-对于整数类型，可以看到影响 JSON 编解码的的时间是字符串长度，在对浮点数据处理是尤其耗时。
-
-为什么 JBOD 处理对象怎么慢？
-JBOD 在处理对象时，80% 的耗时主要在处理对象的键(字符串)，再者就是 JSON.stringify() 和 JSON.parse() 拥有 V8 底层的支持，JBOD 仅仅是通过 JavaScript 提供的 API 对 Object 进行遍历，然后编码。
-那为什么 ProtoBuf 对对象类型编码与 JSON 差不多？
-ProtoBuf 的键通过 id 进行了映射，键的编解码实际是对 varints 进行编解码，并且 ProtoBuf 的对象是预先定义好的，是固定的数据类型，具体可以往下看 Struct 编解码
-
-#### Struct 编解码对比
-
-<img src="./docs/bench/struct.png"/>
-上图是仍然是对1000长度的数组进行编解码，数组的值全为相同的对象
-可以看到，对于相同的数据，Struct对比JBOD有了很大的提升
