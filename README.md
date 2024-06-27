@@ -7,11 +7,11 @@
 [jsr-url]: https://jsr.io/@asn/jbod
 [root]: https://github.com/mian/blob
 
-English | [中文](./README.ZH.md)
+English | [中文](https://github.com/asnowc/jbod/blob/main/README.ZH.md)
 
 [API Document](https://jsr.io/@asn/jbod/doc)
 [JBOD encoding format](https://github.com/asnowc/jbod/blob/main/docs/jbod.md)
-[Benchmark](https://github.com/asnowc/jbod/blob/main//docs/benchmark.md)
+[Benchmark](https://github.com/asnowc/jbod/blob/main/docs/benchmark.md)
 
 ## JavaScript Binary Object Data
 
