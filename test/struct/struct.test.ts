@@ -105,3 +105,11 @@ describe("可选类型", function () {
     expect(() => s2.encode(data), "默认不可选").not.toThrowError();
   });
 });
+test("字段 id 重复", function () {
+  expect(() => StructCodec.define({ f1: 1, f2: 1 })).toThrowError();
+});
+test("无效字段 id", function () {
+  expect(() => StructCodec.define({ f1: 0 })).toThrowError();
+  expect(() => StructCodec.define({ f1: -1 })).toThrowError();
+  expect(() => StructCodec.define({ f1: 0.25 })).toThrowError();
+});

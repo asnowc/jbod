@@ -267,7 +267,7 @@ export function defineStruct(definedMap: Struct, opts: { defaultOptional: boolea
   const decodeDefined: Record<number, StructDecodeInfo> = {};
 
   let key: string;
-  let defined;
+  let defined: StructDefined | number;
   let encodeItem: StructEncodeInfo;
   let decodeItem: StructDecodeInfo;
   for (let i = 0; i < keys.length; i++) {
@@ -284,8 +284,9 @@ export function defineStruct(definedMap: Struct, opts: { defaultOptional: boolea
       decodeItem = res.decode;
     } else throw new Error(`[${key}]定义错误`);
 
-    if (encodeItem.id <= 0) throw new Error(`[${key}]无效id`);
-    if (encodeItem.id % 1 !== 0) throw new Error(`[${key}]无效id`);
+    if (encodeItem.id % 1 !== 0 || encodeItem.id <= 0) throw new Error(`Field "${key}" must be a positive integer`);
+    if (decodeDefined[encodeItem.id])
+      throw new Error(`The id of field "${key}" and field "${String(encodeDefined[i]!.key)}" are repeated`);
 
     encodeDefined[i] = encodeItem;
     decodeDefined[encodeItem.id] = decodeItem;
