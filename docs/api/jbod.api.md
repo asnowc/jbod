@@ -62,6 +62,9 @@ export enum DataType {
     undefined = 38
 }
 
+// @public
+export type DataTypeDesc = keyof TypeDescMap;
+
 // @public (undocumented)
 export interface DataWriter {
     // (undocumented)
@@ -118,6 +121,24 @@ export type Defined<T = any> = {
     encoder: DataWriterCreator<T>;
     decoder: DecodeFn<T>;
     class?: ClassType;
+};
+
+// @public
+export class DefinedCodec<T = any> {
+    // Warning: (ae-incompatible-release-tags) The symbol "__constructor" is marked as @public, but its signature references "Defined" which is marked as @internal
+    constructor(defined: Defined);
+    // (undocumented)
+    decoder: DecodeFn<T>;
+    // (undocumented)
+    encoder: DataWriterCreator<T>;
+}
+
+// @public
+export type DefinedFiled = {
+    type?: DefinedType<any>;
+    id: number;
+    optional?: boolean;
+    repeat?: boolean;
 };
 
 // @public (undocumented)
@@ -179,7 +200,7 @@ export const JS_OBJECT_EXTRA_TYPE: Record<number, Defined>;
 
 // @public
 export type Struct = {
-    [key: string]: StructDefined | number;
+    [key: string]: DefinedFiled | number;
 };
 
 // @public
@@ -206,26 +227,40 @@ export class StructCodec<T extends object = any> implements Encoder, Decoder {
     }, buf: Uint8Array, offset?: number): number;
 }
 
-// @public
-export type StructDefined = {
-    type?: DefinedType<any>;
-    id: number;
-    optional?: boolean;
-    repeat?: boolean;
-};
+// @public @deprecated
+export type StructDefined = DefinedFiled;
+
+// @public @deprecated
+export type StructFieldType = DataTypeDesc;
 
 // @public @deprecated
 export const StructTrans: typeof StructCodec;
 
-// @public
-export class StructType<T = any> {
-    // Warning: (ae-incompatible-release-tags) The symbol "__constructor" is marked as @public, but its signature references "Defined" which is marked as @internal
-    constructor(defined: Defined);
-    // (undocumented)
-    decoder: DecodeFn<T>;
-    // (undocumented)
-    encoder: DataWriterCreator<T>;
-}
+// @public @deprecated
+export const StructType: typeof DefinedCodec;
+
+// @public @deprecated
+export type StructType<T> = DefinedCodec<T>;
+
+// @public (undocumented)
+export type TypeDescMap = {
+    any: any;
+    bool: boolean;
+    f32: number;
+    f64: bigint;
+    dyI64: bigint;
+    dyI32: number;
+    binary: Uint8Array;
+    string: string;
+    anyArray: any[];
+    anyRecord: Record<string, any>;
+    i32: number;
+    i64: bigint;
+    error: Error;
+    map: Map<any, any>;
+    set: Set<any>;
+    regExp: RegExp;
+};
 
 // @public
 class U32DByteParser {
@@ -283,7 +318,7 @@ function zigzagEncodeI64(val: bigint): bigint;
 
 // Warnings were encountered during analysis:
 //
-// src/defined/data_types/struct.ts:326:3 - (ae-forgotten-export) The symbol "DefinedType" needs to be exported by the entry point mod.d.ts
+// src/defined/data_types/struct.ts:356:3 - (ae-forgotten-export) The symbol "DefinedType" needs to be exported by the entry point mod.d.ts
 // src/defined/type.ts:20:3 - (ae-forgotten-export) The symbol "DataWriterCreator" needs to be exported by the entry point mod.d.ts
 // src/defined/type.ts:21:3 - (ae-forgotten-export) The symbol "DecodeFn" needs to be exported by the entry point mod.d.ts
 // src/defined/type.ts:22:3 - (ae-forgotten-export) The symbol "ClassType" needs to be exported by the entry point mod.d.ts

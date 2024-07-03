@@ -196,7 +196,7 @@ export function decodeStruct<T = any>(
 }
 
 function initStructDefineItem(
-  defined: StructDefined,
+  defined: DefinedFiled,
   key: string,
   opts: { defaultOptional: boolean }
 ): {
@@ -208,7 +208,7 @@ function initStructDefineItem(
   let decoder: StructDecodeInfo["decode"];
   switch (typeof type) {
     case "string": {
-      let code = FIELD_TYPE_MAP[type];
+      let code = DATA_TYPE_MAP[type];
       if (typeof code !== "number") throw new Error("Invalid type: " + type);
       if (code === DataType.true) {
         encoder = BoolWriter;
@@ -222,7 +222,7 @@ function initStructDefineItem(
     }
 
     case "object":
-      if (type instanceof StructType) {
+      if (type instanceof DefinedCodec) {
         // 自定义编解码
         decoder = type.decoder;
         encoder = type.encoder;
@@ -267,7 +267,7 @@ export function defineStruct(definedMap: Struct, opts: { defaultOptional: boolea
   const decodeDefined: Record<number, StructDecodeInfo> = {};
 
   let key: string;
-  let defined: StructDefined | number;
+  let defined: DefinedFiled | number;
   let encodeItem: StructEncodeInfo;
   let decodeItem: StructDecodeInfo;
   for (let i = 0; i < keys.length; i++) {
@@ -293,7 +293,7 @@ export function defineStruct(definedMap: Struct, opts: { defaultOptional: boolea
   }
   return { encodeDefined, decodeDefined };
 }
-const FIELD_TYPE_MAP = {
+const DATA_TYPE_MAP = {
   any: VOID_ID,
 
   bool: DataType.true,
@@ -314,15 +314,44 @@ const FIELD_TYPE_MAP = {
   set: DataType.set,
   regExp: DataType.regExp,
 };
-/** JBOD类型描述
- *  @public */
-export type StructFieldType = keyof typeof FIELD_TYPE_MAP;
 
-export type DefinedType<T = unknown> = StructType<T> | Struct | StructFieldType;
+/** @public */
+export type TypeDescMap = {
+  any: any;
 
-/** Struct 定义
- *  @public */
-export type StructDefined = {
+  bool: boolean;
+  f32: number;
+  f64: bigint;
+  dyI64: bigint;
+  dyI32: number;
+  binary: Uint8Array;
+  string: string;
+  anyArray: any[];
+  anyRecord: Record<string, any>;
+
+  i32: number;
+  i64: bigint;
+
+  error: Error;
+  map: Map<any, any>;
+  set: Set<any>;
+  regExp: RegExp;
+};
+
+/**
+ * JBOD类型描述
+ * @public
+ */
+export type DataTypeDesc = keyof TypeDescMap;
+
+/** @public */
+export type DefinedType<T = unknown> = DefinedCodec<T> | Struct | DataTypeDesc;
+
+/**
+ * Struct 字段定义
+ * @public
+ */
+export type DefinedFiled = {
   /** 值类型 */
   type?: DefinedType<any>;
   id: number;
@@ -345,11 +374,14 @@ export type StructDefined = {
  * @public
  */
 export type Struct = {
-  [key: string]: StructDefined | number;
+  [key: string]: DefinedFiled | number;
 };
-/** Struct 自定义类型
- * @public */
-export class StructType<T = any> {
+
+/**
+ * Struct 自定义类型
+ * @public
+ */
+export class DefinedCodec<T = any> {
   constructor(defined: Defined) {
     this.decoder = defined.decoder;
     this.encoder = defined.encoder;
@@ -357,3 +389,30 @@ export class StructType<T = any> {
   encoder: DataWriterCreator<T>;
   decoder: DecodeFn<T>;
 }
+
+/**
+ * {@inheritdoc DataTypeDesc}
+ * @public
+ * @deprecated 改用 DataTypeDesc
+ */
+export type StructFieldType = DataTypeDesc;
+
+/**
+ * {@inheritdoc DefinedFiled}
+ * @deprecated 改用 DefinedFiled
+ * @public
+ */
+export type StructDefined = DefinedFiled;
+
+/**
+ * {@inheritdoc DefinedCodec}
+ * @public
+ * @deprecated 改用 DefinedCodec
+ */
+export const StructType = DefinedCodec;
+/**
+ * {@inheritdoc DefinedCodec}
+ * @public
+ * @deprecated 改用 DefinedCodec
+ */
+export type StructType<T> = DefinedCodec<T>;

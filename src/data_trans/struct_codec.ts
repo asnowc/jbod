@@ -1,14 +1,17 @@
 import type { DecodeResult, Encoder, Decoder, DataWriter } from "../type.ts";
 import {
-  StructDefined,
+  DefinedFiled,
   Struct,
-  StructType,
+  DefinedCodec,
   StructDecodeInfo,
   StructWriter,
   defineStruct,
   decodeStruct,
   StructEncodeInfo,
+  DefinedType,
   DefinedOpts,
+  DataTypeDesc,
+  TypeDescMap,
 } from "../defined/mod.ts";
 import { DecodeContext, EncodeContext, createContext } from "./ctx.ts";
 /**
@@ -66,4 +69,34 @@ export class StructCodec<T extends object = any> implements Encoder, Decoder {
  * @deprecated 改用 StructCodec */
 export const StructTrans = StructCodec;
 
-export type { Struct, StructType, StructDefined };
+export type {
+  StructType,
+  StructFieldType,
+  StructDefined,
+  Struct,
+  DefinedCodec,
+  DefinedFiled,
+  DataTypeDesc,
+  TypeDescMap,
+} from "../defined/data_types/struct.ts";
+
+// type GetFieldType<T> = T extends Defin keyof TypeMap ? TypeMap[T] : any;
+
+//TODO 类型推断
+type InferDefinedType<T> = T extends DefinedCodec<infer P>
+  ? P
+  : T extends keyof TypeDescMap
+  ? TypeDescMap[T]
+  : T extends Struct
+  ? { [key in keyof T]: InferStructField<T[key]> }
+  : unknown;
+
+type InferStructField<T> = T extends number
+  ? any
+  : T extends DefinedFiled
+  ? T["repeat"] extends true
+    ? InferDefinedType<T["type"]>[]
+    : InferDefinedType<T["type"]>
+  : any;
+const d = { k: { id: 1, type: { q: 8 } } } satisfies Struct;
+type c = InferDefinedType<typeof d>;
