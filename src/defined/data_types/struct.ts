@@ -4,11 +4,14 @@ import { JbodWriter, fastDecodeJbod, jbodDecoder } from "./jbod.ts";
 import type { DecodeResult } from "../../type.ts";
 import type { EncodeContext, DecodeContext, DataWriter, DataWriterCreator, DecodeFn, Defined } from "../type.ts";
 type Key = string | number | symbol;
+
+/** Struct 定义的键值的解码信息。每一个键对应一个 StructDecodeInfo */
 export type StructDecodeInfo = {
   decode: number | DecodeFn | Record<number, StructDecodeInfo>;
   key: Key;
   repeat: boolean;
 };
+/** Struct 定义的键值的编码信息。每一个键对应一个 StructEncodeInfo */
 export type StructEncodeInfo = {
   encode: number | DataWriterCreator | StructEncodeInfo[];
   id: number;
@@ -253,7 +256,7 @@ type DefinedOpts = {
 export function defineStruct(definedMap: Struct, opts: DefinedOpts = {}) {
   const optional = !opts.required;
   const keys = Object.keys(definedMap);
-  const encodeDefined: StructEncodeInfo[] = [];
+  const encodeDefined: StructEncodeInfo[] = new Array(keys.length);
   const decodeDefined: Record<number, StructDecodeInfo> = {};
 
   let key: string;

@@ -9,8 +9,8 @@
 
 English | [中文](https://github.com/asnowc/jbod/blob/main/README.ZH.md)
 
-[API Document](https://jsr.io/@asn/jbod/doc)
-[JBOD encoding format](https://github.com/asnowc/jbod/blob/main/docs/jbod.md)
+[API Document](https://jsr.io/@asn/jbod/doc)\
+[JBOD encoding format](https://github.com/asnowc/jbod/blob/main/docs/jbod.md)\
 [Benchmark](https://github.com/asnowc/jbod/blob/main/docs/benchmark.md)
 
 ## JavaScript Binary Object Data

@@ -1,6 +1,6 @@
 import { DecodeError } from "../const.ts";
 
-/** 计算64位无符号整型编码成 varints 后的字节数
+/** 计算64位无符号整数(bigint) 编码成 varints 后的字节数
  * @public
  * @param bigint - 一个 u64类型，传入负数为解析为 u64 类型
  */
@@ -22,8 +22,7 @@ export function calcU64DByte(bigint: bigint): number {
     next = bigint <= 0xfff_ffff;
   } while (true);
 }
-
-/** 将64位无符号整型编码成 varints
+/** 将64位无符号整数(bigint) 编码成 varints
  * @public
  * @param bigint - 一个 u64类型，传入负数为解析为 u64 类型
  * @returns 返回 Uint8Array 偏移量
@@ -49,8 +48,11 @@ export function encodeU64DInto(bigint: bigint, buf: Uint8Array, offset = 0): num
     next = bigint <= 0xfff_ffff;
   } while (true);
 }
-/** 计算32位无符号整型编码成 varints 后的字节数
- * @public */
+
+/**
+ * 计算32位无符号整数编码成 varints 后的字节数
+ * @public
+ */
 export function calcU32DByte(value: number): number {
   let len = 1;
   if (value < 0) {
@@ -63,8 +65,8 @@ export function calcU32DByte(value: number): number {
   }
   return len;
 }
-/** 
- * 将32位无符号整型编码成 varints
+/**
+ * 将32位无符号整数编码成 varints
  * @public
  * @param value - 一个 u32类型，传入负数为解析为 u32 类型
  * @returns 返回 Uint8Array 偏移量 */
@@ -82,7 +84,7 @@ export function encodeU32DInto(value: number, buf: Uint8Array, offset = 0): numb
 }
 
 /** 从二进制解码64位无符号整数。
- *  需要确保数字范围是无符号长整型的范围，否则结果可能错误
+ *  需要确保数字范围是无符号长整数的范围，否则结果可能错误
  *  @public */
 export function decodeU64D(buf: Uint8Array, offset = 0): { value: bigint; byte: number } {
   const res: { value: any; byte: number } = decodeDyInt(buf, offset);
@@ -90,7 +92,7 @@ export function decodeU64D(buf: Uint8Array, offset = 0): { value: bigint; byte: 
   res.value = BigInt(res.value);
   return res;
 }
-/** 从二进制解码32位无符号整数。需要确保数字范围是无符号整型的范围，否则结果可能错误
+/** 从二进制解码32位无符号整数。需要确保数字范围是无符号整数的范围，否则结果可能错误
  * @public
  *
  */
@@ -169,7 +171,7 @@ export function decodeDyInt(buf: Uint8Array, offset: number = 0): { value: bigin
   throw new DecodeError(offset, "DyInt is more than 10 bytes");
 }
 /**
- * 32位无符号整型的 varins 解码器. 收集多个不完整的二进制块. 然后解码
+ * 32位无符号整数的 varins 解码器. 多个不完整的二进制块. 然后解码
  * @public */
 export class U32DByteParser {
   value = 0;
@@ -177,7 +179,9 @@ export class U32DByteParser {
     value: number;
     residue?: Uint8Array;
   };
-  /** 传入二进制块，如果数据完整，则返回true, 否则返回false */
+  /**
+   * 传入二进制分块，如果数据不完整，返回false，你应继续传入分块，直到则返回true
+   */
   next(buf: Uint8Array): boolean {
     let max = buf.byteLength;
     let next: number;
@@ -193,7 +197,7 @@ export class U32DByteParser {
     this.value = 0;
     return true;
   }
-  /** 完成收集，返回解码的值*/
+  /** 当 next() 返回 true 后，调用 finish(), 返回解码的值*/
   finish(): {
     value: number;
     residue?: Uint8Array | undefined;
