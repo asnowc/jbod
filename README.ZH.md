@@ -48,7 +48,7 @@ JavaScript 二进制序列化与反序列库。支持更多的 JS 数据类型�
 | string (设 n 为字符串 utf-8 编码长度) | n+2               | n+(1~5)        |
 
 `JBOD.encode()` 编码的数据大小是 JSON 的 **70%** 左右
-[结构化编码](#结构化编码) `StructCodec.encode()` 编码的数据大小是 JSON 的 **35%** 左右。
+[结构化编码](#结构化编码) `StructCodec.encode()` 编码的数据大小是 JSON 的 **20%~40%**。
 
 查看 [简单的编码大小对比示例](#与-json-数据大小的简单对比)
 
@@ -116,8 +116,10 @@ any 类型。any 类型会比固定类型多出一个字节，用来保存类型
 ```ts
 interface Data {
   name: string;
-  count: number;
+  count?: number;
   custom: any;
+  list: number[];
+  items: { key1: any; key2: any }[];
 }
 ```
 
@@ -126,8 +128,19 @@ interface Data {
 ```ts
 const struct = StructCodec.define({
   name: { id: 1, type: "string" },
-  count: { id: 2, type: "dyInt" },
-  custom: { id: 111, type: "any" },
+  count: { id: 2, type: "dyI32", optional: true }, //可选字段
+  custom: { id: 111, type: "any" }, // 任意类型，也可以忽略 type
+  list: { id: 3, repeat: true, type: "dyI32" },
+
+  // 对象数组
+  items: {
+    id: 4,
+    repeat: true,
+    type: {
+      key1: { id: 1, type: "any" },
+      key2: { id: 2, type: "any" },
+    },
+  },
 });
 const rawObject = { name: "test", count: 9, custom: [1] };
 const u8Arr = struct.encode(rawObject);
@@ -137,13 +150,19 @@ console.log(decodedData);
 ```
 
 需要注意的是，id 用于与键名进行映射，它必须是正整数，并且不能重复。\
-对于 any 类型，可以省略类型的编写，本例子中 custom 字段可以这样定义：
+对于 any 类型，可以省略类型的编写，本例子中还可以这样定义：
 
 ```ts
 const struct = StructCodec.define({
   name: { id: 1, type: "string" },
-  count: { id: 2, type: "dyInt" },
+  count: { id: 2, type: "dyI32", optional: true },
   custom: 111,
+  list: { id: 3, repeat: true, type: "dyI32" },
+  items: {
+    id: 4,
+    repeat: true,
+    type: { key1: 1, key2: 2 },
+  },
 });
 ```
 

@@ -1,5 +1,6 @@
 import JBOD, { StructCodec } from "jbod";
 import { Buffer } from "node:buffer";
+import { formatSize } from "./util/mod.ts";
 function encodeJSON(data: any) {
   return Buffer.from(JSON.stringify(data));
 }
@@ -24,3 +25,12 @@ console.log(encodeJSON(objData).byteLength); // 96
 console.log(JBOD.encode(objData).byteLength); // 67
 console.log(anyStruct.encode(objData).byteLength); // 38
 console.log(fixedStruct.encode(objData).byteLength); // 34
+
+console.table(
+  formatSize([
+    { name: "JSON", size: encodeJSON(objData).byteLength },
+    { name: "JBOD", size: JBOD.encode(objData).byteLength },
+    { name: "JBOD:Struct any", size: anyStruct.encode(objData).byteLength },
+    { name: "JBOD:Struct", size: fixedStruct.encode(objData).byteLength },
+  ])
+);

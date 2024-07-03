@@ -53,7 +53,7 @@ Inspired by [ProtoBuf](https://protobuf.dev/), JBOD is more flexible than ProtoB
 | string (Set n as the UTF-8 encoding length of the string) | n+2               | n+(1~5)          |
 
 The data encoded by `JBOD.encode()` is about **70%** the size of JSON
-The data encoded by `StructCodec.encode()` is about **35%** the size of JSON. View [Structured Encoding](#structured-encoding)
+The data size of structured encoding is **20% ~ 40%** of JSON View [Structured Encoding](#structured-encoding)
 
 View [simple code size comparison example](#simple-code-size-comparison-example)
 
@@ -121,8 +121,10 @@ Suppose you need to define the following data structure:
 ```ts
 interface Data {
   name: string;
-  count: number;
+  count?: number;
   custom: any;
+  list: number[];
+  items: { key1: any; key2: any }[];
 }
 ```
 
@@ -131,8 +133,19 @@ Defining structure：
 ```ts
 const struct = StructCodec.define({
   name: { id: 1, type: "string" },
-  count: { id: 2, type: "dyInt" },
-  custom: { id: 111, type: "any" },
+  count: { id: 2, type: "dyI32", optional: true }, // Optional field
+  custom: { id: 111, type: "any" }, // Any type, or you can omit type
+  list: { id: 3, repeat: true, type: "dyI32" },
+
+  // Array of objects
+  items: {
+    id: 4,
+    repeat: true,
+    type: {
+      key1: { id: 1, type: "any" },
+      key2: { id: 2, type: "any" },
+    },
+  },
 });
 const rawObject = { name: "test", count: 9, custom: [1] };
 const u8Arr = struct.encode(rawObject);
@@ -142,13 +155,19 @@ console.log(decodedData);
 ```
 
 Note that the id is used to map with the key name, it must be a positive integer, and it cannot be repeated。\
-For the any type, you can omit the type, as in this case the custom field：
+For the any type, you don't have to write the type. In this case, you could have also defined it like this:
 
 ```ts
 const struct = StructCodec.define({
   name: { id: 1, type: "string" },
-  count: { id: 2, type: "dyInt" },
+  count: { id: 2, type: "dyI32", optional: true },
   custom: 111,
+  list: { id: 3, repeat: true, type: "dyI32" },
+  items: {
+    id: 4,
+    repeat: true,
+    type: { key1: 1, key2: 2 },
+  },
 });
 ```
 
