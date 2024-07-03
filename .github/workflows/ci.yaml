@@ -6,6 +6,9 @@ on:
       - feat/*
 jobs:
   build:
+    strategy:
+      matrix:
+        node-version: [18, 20, 22]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -14,7 +17,7 @@ jobs:
       - name: Setup NodeJS
         uses: asnowc/actions@setup-node/v2
         with:
-          node_v: 20
+          node_v: ${{matrix.node-version}}
           pnpm_v: 9
           run_install: true
       - name: Test
