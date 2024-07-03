@@ -83,7 +83,7 @@ export class StructWriter implements DataWriter {
       }
       res = this.getWriter(value, info, ctx);
 
-      len += calcU32DByte(info.id) + res.byteLength;
+      len += calcU32DByte(info.id) + res.byteLength; // id length + content length
       ids[y] = info.id;
       dataWriter[y] = res;
       y++;
@@ -93,7 +93,7 @@ export class StructWriter implements DataWriter {
     this.writers = dataWriter;
     this.ids = ids;
   }
-  private getWriter(value: any, define: StructEncodeInfo, ctx: EncodeContext): DataWriter {
+  private getWriter(value: unknown, define: StructEncodeInfo, ctx: EncodeContext): DataWriter {
     let encoder: DataWriterCreator;
     switch (typeof define.encode) {
       case "number": {
@@ -109,14 +109,15 @@ export class StructWriter implements DataWriter {
       case "object": {
         let res: DataWriter;
         if (define.repeat) {
-          let totalLen = calcU32DByte(value.length);
+          const arr = value as any[];
+          let totalLen = 0;
           const writers: DataWriter[] = [];
-          for (let i = 0; i < value.length; i++) {
-            writers[i] = new StructWriter(define.encode, value[i], ctx);
+          for (let i = 0; i < arr.length; i++) {
+            writers[i] = new StructWriter(define.encode, arr[i], ctx);
             totalLen += writers[i].byteLength;
           }
           return new RepeatWriter(writers, totalLen);
-        } else res = new StructWriter(define.encode, value, ctx);
+        } else res = new StructWriter(define.encode, value as object, ctx);
         return res;
       }
 
@@ -126,8 +127,9 @@ export class StructWriter implements DataWriter {
     if (define.repeat) {
       let totalLen = 0;
       const writers: DataWriter[] = [];
-      for (let i = 0; i < value.length; i++) {
-        writers[i] = new encoder(value[i], ctx);
+      const arr = value as any[];
+      for (let i = 0; i < arr.length; i++) {
+        writers[i] = new encoder(arr[i], ctx);
         totalLen += writers[i].byteLength;
       }
       return new RepeatWriter(writers, totalLen);
@@ -194,14 +196,14 @@ export function decodeStruct<T = any>(
 }
 
 function initStructDefineItem(
-  value: StructDefined,
+  defined: StructDefined,
   key: string,
-  opts: DefinedOpts
+  opts: { defaultOptional: boolean }
 ): {
   encode: StructEncodeInfo;
   decode: StructDecodeInfo;
 } {
-  let type = value.type === "any" ? undefined : value.type;
+  let type = defined.type === "any" ? undefined : defined.type;
   let encoder: StructEncodeInfo["encode"];
   let decoder: StructDecodeInfo["decode"];
   switch (typeof type) {
@@ -239,40 +241,45 @@ function initStructDefineItem(
   }
 
   return {
-    decode: { decode: decoder, repeat: value.repeat ?? false, key },
+    decode: { decode: decoder, repeat: defined.repeat ?? false, key },
     encode: {
       encode: encoder,
-      repeat: value.repeat ?? false,
-      id: value.id,
-      optional: value.optional === undefined ? !opts.required : Boolean(value.optional),
+      repeat: defined.repeat ?? false,
+      id: defined.id,
+      optional: Boolean(defined.optional ?? opts.defaultOptional),
       key,
     },
   };
 }
-type DefinedOpts = {
-  required?: boolean;
+/** @public */
+export type DefinedOpts = {
+  /**
+   * 是否默认可选。
+   * @defaultValue false
+   */
+  defaultOptional?: boolean;
 };
 /* @__NO_SIDE_EFFECTS__ */
-export function defineStruct(definedMap: Struct, opts: DefinedOpts = {}) {
-  const optional = !opts.required;
+export function defineStruct(definedMap: Struct, opts: { defaultOptional: boolean }) {
+  const optional = opts.defaultOptional;
   const keys = Object.keys(definedMap);
   const encodeDefined: StructEncodeInfo[] = new Array(keys.length);
   const decodeDefined: Record<number, StructDecodeInfo> = {};
 
   let key: string;
-  let value;
+  let defined;
   let encodeItem: StructEncodeInfo;
   let decodeItem: StructDecodeInfo;
   for (let i = 0; i < keys.length; i++) {
     key = keys[i];
-    value = definedMap[key];
+    defined = definedMap[key];
 
-    if (typeof value === "number") {
+    if (typeof defined === "number") {
       // 仅定义ID： any 类型
-      encodeItem = { encode: JbodWriter, repeat: false, id: value, optional, key };
+      encodeItem = { encode: JbodWriter, repeat: false, id: defined, optional, key };
       decodeItem = { decode: jbodDecoder, repeat: false, key };
-    } else if (typeof value === "object") {
-      const res = initStructDefineItem(value, key, opts);
+    } else if (typeof defined === "object") {
+      const res = initStructDefineItem(defined, key, opts);
       encodeItem = res.encode;
       decodeItem = res.decode;
     } else throw new Error(`[${key}]定义错误`);
@@ -309,11 +316,14 @@ const FIELD_TYPE_MAP = {
 /** JBOD类型描述
  *  @public */
 export type StructFieldType = keyof typeof FIELD_TYPE_MAP;
+
+export type DefinedType<T = unknown> = StructType<T> | Struct | StructFieldType;
+
 /** Struct 定义
  *  @public */
 export type StructDefined = {
   /** 值类型 */
-  type?: StructType | Struct | StructFieldType;
+  type?: DefinedType<any>;
   id: number;
   /** 键是否可选 */
   optional?: boolean;

@@ -2,7 +2,7 @@ import { DecodeResult } from "../../type.ts";
 import { defineStruct, StructWriter, decodeStruct } from "./struct.ts";
 import { EncodeContext, Defined } from "../type.ts";
 import { dyArray } from "./repeat.ts";
-const symbolStruct = defineStruct({ description: 1 });
+const symbolStruct = defineStruct({ description: 1 }, { defaultOptional: true });
 
 export const symbol: Defined<symbol> = {
   encoder: function SymbolWriter(data: Symbol, ctx: EncodeContext) {
@@ -15,7 +15,7 @@ export const symbol: Defined<symbol> = {
   },
 };
 
-const errorStruct = defineStruct({ message: 1, name: 2, cause: 3, code: 4 });
+const errorStruct = defineStruct({ message: 1, name: 2, cause: 3, code: 4 }, { defaultOptional: true });
 
 export const error: Defined<Error> = {
   encoder: function ErrorWriter(data: Error, ctx: EncodeContext) {
@@ -31,7 +31,7 @@ export const error: Defined<Error> = {
   class: Error,
 };
 
-const regExpStruct = defineStruct({ source: 1, flags: 2 });
+const regExpStruct = defineStruct({ source: 1, flags: 2 }, { defaultOptional: true });
 export const regExp: Defined<RegExp> = {
   encoder: function RegExpWriter(data: RegExp, ctx: EncodeContext) {
     return new StructWriter(regExpStruct.encodeDefined, data, ctx);

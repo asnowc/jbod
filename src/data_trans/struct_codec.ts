@@ -8,14 +8,18 @@ import {
   defineStruct,
   decodeStruct,
   StructEncodeInfo,
+  DefinedOpts,
 } from "../defined/mod.ts";
 import { DecodeContext, EncodeContext, createContext } from "./ctx.ts";
 /**
  * 固定结构解码器
  * @public */
 export class StructCodec<T extends object = any> implements Encoder, Decoder {
-  static define<T extends object>(definedMap: Struct, opts: { required?: boolean } = {}): StructCodec<T> {
-    const { decodeDefined, encodeDefined } = defineStruct(definedMap, opts);
+  // static define<T extends Struct>(definedMap: T, opts?: { required?: boolean }): InferStructType<T>;
+  static define<T extends object>(definedMap: Struct, opts?: DefinedOpts): StructCodec<T>;
+  static define(definedMap: Struct, opts: DefinedOpts = {}): StructCodec<any> {
+    const { defaultOptional = false } = opts;
+    const { decodeDefined, encodeDefined } = defineStruct(definedMap, { defaultOptional });
     return new this(encodeDefined, decodeDefined);
   }
   private encContext: EncodeContext;

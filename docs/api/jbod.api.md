@@ -193,10 +193,10 @@ export class StructCodec<T extends object = any> implements Encoder, Decoder {
     createWriter(data: any): DataWriter;
     // (undocumented)
     decode(buf: Uint8Array, offset?: number): DecodeResult<T>;
+    // Warning: (ae-forgotten-export) The symbol "DefinedOpts" needs to be exported by the entry point mod.d.ts
+    //
     // (undocumented)
-    static define<T extends object>(definedMap: Struct, opts?: {
-        required?: boolean;
-    }): StructCodec<T>;
+    static define<T extends object>(definedMap: Struct, opts?: DefinedOpts): StructCodec<T>;
     // (undocumented)
     encode(data: T): Uint8Array;
     // @deprecated (undocumented)
@@ -208,7 +208,7 @@ export class StructCodec<T extends object = any> implements Encoder, Decoder {
 
 // @public
 export type StructDefined = {
-    type?: StructType | Struct | StructFieldType;
+    type?: DefinedType<any>;
     id: number;
     optional?: boolean;
     repeat?: boolean;
@@ -283,7 +283,7 @@ function zigzagEncodeI64(val: bigint): bigint;
 
 // Warnings were encountered during analysis:
 //
-// src/defined/data_types/struct.ts:318:3 - (ae-forgotten-export) The symbol "StructFieldType" needs to be exported by the entry point mod.d.ts
+// src/defined/data_types/struct.ts:326:3 - (ae-forgotten-export) The symbol "DefinedType" needs to be exported by the entry point mod.d.ts
 // src/defined/type.ts:20:3 - (ae-forgotten-export) The symbol "DataWriterCreator" needs to be exported by the entry point mod.d.ts
 // src/defined/type.ts:21:3 - (ae-forgotten-export) The symbol "DecodeFn" needs to be exported by the entry point mod.d.ts
 // src/defined/type.ts:22:3 - (ae-forgotten-export) The symbol "ClassType" needs to be exported by the entry point mod.d.ts

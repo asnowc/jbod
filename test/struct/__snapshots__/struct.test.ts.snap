@@ -1,0 +1,29 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`encode > boolean 1`] = `"0104020300"`;
+
+exports[`encode > sample repeat 1`] = `"0103020406020207020300"`;
+
+exports[`encode > struct repeat 1`] = `"0402011400010c0000"`;
+
+exports[`encode > struct repeat 2`] = `"0402011400010c0000"`;
+
+exports[`encode > 可选类型 1`] = `"020000000900"`;
+
+exports[`encode > 基础 1`] = `"01030200000009030a02616200"`;
+
+exports[`encode > 嵌套 1`] = `"010710020107120207010000"`;
+
+exports[`可选类型 > 可选类型编解码 1`] = `"020000000900"`;
+
+exports[`编解码 > boolean 1`] = `"0104020300"`;
+
+exports[`编解码 > sample repeat 1`] = `"0103020406020207020300"`;
+
+exports[`编解码 > struct repeat 1`] = `"0402011400010c0000"`;
+
+exports[`编解码 > struct repeat 2`] = `"0402011400010c0000"`;
+
+exports[`编解码 > 基础 1`] = `"01030200000009030a02616200"`;
+
+exports[`编解码 > 嵌套 1`] = `"010710020107120207010000"`;
