@@ -1,6 +1,6 @@
 {
   "name": "jbod",
-  "version": "0.4.9",
+  "version": "0.5.0",
   "description": "JavaScript Binary Serialization and deserialization. Support for more JS data types",
   "type": "module",
   "types": "./dist/mod.d.ts",
