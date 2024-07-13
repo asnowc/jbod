@@ -13,7 +13,7 @@
 
 ### 不同数据类型的编解码对比
 
-<img src="./docs/bench/cp.png"/>
+<img src="./bench/cp.png"/>
 上图的基准测试中，是对一个数组进行编解码，其中数组的值是相同的，每组测试的数据如下
 
 | 名称                   | 数据                         |
@@ -47,5 +47,5 @@ ProtoBuf 的键通过 id 进行了映射，键的编解码实际是对整数(var
 
 #### Struct 编解码对比
 
-<img src="./docs/bench/struct.png"/>
+<img src="./bench/struct.png"/>
 上图是仍然是对1000长度的对象数组进行编解码，可以看到，由于不需要编码字符串键，对于相同的数据，Struct 相比 any 类型有了很大的提升
