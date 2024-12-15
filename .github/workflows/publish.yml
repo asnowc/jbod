@@ -10,6 +10,7 @@ permissions:
 
 jobs:
   check:
+    if: github.repository_owner=='asnowc'
     runs-on: ubuntu-latest
     outputs:
       version: ${{fromJson(env.PACKAGE_JSON).version}}
