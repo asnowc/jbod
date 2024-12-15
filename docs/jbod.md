@@ -8,24 +8,24 @@ Range: 000x_xxxx
 
 0000_xxxx :
 
-| DEC | BIN  | type      | content length                                          | Description             |
-| --- | ---- | --------- | ------------------------------------------------------- | ----------------------- |
-| 0   | 0000 | void      | 0                                                       | Repeating type end flag |
-| 1   | 0001 | null      | 0                                                       |                         |
-| 2   | 0010 |           |                                                         |                         |
-| 3   | 0011 | true      | 1                                                       |                         |
-| 4   | 0100 | false     | 1                                                       |                         |
-| 5   | 0101 | f32       | 8                                                       | 32-bit float            |
-| 6   | 0110 | f64       | 8                                                       | 64-bit float            |
-| 7   | 0111 | dyI32     | zigzag + varints                                        |                         |
-| 8   | 1000 | dyI64     | zigzag + varints                                        |                         |
-| 9   | 1001 | binary    | contentLen(varints) + content                           |                         |
-| 10  | 1010 | \*string  | contentLen(varints) + content(utf8)                     |                         |
-| 11  | 1011 | array     | item-len, item-type, item...                            |                         |
-| 12  | 1100 | record    | item-len ,key-type, value-type, key, item, key, item... |                         |
-| 13  | 1101 | anyArray  | item, item, ..., void                                   |                         |
-| 14  | 1110 | anyRecord | item, item, ..., void                                   |                         |
-| 15  | 1111 |           |                                                         |                         |
+| DEC | BIN  | type      | value format                                                              | Description                                        |
+| --- | ---- | --------- | ------------------------------------------------------------------------- | -------------------------------------------------- |
+| 0   | 0000 | void      | 0                                                                         | Repeating type end flag                            |
+| 1   | 0001 | null      | 0                                                                         |                                                    |
+| 2   | 0010 |           |                                                                           |                                                    |
+| 3   | 0011 | true      | 0                                                                         |                                                    |
+| 4   | 0100 | false     | 0                                                                         |                                                    |
+| 5   | 0101 | f32       | 8                                                                         | 32-bit float                                       |
+| 6   | 0110 | f64       | 8                                                                         | 64-bit float                                       |
+| 7   | 0111 | dyI32     | zigzag + varints                                                          |                                                    |
+| 8   | 1000 | dyI64     | zigzag + varints                                                          |                                                    |
+| 9   | 1001 | binary    | contentLen(varints) + content                                             |                                                    |
+| 10  | 1010 | \*string  | contentLen(varints) + content(utf8)                                       |                                                    |
+| 11  | 1011 | array     | elements-len, elements-type, element-0, element-1, ..., element-n         | Elements do not have a type                        |
+| 12  | 1100 | record    | elements-len, keys-type, values-type, key-0, value-0, ..., key-n, value-n | Keys and values do not carry types                 |
+| 13  | 1101 | anyArray  | element-0, element-1, ..., element-n, void                                | Elements carry types                               |
+| 14  | 1110 | anyRecord | value-0-type, key-0, value-0, ..., key-n, value-n-type, void              | Keys are of type string and values are of type any |
+| 15  | 1111 |           |                                                                           |                                                    |
 
 0001_xxxx:
 
