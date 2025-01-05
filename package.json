@@ -1,6 +1,6 @@
 {
   "name": "jbod",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "JavaScript Binary Serialization and deserialization. Support for more JS data types",
   "type": "module",
   "types": "./dist/mod.d.ts",
@@ -10,6 +10,7 @@
     "build": "pnpm rollup -c && pnpm run api:check -l",
     "test": "vitest",
     "type:check": "tsc",
+    "check:src": "tsc -p src/tsconfig.json",
     "api:check": "api-extractor run -c api-extractor.jsonc -v"
   },
   "devDependencies": {

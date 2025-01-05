@@ -133,8 +133,23 @@ interface TextEncoderLike {
     written: number;
   };
 }
+const g = (function (): any {
+  try {
+    //@ts-ignore
+    return globalThis;
+  } catch (error) {}
+  try {
+    //@ts-ignore
+    return window;
+  } catch (error) {}
+  try {
+    //@ts-ignore
+    return global;
+  } catch (error) {}
+})();
+
 export const decodeUtf8: (buf: Uint8Array, start?: number, end?: number) => string = (function () {
-  const TextDecoder = (globalThis as any).TextDecoder;
+  const TextDecoder = g.TextDecoder;
   if (TextDecoder) {
     //英文在长度小于22左右，手搓解码器比 TextDecoder 快。如果是中文，手搓的总是比 TextDecoder 快。这里需要权衡
     const critical = 22;
@@ -151,7 +166,7 @@ export const decodeUtf8: (buf: Uint8Array, start?: number, end?: number) => stri
 })();
 
 export const encodeUtf8Into: (str: string, buf: Uint8Array, offset: number) => number = (function () {
-  const TextEncoder = (globalThis as any).TextEncoder;
+  const TextEncoder = g.TextEncoder;
   if (TextEncoder) {
     const textEncoder: TextEncoderLike = new TextEncoder();
     return (str: string, buf: Uint8Array, offset) => {

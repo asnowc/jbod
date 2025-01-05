@@ -1,10 +1,13 @@
+### 0.5.1
+
+最低支持 ES2017
+
 ### 0.5.0
 
 - fix: StructCodec.define 存在重复字段 id 时应抛出异常
 - feat: 废弃 StructType，StructDefined，StructFieldType 类型，新增 DefinedCodec、DefinedFiled、DataTypeDesc 代替
 - BREAKING CHANGE: StructCodec.define 现在默认将字段定义为必选字段。StructCodec.define 选项的 required 改为 optional 代替
 - BREAKING CHANGE: StructCodec.define 选项的 required 改为 optional 代替
-
 
 ### 0.4.9
 

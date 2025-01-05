@@ -6,7 +6,7 @@
     "lib": ["ESNext"],
     "strict": true,
     "allowImportingTsExtensions": true,
-    "skipDefaultLibCheck": true,
+    "skipLibCheck": true,
     "noEmit": true,
     "allowJs": true,
     "isolatedModules": true,
