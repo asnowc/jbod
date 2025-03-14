@@ -9,39 +9,37 @@
 
 English | [中文](https://github.com/asnowc/jbod/blob/main/README.ZH.md)
 
-[API Document](https://jsr.io/@asn/jbod/doc)\
-[JBOD encoding format](https://github.com/asnowc/jbod/blob/main/docs/jbod.md)\
-[Benchmark](https://github.com/asnowc/jbod/blob/main/docs/benchmark.md)
+[API Documentation](https://jsr.io/@asn/jbod/doc)
+[JBOD Encoding Format](./docs/jbod.md)
+[Benchmark](./docs/benchmark.zh.md)
 
 ## JavaScript Binary Object Data
 
-JavaScript Binary Serialization and deserialization lib. Support for more JS data types。Can be used for transmission, and storage. \
-JavaScript 二进制序列化与反序列库。支持更多的 JS 数据类型，序列化后大小占用很小。可用于传输、和存储。
-
-Inspired by [ProtoBuf](https://protobuf.dev/), JBOD is more flexible than ProtoBuf. More applicable to dynamically typed languages like JavaScript.
+JavaScript binary serialization and deserialization library. It supports more JS data types and has a small size after serialization. It can be used for transmission and storage.\
+It is inspired by [ProtoBuf](https://protobuf.dev/), and is more flexible than ProtoBuf. It is more suitable for dynamically typed languages like JavaScript.
 
 ## Features
 
-##### More JavaScript data types
+##### More JavaScript Data Types
 
-| type       | Notes                                                                                                 |
-| ---------- | ----------------------------------------------------------------------------------------------------- |
-| boolean    |                                                                                                       |
-| null       |                                                                                                       |
-| undefined  |                                                                                                       |
-| number     | Support NaN、-Infinity、+Infinity                                                                     |
-| bigint     |                                                                                                       |
-| Uint8Array |                                                                                                       |
-| string     |                                                                                                       |
-| RegExp     |                                                                                                       |
-| Array      |                                                                                                       |
-| Object     |                                                                                                       |
-| Symbol     | The significance is not significant, only the description attribute will be retained after conversion |
-| Error      | Keep only the cause, code, message, and name attributes                                               |
-| Map        |                                                                                                       |
-| Set        |                                                                                                       |
+| Type       | Notes                                                                        |
+| ---------- | ---------------------------------------------------------------------------- |
+| boolean    |                                                                              |
+| null       |                                                                              |
+| undefined  |                                                                              |
+| number     | Supports NaN, -Infinity, +Infinity                                           |
+| bigint     |                                                                              |
+| Uint8Array |                                                                              |
+| string     |                                                                              |
+| RegExp     |                                                                              |
+| Array      |                                                                              |
+| Object     |                                                                              |
+| Symbol     | Not significant, only the description attribute is retained after conversion |
+| Error      | Only the cause, code, message, and name attributes are retained              |
+| Map        |                                                                              |
+| Set        |                                                                              |
 
-##### Smaller binary data size
+##### Smaller Binary Data Size
 
 | Data type                                                 | Byte size (JSON)  | Byte size (JBOD) |
 | --------------------------------------------------------- | ----------------- | ---------------- |
@@ -52,10 +50,10 @@ Inspired by [ProtoBuf](https://protobuf.dev/), JBOD is more flexible than ProtoB
 | null                                                      | 4                 | 1                |
 | string (Set n as the UTF-8 encoding length of the string) | n+2               | n+(1~5)          |
 
-The data encoded by `JBOD.encode()` is about **70%** the size of JSON
-The data size of structured encoding is **20% ~ 40%** of JSON View [Structured Encoding](#structured-encoding)
+The data size of `JBOD.encode()` is about **70%** of JSON
+The data size of [structured encoding](#structured-encoding) `StructCodec.encode()` is **20%~40%** of JSON.
 
-View [simple code size comparison example](#simple-code-size-comparison-example)
+Check out the [simple code size comparison example](#simple-code-size-comparison)
 
 ## Usage
 
@@ -85,36 +83,36 @@ const u8Arr = JBOD.encode(data);
 const decodedData = JBOD.decode(u8Arr).data;
 ```
 
-## Structured encoding
+## Structured Encoding
 
-There are some scenarios where the data structure is fairly fixed, in which case transmitting type information can be quite redundant. For example, the object type has very space-consuming key names, and it also has a significant impact on performance in the JavaScript environment. In some scenarios, the keys are fixed, in which case ideally, the encoding should not retain the key information, only encode the values, and the decoder should decode the values based on the predefined structure, then restore the object data. This feature is inspired by ProtoBuf.
+In some scenarios, the data structure is quite fixed, and transmitting type information can be redundant. For example, the key names of object types are very space-consuming and also have a significant impact on performance in the JavaScript environment. In some scenarios, the keys are fixed, and ideally, the encoding should not retain key information, only encode the values. The decoder should decode the values based on the predefined structure and then restore the object data. This feature is inspired by ProtoBuf.
 
-### Struct data types
+### Struct Data Types
 
-| Type symbol | description                                                    | js type    |
-| ----------- | -------------------------------------------------------------- | ---------- |
-| dyI32       | 32-bit Integer （Dynamic length encode by zigzag + varints ）  | number     |
-| dyI64       | 64-bit Integer （Dynamic length, encode by zigzag + varints ） | bigint     |
-| i32         | 32-bit Integer                                                 | number     |
-| i64         | 64-bit Integer                                                 | bigint     |
-| f64         | 64-bit Float                                                   | number     |
-| bool        | Boolean                                                        | boolean    |
-|             |                                                                |            |
-| string      |                                                                | string     |
-| binary      |                                                                | Uint8Array |
-| any         | Any type                                                       |            |
-| anyArray    | Array elements can be of any type                              |            |
-| anyRecord   | Object pieces and values can be of any type                    |            |
-|             |                                                                |            |
-| regExp      |                                                                | RegExp     |
-| error       |                                                                | Error      |
-| map         |                                                                | Map        |
-| set         |                                                                | Set        |
-| symbol      |                                                                | symbol     |
+| Type symbol | Description                                                   | js type    |
+| ----------- | ------------------------------------------------------------- | ---------- |
+| dyI32       | 32-bit Integer （Dynamic length, zigzag + varints encoding ） | number     |
+| dyI64       | 64-bit Integer （Dynamic length, zigzag + varints encoding ） | bigint     |
+| i32         | 32-bit Integer                                                | number     |
+| i64         | 64-bit Integer                                                | bigint     |
+| f64         | 64-bit Float                                                  | number     |
+| bool        | Boolean                                                       | boolean    |
+|             |                                                               |            |
+| string      |                                                               | string     |
+| binary      |                                                               | Uint8Array |
+| any         | Any type                                                      |            |
+| anyArray    | Array elements can be of any type                             |            |
+| anyRecord   | Object fields and values can be of any type                   |            |
+|             |                                                               |            |
+| regExp      |                                                               | RegExp     |
+| error       |                                                               | Error      |
+| map         |                                                               | Map        |
+| set         |                                                               | Set        |
+| symbol      |                                                               | symbol     |
 
-Any type: The any type has an extra byte to hold type information than the fixed type
+Any type: The any type has an extra byte to hold type information compared to the fixed type
 
-### Example Struct definition
+### Struct Definition Example
 
 Suppose you need to define the following data structure:
 
@@ -128,7 +126,7 @@ interface Data {
 }
 ```
 
-Defining structure：
+Defining Struct:
 
 ```ts
 const struct = StructCodec.define({
@@ -154,7 +152,7 @@ const decodedData = struct.decode(u8Arr).data;
 console.log(decodedData);
 ```
 
-Note that the id is used to map with the key name, it must be a positive integer, and it cannot be repeated。\
+Note that the id is used to map with the key name, it must be a positive integer, and it cannot be repeated.\
 For the any type, you don't have to write the type. In this case, you could have also defined it like this:
 
 ```ts
@@ -175,7 +173,7 @@ The any type contains an extra byte to hold the type information, depending on y
 
 ## Examples
 
-### Simple code size comparison example
+### Simple Code Size Comparison
 
 ```ts
 import JBOD, { StructCodec } from "jbod";
