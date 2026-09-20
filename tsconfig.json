@@ -10,7 +10,6 @@
     "noEmit": true,
     "allowJs": true,
     "isolatedModules": true,
-    "baseUrl": ".",
     "paths": {
       "jbod": ["./src/mod.ts"]
     }

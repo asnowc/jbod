@@ -117,7 +117,7 @@ function writeByUtf8Into(str: string, buf: Uint8Array, offset = 0) {
 }
 interface TextDecoderLike {
   decode(
-    input?: ArrayBuffer | null,
+    input?: ArrayBufferLike | ArrayBufferView<ArrayBufferLike> | null,
     options?: {
       stream?: boolean | undefined;
     }

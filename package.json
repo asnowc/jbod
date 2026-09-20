@@ -3,6 +3,9 @@
   "version": "0.5.1",
   "description": "JavaScript Binary Serialization and deserialization. Support for more JS data types",
   "type": "module",
+  "engines": {
+    "node": ">=18"
+  },
   "types": "./dist/mod.d.ts",
   "scripts": {
     "ci:test": "vitest run",
@@ -14,12 +17,12 @@
     "api:check": "api-extractor run -c api-extractor.jsonc -v"
   },
   "devDependencies": {
-    "@microsoft/api-extractor": "^7.47.0",
-    "@types/node": "^20.14.9",
+    "@microsoft/api-extractor": "^7.59.1",
+    "@types/node": "^22.20.4",
     "@vitest/coverage-v8": "^1.6.0",
     "@vitest/ui": "^1.6.0",
     "rolldown": "^1.2.9",
-    "typescript": "^5.5.3",
+    "typescript": "^7.0.2",
     "vitest": "^1.6.0"
   },
   "repository": {
