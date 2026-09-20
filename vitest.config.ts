@@ -5,5 +5,8 @@ const root = import.meta.dirname;
 export default defineConfig({
   test: {
     alias: [{ find: /^jbod$/, replacement: path.resolve(root, "src/mod.ts") }],
+    coverage:{
+      include: ["src/**/*.ts"]
+    }
   },
 });
