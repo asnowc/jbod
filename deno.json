@@ -5,7 +5,7 @@
   "publish": {
     "include": ["LICENSE", "README.md", "src/**/*.ts"]
   },
-  "nodeModulesDir": false,
+  "nodeModulesDir": "none",
   "lock": false,
   "tasks": {
     "api:gen-doc": "deno doc --output=docs/api/doc --name=jbod --private --html src/mod.ts",

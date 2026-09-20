@@ -5,6 +5,7 @@
     "target": "ESNext",
     "lib": ["ESNext"],
     "strict": true,
+    "rewriteRelativeImportExtensions": true,
     "allowImportingTsExtensions": true,
     "skipLibCheck": true,
     "noEmit": true,

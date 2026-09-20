@@ -1,65 +1,68 @@
-[![NPM version][npm]][npm-url]
-[![JSR version][jsr]][jsr-url]
+[![NPM version][npm]][npm-url] [![JSR version][jsr]][jsr-url]
 
 [npm]: https://img.shields.io/npm/v/jbod.svg
 [npm-url]: https://npmjs.com/package/jbod
 [jsr]: https://jsr.io/badges/@asn/jbod
 [jsr-url]: https://jsr.io/@asn/jbod
-[root]: https://github.com/mian/blob
 
-English | [中文](https://github.com/asnowc/jbod/blob/main/README.ZH.md)
+English | [中文](./README.ZH.md)
 
 [API Documentation](https://jsr.io/@asn/jbod/doc)
-[JBOD Encoding Format](./docs/jbod.md)
-[Benchmark](./docs/benchmark.zh.md)
+[JBOD Encoding Format](./docs/jbod.md) [Benchmark](./docs/benchmark.md)
 
 ## JavaScript Binary Object Data
 
-JavaScript binary serialization and deserialization library. It supports more JS data types and has a small size after serialization. It can be used for transmission and storage.\
-It is inspired by [ProtoBuf](https://protobuf.dev/), and is more flexible than ProtoBuf. It is more suitable for dynamically typed languages like JavaScript.
+JBOD is a binary serialization and deserialization library for JavaScript. It
+supports more JavaScript data types and produces compact serialized data
+suitable for transmission and storage. Inspired by
+[Protocol Buffers](https://protobuf.dev/), JBOD is more flexible and better
+suited to dynamically typed languages such as JavaScript.
 
 ## Features
 
-##### More JavaScript Data Types
+### More JavaScript Data Types
 
-| Type       | Notes                                                                        |
-| ---------- | ---------------------------------------------------------------------------- |
-| boolean    |                                                                              |
-| null       |                                                                              |
-| undefined  |                                                                              |
-| number     | Supports NaN, -Infinity, +Infinity                                           |
-| bigint     |                                                                              |
-| Uint8Array |                                                                              |
-| string     |                                                                              |
-| RegExp     |                                                                              |
-| Array      |                                                                              |
-| Object     |                                                                              |
-| Symbol     | Not significant, only the description attribute is retained after conversion |
-| Error      | Only the cause, code, message, and name attributes are retained              |
-| Map        |                                                                              |
-| Set        |                                                                              |
+| Type         | Notes                                                     |
+| ------------ | --------------------------------------------------------- |
+| `boolean`    |                                                           |
+| `null`       |                                                           |
+| `undefined`  |                                                           |
+| `number`     | Supports `NaN`, `-Infinity`, and `Infinity`               |
+| `bigint`     |                                                           |
+| `Uint8Array` |                                                           |
+| `string`     |                                                           |
+| `RegExp`     |                                                           |
+| `Array`      |                                                           |
+| `Object`     |                                                           |
+| `Symbol`     | Only the `description` property is preserved              |
+| `Error`      | Only `cause`, `code`, `message`, and `name` are preserved |
+| `Map`        |                                                           |
+| `Set`        |                                                           |
 
-##### Smaller Binary Data Size
+### Smaller Binary Data Size
 
-| Data type                                                 | Byte size (JSON)  | Byte size (JBOD) |
-| --------------------------------------------------------- | ----------------- | ---------------- |
-| int(0~2147483647)                                         | 1~ 10             | 1~5              |
-| int (-1~-2147483648)                                      | 2~ 11             | 1~5              |
-| double                                                    | 1~22              | 8                |
-| boolean                                                   | 4(true)、5(false) | 1                |
-| null                                                      | 4                 | 1                |
-| string (Set n as the UTF-8 encoding length of the string) | n+2               | n+(1~5)          |
+| Data type                                 |        Byte size (JSON) | Byte size (JBOD) |
+| ----------------------------------------- | ----------------------: | ---------------: |
+| int (0–2147483647)                        |                    1–10 |              1–5 |
+| int (-1–-2147483648)                      |                    2–11 |              1–5 |
+| double                                    |                    1–22 |                8 |
+| boolean                                   | 4 (`true`), 5 (`false`) |                1 |
+| null                                      |                       4 |                1 |
+| string (where n is its UTF-8 byte length) |                     n+2 |          n+(1–5) |
 
-The data size of `JBOD.encode()` is about **70%** of JSON
-The data size of [structured encoding](#structured-encoding) `StructCodec.encode()` is **20%~40%** of JSON.
+Data encoded with `JBOD.encode()` is approximately **70%** the size of JSON.
+Data encoded with [structured encoding](#structured-encoding), using
+`StructCodec.encode()`, is approximately **20%–40%** the size of JSON.
 
-Check out the [simple code size comparison example](#simple-code-size-comparison)
+See the [simple size comparison](#simple-size-comparison).
 
 ## Usage
 
 ### Node
 
-`npm install jbod`
+```sh
+npm install jbod
+```
 
 ```ts
 import JBOD from "jbod";
@@ -85,32 +88,27 @@ const decodedData = JBOD.decode(u8Arr).data;
 
 ## Structured Encoding
 
-In some scenarios, the data structure is quite fixed, and transmitting type information can be redundant. For example, the key names of object types are very space-consuming and also have a significant impact on performance in the JavaScript environment. In some scenarios, the keys are fixed, and ideally, the encoding should not retain key information, only encode the values. The decoder should decode the values based on the predefined structure and then restore the object data. This feature is inspired by ProtoBuf.
+In some scenarios, the data structure is fixed, so including type information
+during transmission is redundant. Object keys also consume considerable space
+and affect performance in JavaScript. When the keys are known in advance, the
+encoded data only needs to contain values; the decoder can restore the object
+from a predefined structure. This feature is inspired by Protocol Buffers.
 
 ### Struct Data Types
 
-| Type symbol | Description                                                   | js type    |
-| ----------- | ------------------------------------------------------------- | ---------- |
-| dyI32       | 32-bit Integer （Dynamic length, zigzag + varints encoding ） | number     |
-| dyI64       | 64-bit Integer （Dynamic length, zigzag + varints encoding ） | bigint     |
-| i32         | 32-bit Integer                                                | number     |
-| i64         | 64-bit Integer                                                | bigint     |
-| f64         | 64-bit Float                                                  | number     |
-| bool        | Boolean                                                       | boolean    |
-|             |                                                               |            |
-| string      |                                                               | string     |
-| binary      |                                                               | Uint8Array |
-| any         | Any type                                                      |            |
-| anyArray    | Array elements can be of any type                             |            |
-| anyRecord   | Object fields and values can be of any type                   |            |
-|             |                                                               |            |
-| regExp      |                                                               | RegExp     |
-| error       |                                                               | Error      |
-| map         |                                                               | Map        |
-| set         |                                                               | Set        |
-| symbol      |                                                               | symbol     |
-
-Any type: The any type has an extra byte to hold type information compared to the fixed type
+| Type                                      | JavaScript value      | Encoding                               |
+| ----------------------------------------- | --------------------- | -------------------------------------- |
+| `dyI32`                                   | `number`              | Signed 32-bit integer, ZigZag + varint |
+| `dyI64`                                   | `bigint`              | Signed 64-bit integer, ZigZag + varint |
+| `i32`                                     | `number`              | Fixed-width 32-bit integer             |
+| `i64`                                     | `bigint`              | Fixed-width 64-bit integer             |
+| `f64`                                     | `number`              | 64-bit floating point                  |
+| `bool`                                    | `boolean`             | Boolean                                |
+| `string`                                  | `string`              | UTF-8 string                           |
+| `binary`                                  | `Uint8Array`          | Binary payload                         |
+| `any`                                     | Any supported value   | Self-describing value                  |
+| `anyArray`, `anyRecord`                   | Array or object       | Self-describing members                |
+| `regExp`, `error`, `map`, `set`, `symbol` | Corresponding JS type | Type-specific encoding                 |
 
 ### Struct Definition Example
 
@@ -126,7 +124,7 @@ interface Data {
 }
 ```
 
-Defining Struct:
+Define the Struct:
 
 ```ts
 const struct = StructCodec.define({
@@ -152,8 +150,9 @@ const decodedData = struct.decode(u8Arr).data;
 console.log(decodedData);
 ```
 
-Note that the id is used to map with the key name, it must be a positive integer, and it cannot be repeated.\
-For the any type, you don't have to write the type. In this case, you could have also defined it like this:
+The ID maps to the field name. It must be a positive integer and cannot be
+duplicated. For an `any` field, the type can be omitted. The example above can
+also be written as follows:
 
 ```ts
 const struct = StructCodec.define({
@@ -169,11 +168,12 @@ const struct = StructCodec.define({
 });
 ```
 
-The any type contains an extra byte to hold the type information, depending on your use case
+The `any` type uses one extra byte to store type information. Choose between
+`any` and a fixed type according to your use case.
 
 ## Examples
 
-### Simple Code Size Comparison
+### Simple Size Comparison
 
 ```ts
 import JBOD, { StructCodec } from "jbod";
@@ -189,7 +189,13 @@ export const objData = {
   id: 876,
 };
 
-const anyStruct = StructCodec.define({ disabled: 1, count: 2, name: 3, dataStamp: 4, id: 5 });
+const anyStruct = StructCodec.define({
+  disabled: 1,
+  count: 2,
+  name: 3,
+  dataStamp: 4,
+  id: 5,
+});
 const fixedStruct = StructCodec.define({
   disabled: { id: 1, type: "bool" },
   count: { id: 2, type: "dyI32" },
@@ -199,7 +205,7 @@ const fixedStruct = StructCodec.define({
 });
 
 console.log(encodeJSON(objData).byteLength); // 96
-console.log(JBOD.encode(objData).byteLength); // 67   (70% of JSON)
+console.log(JBOD.encode(objData).byteLength); // 67 (70% of JSON)
 console.log(anyStruct.encode(objData).byteLength); // 38 (55% of JSON)
 console.log(fixedStruct.encode(objData).byteLength); // 34 (35% of JSON)
 ```

@@ -4,12 +4,12 @@
   "description": "JavaScript Binary Serialization and deserialization. Support for more JS data types",
   "type": "module",
   "engines": {
-    "node": ">=18"
+    "node": ">=22"
   },
   "types": "./dist/mod.d.ts",
   "scripts": {
     "ci:test": "vitest run",
-    "ci:build": "rolldown -c && tsc -p src/tsconfig.json --noEmit false --emitDeclarationOnly --outDir dist",
+    "ci:build": "tsc -p src/tsconfig.json --noEmit false",
     "build": "pnpm run ci:build && pnpm run api:check -l",
     "test": "vitest",
     "type:check": "tsc",
@@ -19,11 +19,10 @@
   "devDependencies": {
     "@microsoft/api-extractor": "^7.59.1",
     "@types/node": "^22.20.4",
-    "@vitest/coverage-v8": "^1.6.0",
-    "@vitest/ui": "^1.6.0",
-    "rolldown": "^1.2.9",
+    "@vitest/coverage-v8": "^5.0.1",
+    "@vitest/ui": "^5.0.1",
     "typescript": "^7.0.2",
-    "vitest": "^1.6.0"
+    "vitest": "^5.0.1"
   },
   "repository": {
     "type": "git",
