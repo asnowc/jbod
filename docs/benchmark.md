@@ -8,8 +8,11 @@ For ProtoBuf, since it does not support defining array types directly, a single-
 
 Deno is used for benchmarking in order to get more accurate results
 
-- Run the `deno task benchmark` command, and the test results will be output to the "benchmark/dist/result.json" file.
-- Run the `deno task bench-ui` command to start the web server and view the test results.
+- `deno task benchmark:encode` renders `benchmark/dist/encode.png`.
+- `deno task benchmark:decode` renders `benchmark/dist/decode.png`.
+- `deno task benchmark:struct` renders `benchmark/dist/struct.png`.
+- `deno task benchmark:utf8` renders `benchmark/dist/utf8.png`.
+- To render another benchmark file, pipe its JSON output to the renderer: `deno bench -A --json <file> | deno run -A benchmark/ui/render.ts`.
 
 ### Comparison of encoding and decoding for different data types
 
