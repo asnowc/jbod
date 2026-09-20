@@ -13,15 +13,12 @@ jobs:
     if: ${{github.repository_owner == 'asnowc'}}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: pnpm/setup@v2
         with:
-          node-version: 22
-          registry-url: https://registry.npmjs.org
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 9
-          run_install: true
+          version: ^12.0.0
+          runtime: node@26
+          cache: true
       - name: Build
         run: pnpm run ci:build
       - name: Check Api
