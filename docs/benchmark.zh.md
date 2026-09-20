@@ -8,8 +8,11 @@
 
 为了获得更精准的结果，项目中使用了 Deno 进行基准测试。
 
-- 运行 `deno task benchmark`，测试结果输出到 benchmark/dist/result.json
-- 运行 `deno task bench-ui`, 启动 web 服务器，查看测试结果
+- `deno task benchmark:encode` 渲染到 `benchmark/dist/encode.png`。
+- `deno task benchmark:decode` 渲染到 `benchmark/dist/decode.png`。
+- `deno task benchmark:struct` 渲染到 `benchmark/dist/struct.png`。
+- `deno task benchmark:utf8` 渲染到 `benchmark/dist/utf8.png`。
+- 如需渲染其他基准测试文件，可将其 JSON 输出通过管道传给渲染器：`deno bench -A --json <file> | deno run -A benchmark/ui/render.ts`。
 
 ### 不同数据类型的编解码对比
 

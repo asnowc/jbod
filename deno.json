@@ -5,18 +5,21 @@
   "publish": {
     "include": ["LICENSE", "README.md", "src/**/*.ts"]
   },
-  "nodeModulesDir": false,
+  "nodeModulesDir": "none",
   "lock": false,
   "tasks": {
     "api:gen-doc": "deno doc --output=docs/api/doc --name=jbod --private --html src/mod.ts",
     "version_snapshots": "deno run -A scripts/version_snapshots.ts",
-    "benchmark": "deno bench -A --json > benchmark/dist/result.json",
-    "bench-ui": "deno run -A benchmark/ui/chart_ui.ts "
+    "bench:encode": "deno bench -A --json benchmark/encode.bench.ts | deno run -A benchmark/ui/render.ts benchmark/dist/encode.png",
+    "bench:decode": "deno bench -A --json benchmark/decode.bench.ts | deno run -A benchmark/ui/render.ts benchmark/dist/decode.png",
+    "bench:struct": "deno bench -A --json benchmark/struct.bench.ts | deno run -A benchmark/ui/render.ts benchmark/dist/struct.png",
+    "bench:utf8": "deno bench -A --json benchmark/utf8/utf8_codec.bench.ts | deno run -A benchmark/ui/render.ts benchmark/dist/utf8.png"
   },
   "imports": {
-    "@eavid/vitest-tool": "npm:@eavid/vitest-tool@^1.2.3",
+    "@napi-rs/canvas": "npm:@napi-rs/canvas@^1.0.9",
+    "echarts": "npm:echarts@^6.1.0",
     "jbod": "./src/mod.ts",
-    "jbod-before": "./benchmark/dist/before.js",
+    "jbod-before": "./dist/mod.js",
     "protobufjs": "npm:protobufjs@^7.3.0"
   }
 }

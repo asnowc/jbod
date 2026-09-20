@@ -3,19 +3,8 @@
   "tasks": [
     {
       "label": "Benchmark",
-      "command": "deno bench -A ${file} --json > benchmark/dist/result.json",
-      "detail": "deno bench -A ${file} --json > benchmark/dist/result.json",
-      "type": "shell",
-      "args": [],
-      "presentation": {
-        "reveal": "always"
-      },
-      "group": "test"
-    },
-    {
-      "label": "Benchmark ui",
-      "command": "deno run -A benchmark/ui/chart_ui.ts",
-      "detail": "deno run -A benchmark/ui/chart_ui.ts",
+      "command": "deno bench -A --json ${file} | deno run -A benchmark/ui/render.ts",
+      "detail": "deno bench -A --json ${file} | deno run -A benchmark/ui/render.ts",
       "type": "shell",
       "args": [],
       "presentation": {

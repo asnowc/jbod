@@ -2,7 +2,7 @@
   "extends": "../tsconfig.json",
   "compilerOptions": {
     "lib": ["ES2017", "ES2022.Error", "ES2020.BigInt"],
-    "outDir": "../out",
+    "outDir": "../dist",
     "target": "ES2017",
     "types": [],
     "noEmit": true,

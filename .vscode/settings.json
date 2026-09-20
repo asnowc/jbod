@@ -1,4 +1,5 @@
 {
+  "vitest.runtime": "node",
   "cSpell.words": ["jbod"],
   "deno.config": "./deno.json",
   "deno.enable": true,
